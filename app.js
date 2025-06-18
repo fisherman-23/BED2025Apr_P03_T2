@@ -1,0 +1,42 @@
+const express = require("express");
+const sql = require("mssql");
+const dotenv = require("dotenv");
+const path = require("path");
+dotenv.config();
+
+const userController = require("./controllers/userController.js");
+const {
+  validateUserId,
+  validateSearchUser,
+  validateCreateUser,
+  validateUpdateUser
+} = require("./middlewares/userValidation");
+
+const app = express();
+const port = process.env.PORT || 3000;
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "public")));
+
+app.get("/users", validateSearchUser, userController.searchUser);
+
+app.get("/users/:id", validateUserId, userController.getUserById);
+
+app.post("/users", validateCreateUser, userController.createUser);
+
+app.put("/users/:id", validateUserId, validateUpdateUser, userController.updateUser);
+
+app.delete("/users/:id", validateUserId, userController.deleteUser);
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
+
+
+process.on("SIGINT", async () => {
+  console.log("Server is gracefully shutting down");
+  await sql.close();
+  console.log("Database connections closed");
+  process.exit(0);
+});
+
