@@ -10,12 +10,13 @@ async function searchUser(searchTerm) {
     const query = `
     SELECT *
     FROM Users
-    WHERE phoneNumber LIKE '%' + @searchTerm + '%'
-        OR email LIKE '%' + @searchTerm + '%'  
+    WHERE (PhoneNumber LIKE '%' + @SearchTerm + '%'
+        OR Email LIKE '%' + @SearchTerm + '%') 
+        AND IsActive = 1
     `;
 
     const request = connection.request();
-    request.input("searchTerm", sql.Char, searchTerm);
+    request.input("SearchTerm", searchTerm);
     const result = await request.query(query);
     return result.recordset[0];
   } catch (error) {
@@ -32,13 +33,13 @@ async function searchUser(searchTerm) {
   }
 }
 
-async function getUserById(id) {
+async function getUserById(ID) {
   let connection;
   try {
     connection = await sql.connect(dbConfig);
-    const query = "SELECT id, email, name, aboutMe, phoneNumber, dateOfBirth, profilePicture, createdAt, updatedAt, isActive FROM Users WHERE id = @id";
+    const query = "SELECT ID, Email, Name, AboutMe, PhoneNumber, DateOfBirth, ProfilePicture, CreatedAt, UpdatedAt, IsActive FROM Users WHERE ID = @ID AND IsActive = 1";
     const request = connection.request();
-    request.input("id", id);
+    request.input("ID", ID);
     const result = await request.query(query);
 
     if (result.recordset.length === 0) {
@@ -67,25 +68,25 @@ async function createUser(userData) {
     connection = await sql.connect(dbConfig)
   const query = `
     INSERT INTO Users 
-      (email, password, name, aboutMe, phoneNumber, dateOfBirth, profilePicture, isActive)
+      (Email, Password, Name, AboutMe, PhoneNumber, DateOfBirth, ProfilePicture, IsActive)
     VALUES 
-      (@email, @password, @name, @aboutMe, @phoneNumber, @dateOfBirth, @profilePicture, @isActive);
-    SELECT SCOPE_IDENTITY() AS id;
+      (@Email, @Password, @Name, @AboutMe, @PhoneNumber, @DateOfBirth, @ProfilePicture, @IsActive);
+    SELECT SCOPE_IDENTITY() AS ID;
   `;
 
   const request = connection.request();
-  const passwordHash = await hash(userData.password);
-  request.input("email", userData.email);
-  request.input("password", passwordHash);
-  request.input("name", userData.name);
-  request.input("aboutMe", null);
-  request.input("phoneNumber", userData.phoneNumber);
-  request.input("dateOfBirth", userData.dateOfBirth); //format: YYYY-MM-DD
-  request.input("profilePicture", userData.profilePicture || null);
-  request.input("isActive", 1);
+  const passwordHash = await hash(userData.Password);
+  request.input("Email", userData.Email);
+  request.input("Password", passwordHash);
+  request.input("Name", userData.Name);
+  request.input("AboutMe", null);
+  request.input("PhoneNumber", userData.PhoneNumber);
+  request.input("DateOfBirth", userData.DateOfBirth); //format: YYYY-MM-DD
+  request.input("ProfilePicture", userData.ProfilePicture || null);
+  request.input("IsActive", 1);
 
     const result = await request.query(query);
-    const newUserId = result.recordset[0].id;
+    const newUserId = result.recordset[0].ID;
     return await getUserById(newUserId);
   } catch (error) {
     console.error("Database error:", error);
@@ -102,59 +103,62 @@ async function createUser(userData) {
 }
 
 
-async function updateUser(id, userData) {
+async function updateUser(ID, userData) {
   let connection;
   try {
     connection = await sql.connect(dbConfig);
     const request = connection.request();
 
     let sqlQuery = ``;
-    if (userData.password && userData.newPassword) {
+    if (userData.Password && userData.NewPassword) {
       sqlQuery = `
         UPDATE Users
         SET
-          email = @email,
-          password = @password,
-          name = @name,
-          aboutMe = @aboutMe,
-          phoneNumber = @phoneNumber,
-          updatedAt = GETDATE()
-        WHERE id = @id
+          Email = @Email,
+          Password = @Password,
+          Name = @Name,
+          AboutMe = @AboutMe,
+          PhoneNumber = @PhoneNumber,
+          ProfilePicture = @ProfilePicture,
+          UpdatedAt = GETDATE()
+        WHERE ID = @ID
       `;
 
-      const passwordQuery = `SELECT password FROM Users WHERE id = @id`
+      const passwordQuery = `SELECT Password FROM Users WHERE ID = @ID`
       const passwordRequest = connection.request();
-      passwordRequest.input("id", id);
+      passwordRequest.input("ID", ID);
       const passwordResult = await passwordRequest.query(passwordQuery);
       if (!passwordResult.recordset[0]) {
         console.log("User not found for update");
         return null;
       }
-      const currentPassword = passwordResult.recordset[0].password;
-      if (!await compare(userData.password, currentPassword)) {
+      const currentPassword = passwordResult.recordset[0].Password;
+      if (!await compare(userData.Password, currentPassword)) {
         console.log("Password does not match current password");
         return null;
       }
 
-      request.input("password", await hash(userData.newPassword));
+      request.input("Password", await hash(userData.NewPassword));
     } else {
       sqlQuery = `
         UPDATE Users
         SET
-          email = @email,
-          name = @name,
-          aboutMe = @aboutMe,
-          phoneNumber = @phoneNumber,
-          updatedAt = GETDATE()
-        WHERE id = @id
+          Email = @Email,
+          Name = @Name,
+          AboutMe = @AboutMe,
+          PhoneNumber = @PhoneNumber,
+          ProfilePicture = @ProfilePicture,
+          UpdatedAt = GETDATE()
+        WHERE ID = @ID
       `;
     }
 
-    request.input("id", id);
-    request.input("email", userData.email);
-    request.input("name", userData.name);
-    request.input("aboutMe", userData.aboutMe ?? null);
-    request.input("phoneNumber", userData.phoneNumber);
+    request.input("ID", ID);
+    request.input("Email", userData.Email);
+    request.input("Name", userData.Name);
+    request.input("AboutMe", userData.AboutMe ?? null);
+    request.input("PhoneNumber", userData.PhoneNumber);
+    request.input("ProfilePicture", userData.ProfilePicture || null);
 
     const result = await request.query(sqlQuery);
 
@@ -162,7 +166,7 @@ async function updateUser(id, userData) {
       return null;
     }
 
-    return await getUserById(id);
+    return await getUserById(ID);
   } catch (error) {
     console.error("Database error in updateUser:", error);
     throw error;
@@ -179,15 +183,15 @@ async function updateUser(id, userData) {
 
 
 
-async function deleteUser(id) {
-  const userToDelete = await getUserById(id);
+async function deleteUser(ID) {
+  const userToDelete = await getUserById(ID);
   let connection;
   try {
     connection = await sql.connect(dbConfig)
 
-    const sqlQuery = `UPDATE Users SET isActive = 0 WHERE id = @id`
+    const sqlQuery = `UPDATE Users SET IsActive = 0 WHERE ID = @ID`
     const request = connection.request()
-    request.input("id", id)
+    request.input("ID", ID)
     const result = await request.query(sqlQuery)
 
     if (result.rowsAffected[0] === 0) {

@@ -10,14 +10,14 @@ async function searchUser(req, res) {
     }
     res.json(user);
   } catch (error) {
-    console.error("Controller error in searchUsers:", error);
+    console.error("Controller error in searchUser:", error);
     res.status(500).json({ error: "Error searching users" });
   }
 }
 
 async function getUserById(req, res) {
   try {
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(req.params.ID, 10);
     const user = await userModel.getUserById(id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -41,7 +41,7 @@ async function createUser(req, res) {
 
 async function updateUser(req, res) {
   try {
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(req.params.ID, 10);
     const updatedUser = await userModel.updateUser(id, req.body);
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found or password incorrect" });
@@ -55,7 +55,7 @@ async function updateUser(req, res) {
 
 async function deleteUser(req, res) {
   try {
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(req.params.ID, 10);
     const deletedUser = await userModel.deleteUser(id);
     if (!deletedUser) {
       return res.status(404).json({ error: "User not found" });
