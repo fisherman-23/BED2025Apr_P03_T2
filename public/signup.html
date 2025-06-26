@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Our Community - CircleAge</title>
+    <link rel="stylesheet" href="/global.css">
+    <link rel="stylesheet" href="/signup/signup.css">
+    <script src="/signup/signup.js" defer></script>
+</head>
+<body>
+    <nav>
+        <img src="/assets/images/Logo.svg" alt="Logo" class="logo">
+        <button class="signUp">Sign Up</button>
+    </nav>
+    <main class="form-container">
+        <h1>Join Our Community</h1>
+        <form id="registration-form">
+            <input type="email" id="Email" placeholder="Email" required/>
+            <div class="password-container">
+                <input type="password" id="Password" placeholder="Password" required />
+                <span class="toggle-password">
+                    <img id="eye-icon" src="/assets/icons/eye-hidden.svg" alt="Toggle Password Visibility" />
+                </span>
+            </div>
+            <input type="text" id="Name" placeholder="Full Name" required />
+            <input type="tel" id="PhoneNumber" placeholder="8-digit Phone Number" required />
+            <label class="dob-label">Date of Birth</label>
+            <div class="dob-container">
+                <select id="dob-day" required>
+                    <option value="" disabled selected>Day</option>
+                    <!-- Days 1 to 31 -->
+                </select>
+                <select id="dob-month" required>
+                    <option value="" disabled selected>Month</option>
+                    <!-- Months Jan-Dec -->
+                </select>
+                <select id="dob-year" required>
+                    <option value="" disabled selected>Year</option>
+                    <!-- Years 1900 to current year -->
+                </select>
+            </div>
+            <div class="photo-container">
+                <label for="photo-input" class="photo-label">
+                    <img src="/assets/icons/add_a_photo.svg" alt="Add Photo Icon" class="photo-icon">
+                    <span>Add Photo</span>
+                </label>
+                <input type="file" id="photo-input" accept="image/*" hidden />
+                <button type="button" id="remove-photo" class="remove-photo-button" style="display:none;">Remove</button>
+            </div>
+            <button type="submit" class="submit-button">Create My Account</button>
+            <p class="signin-link">
+                Already have an account? <a href="login.html">Sign In</a>
+            </p>
+        </form>
+    </main>
+</body>
+</html>
