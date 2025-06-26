@@ -10,6 +10,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify({ searchTerm, password }),
     });
 
@@ -21,8 +22,6 @@ document.getElementById("loginForm").addEventListener("submit", async function (
     }
     alert(`Welcome, ${data.user.name}!`);
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
     window.location.href = "/index.html";
 
   } catch (error) {

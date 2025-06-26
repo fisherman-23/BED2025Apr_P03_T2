@@ -1,16 +1,21 @@
 const userModel = require("../models/userModel");
 
 async function loginUser(req, res) {
-  const { searchTerm, password } = req.body;
+  const { searchTerm, Password } = req.body;
 
   try {
-    // This returns { user, token } (or null)
-    const result = await userModel.loginUser(searchTerm, password);
+    const result = await userModel.loginUser(searchTerm, Password);
     if (!result) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
     const { user, token } = result;
-    res.json({ user, token });
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 1000 * 60 * 60     // expires in 1h
+    });
+    res.json({ user });
   } catch (error) {
     console.error("Controller error in loginUser:", error);
     res.status(500).json({ error: "Error logging in user" });

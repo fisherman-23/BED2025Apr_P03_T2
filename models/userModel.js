@@ -3,7 +3,7 @@ const dbConfig = require("../dbConfig");
 const { hash, compare } = require("../utils/hash.js");
 const jwt = require("jsonwebtoken");
 
-async function loginUser(searchTerm, password) {
+async function loginUser(searchTerm, Password) {
   let connection;
   try {
     connection = await sql.connect(dbConfig);
@@ -22,11 +22,11 @@ async function loginUser(searchTerm, password) {
       return null;
     }
 
-    if  (!await compare(password, user.password)) {
+    if  (!await compare(Password, user.Password)) {
       return null;
     }
 
-    delete user.password;
+    delete user.Password;
         const token = jwt.sign(
       { id: user.ID, email: user.Email },
       process.env.JWT_SECRET,
