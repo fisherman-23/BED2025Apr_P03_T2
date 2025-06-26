@@ -1,0 +1,149 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    margin: 0 1rem;
+    position: fixed; 
+    top: 0;                
+    left: 0;
+    right: 0;
+}
+.signUp {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 0.9rem 1.1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.signUp:hover {
+    background-color: #0056b3;
+}
+
+.form-container {
+    width: 100%;
+    height: auto;
+    margin-top: 3.5rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.form-container h1 {
+    font-size: 2rem;
+    margin: 1.25rem 0;
+    text-align: center;
+}
+#registration-form {
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem;
+}
+#registration-form input,
+.dob-container select {
+    width: 100%;
+    padding: 0.625rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+.password-container {
+    position: relative;
+}
+.password-container input {
+    padding-right: 2.5rem;
+    width: 100%;
+}
+.toggle-password {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+.toggle-password img {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+.dob-label {
+    align-self: flex-start;
+}
+.dob-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.dob-container select {
+    width: 32%;
+}
+.photo-container {
+    border: 1px dashed #ccc;
+    padding: 40px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+}
+.photo-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.625rem;
+}
+.photo-label img {
+    width: 3rem;
+    height: 3rem;
+}
+.photo-label span {
+    font-size: 1rem;
+    text-align: center;
+}
+.remove-photo-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    align-self: center;
+}
+.remove-photo-button:hover {
+    background-color: #c82333;
+}
+.submit-button {
+    padding: 0.875rem;
+    background-color: #007bff;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+.signin-link {
+    text-align: center;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 480px) {
+    #registration-form {
+        width: 90%;
+    }
+}
+
