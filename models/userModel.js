@@ -22,11 +22,11 @@ async function loginUser(searchTerm, password) {
       return null;
     }
 
-    if  (!await compare(password, user.Password)) {
+    if  (!await compare(password, user.password)) {
       return null;
     }
 
-    delete user.Password;
+    delete user.password;
         const token = jwt.sign(
       { id: user.ID, email: user.Email },
       process.env.JWT_SECRET,
