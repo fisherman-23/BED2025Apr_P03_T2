@@ -1,8 +1,9 @@
 const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 const { hash, compare } = require("../utils/hash.js");
+const jwt = require("jsonwebtoken");
 
-async function searchUser(searchTerm) {
+async function loginUser(searchTerm, password) {
   let connection;
   try {
     connection = await sql.connect(dbConfig);
@@ -10,24 +11,38 @@ async function searchUser(searchTerm) {
     const query = `
     SELECT *
     FROM Users
-    WHERE (PhoneNumber LIKE '%' + @SearchTerm + '%'
-        OR Email LIKE '%' + @SearchTerm + '%') 
-        AND IsActive = 1
-    `;
+    WHERE (PhoneNumber = @SearchTerm OR Email = @SearchTerm) AND IsActive = 1`;
 
     const request = connection.request();
     request.input("SearchTerm", searchTerm);
     const result = await request.query(query);
-    return result.recordset[0];
+    const user = result.recordset[0];
+
+    if (!user) {
+      return null;
+    }
+
+    if  (!await compare(password, user.password)) {
+      return null;
+    }
+
+    delete user.password;
+        const token = jwt.sign(
+      { id: user.ID, email: user.Email },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+    return { user, token };
+
   } catch (error) {
-    console.error("Database error in searchUser:", error);
+    console.error("Database error in loginUser:", error);
     throw error;
   } finally {
     if (connection) {
       try {
         await connection.close();
       } catch (err) {
-        console.error("Error closing connection after searchUser:", err);
+        console.error("Error closing connection after loginUser:", err);
       }
     }
   }
@@ -216,7 +231,7 @@ async function deleteUser(ID) {
 
 
 module.exports = {
-  searchUser,
+  loginUser,
   getUserById,
   createUser,
   updateUser,

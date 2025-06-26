@@ -10,12 +10,18 @@ const IdSchema = Joi.object({
 });
 
 
-const searchUserSchema = Joi.object({
+const loginUserSchema = Joi.object({
   searchTerm: Joi.string().min(1).required().messages({
     "string.base":    "Search term must be a string",
     "string.empty":   "Search term cannot be empty",
     "string.min":     "Search term must be at least 1 character long",
     "any.required":   "Search term is required",
+  }),
+  password: Joi.string().min(8).required().messages({
+    "string.base": "Password must be a string",
+    "string.empty": "Password cannot be empty",
+    "string.min": "Password must be at least 8 characters long",
+    "any.required": "Password is required",
   }),
 });
 
@@ -105,7 +111,25 @@ const updateUserSchema = Joi.object({
   }),
 });
 
+const jwt = require("jsonwebtoken");
 
+function authenticateJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Token missing or malformed" });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(403).json({ error: "Invalid or expired token" });
+  }
+}
 
 function validateUserId(req, res, next) {
   const { error } = IdSchema.validate(req.params, { abortEarly: false });
@@ -116,8 +140,8 @@ function validateUserId(req, res, next) {
   next();
 }
 
-function validateSearchUser(req, res, next) {
-  const { error } = searchUserSchema.validate(req.query, { abortEarly: false });
+function validateLoginUser(req, res, next) {
+  const { error } = loginUserSchema.validate(req.body, { abortEarly: false });
   if (error) {
     const errormessage = error.details.map(d => d.message).join(", ");
     return res.status(400).json({ error: errormessage });
@@ -145,7 +169,8 @@ function validateUpdateUser(req, res, next) {
 
 module.exports = {
   validateUserId,
-  validateSearchUser,
+  validateLoginUser,
   validateCreateUser,
   validateUpdateUser,
+  authenticateJWT
 };

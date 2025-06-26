@@ -1,17 +1,19 @@
 const userModel = require("../models/userModel");
 
-async function searchUser(req, res) {
-  const { searchTerm } = req.query;
+async function loginUser(req, res) {
+  const { searchTerm, password } = req.body;
 
   try {
-    const user = await userModel.searchUser(searchTerm);
-    if (!user) {
-      return res.status(404).json({ error: "No user found matching search term" });
+    // This returns { user, token } (or null)
+    const result = await userModel.loginUser(searchTerm, password);
+    if (!result) {
+      return res.status(401).json({ error: "Invalid credentials" });
     }
-    res.json(user);
+    const { user, token } = result;
+    res.json({ user, token });
   } catch (error) {
-    console.error("Controller error in searchUser:", error);
-    res.status(500).json({ error: "Error searching users" });
+    console.error("Controller error in loginUser:", error);
+    res.status(500).json({ error: "Error logging in user" });
   }
 }
 
@@ -68,7 +70,7 @@ async function deleteUser(req, res) {
 }
 
 module.exports = {
-  searchUser,
+  loginUser,
   getUserById,
   createUser,
   updateUser,
