@@ -1,0 +1,11 @@
+@font-face {
+  font-family: "Poppins";
+  src: url("/assets/fonts/Poppins-VariableFont_wght.otf") format("opentype");
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  font-weight: 400; /* you can set any value from 100 to 900 */
+}

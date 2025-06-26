@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="home/style.css" />
+    <link rel="stylesheet" href="global.css" />
+  </head>
+  <body>
+    <div class="flex flex-col items-center justify-center h-screen p-8">
+      <div class="grid grid-rows-2 grid-cols-3 gap-6 w-full h-full">
+        <div class="flex flex-col items-center justify-center">
+          <h1 class="text-xl">Welcome to</h1>
+          <img src="assets/Logo.svg" class="w-1/2" />
+          <div class="flex flex-row gap-4">
+            <button
+              class="px-6 py-2 rounded-xl border-2 border-black bg-transparent text-black"
+            >
+              Sign Up
+            </button>
+            <button
+              class="px-6 py-2 rounded-xl border-2 border-black bg-transparent text-black"
+            >
+              Login
+            </button>
+          </div>
+        </div>
+        <div
+          class="relative rounded-xl overflow-hidden group transition-transform duration-300 ease-in-out hover:scale-[1.03] hover:shadow-xl cursor-pointer"
+          onclick="window.location.href='buddySystem.html';"
+        >
+          <img
+            src="assets/images/healthcareImage.png"
+            alt="Placeholder Image"
+            class="w-full h-full object-cover absolute inset-0 z-0"
+          />
+          <div class="relative p-8 z-10 h-full">
+            <!-- Progressive Blur Overlay -->
+            <div
+              class="absolute inset-x-0 bottom-0 h-64 z-0 pointer-events-none"
+            >
+              <div
+                class="w-full h-full bg-black/25 backdrop-blur-3xl"
+                style="
+                  mask-image: linear-gradient(to top, black, transparent);
+                  -webkit-mask-image: linear-gradient(
+                    to top,
+                    black,
+                    transparent
+                  );
+                "
+              ></div>
+            </div>
+
+            <div
+              class="absolute top-0 right-0 p-4 z-20 text-white font-semibold"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="52"
+                height="52"
+                fill="none"
+                viewBox="0 0 52 52"
+              >
+                <path
+                  fill="#FFFBFB"
+                  d="M49.725 30.55a1.625 1.625 0 0 1-2.275-.325A10.48 10.48 0 0 0 39 26a1.626 1.626 0 0 1 0-3.25 4.874 4.874 0 1 0-4.72-6.094 1.627 1.627 0 0 1-3.185-.179 1.627 1.627 0 0 1 .036-.633 8.126 8.126 0 0 1 15.95 1.22 8.125 8.125 0 0 1-2.597 6.805 13.8 13.8 0 0 1 5.572 4.404 1.626 1.626 0 0 1-.331 2.277ZM38.781 43.062a1.626 1.626 0 1 1-2.812 1.626 11.58 11.58 0 0 0-19.938 0 1.626 1.626 0 1 1-2.812-1.626 14.637 14.637 0 0 1 6.854-6.077 9.75 9.75 0 1 1 11.854 0 14.637 14.637 0 0 1 6.854 6.078ZM26 35.75a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13ZM14.625 24.375A1.625 1.625 0 0 0 13 22.75a4.874 4.874 0 1 1 4.72-6.094 1.626 1.626 0 0 0 3.15-.812 8.125 8.125 0 1 0-13.354 8.025 13.801 13.801 0 0 0-5.566 4.404 1.626 1.626 0 1 0 2.6 1.952A10.481 10.481 0 0 1 13 26a1.625 1.625 0 0 0 1.625-1.625Z"
+                />
+              </svg>
+            </div>
+
+            <div class="relative flex h-full flex-col justify-end z-10">
+              <h1 class="text-4xl font-medium text-white text-shadow-md">
+                Medication and Appointment
+              </h1>
+            </div>
+          </div>
+        </div>
+        <div
+          class="relative rounded-xl overflow-hidden group transition-transform duration-300 ease-in-out hover:scale-[1.03] hover:shadow-xl cursor-pointer"
+          onclick="window.location.href='something.html';"
+        >
+          <img
+            src="assets/images/transportImage.png"
+            alt="Placeholder Image"
+            class="w-full h-full object-cover absolute inset-0 z-0"
+          />
+          <div class="relative p-8 z-10 h-full">
+            <!-- Progressive Blur Overlay -->
+            <div
+              class="absolute inset-x-0 bottom-0 h-64 z-0 pointer-events-none"
+            >
+              <div
+                class="w-full h-full bg-black/25 backdrop-blur-3xl"
+                style="
+                  mask-image: linear-gradient(to top, black, transparent);
+                  -webkit-mask-image: linear-gradient(
+                    to top,
+                    black,
+                    transparent
+                  );
+                "
+              ></div>
+            </div>
+
+            <div
+              class="absolute top-0 right-0 p-4 z-20 text-white font-semibold"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="52"
+                height="52"
+                fill="none"
+                viewBox="0 0 52 52"
+              >
+                <path
+                  fill="#FFFBFB"
+                  d="M49.725 30.55a1.625 1.625 0 0 1-2.275-.325A10.48 10.48 0 0 0 39 26a1.626 1.626 0 0 1 0-3.25 4.874 4.874 0 1 0-4.72-6.094 1.627 1.627 0 0 1-3.185-.179 1.627 1.627 0 0 1 .036-.633 8.126 8.126 0 0 1 15.95 1.22 8.125 8.125 0 0 1-2.597 6.805 13.8 13.8 0 0 1 5.572 4.404 1.626 1.626 0 0 1-.331 2.277ZM38.781 43.062a1.626 1.626 0 1 1-2.812 1.626 11.58 11.58 0 0 0-19.938 0 1.626 1.626 0 1 1-2.812-1.626 14.637 14.637 0 0 1 6.854-6.077 9.75 9.75 0 1 1 11.854 0 14.637 14.637 0 0 1 6.854 6.078ZM26 35.75a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13ZM14.625 24.375A1.625 1.625 0 0 0 13 22.75a4.874 4.874 0 1 1 4.72-6.094 1.626 1.626 0 0 0 3.15-.812 8.125 8.125 0 1 0-13.354 8.025 13.801 13.801 0 0 0-5.566 4.404 1.626 1.626 0 1 0 2.6 1.952A10.481 10.481 0 0 1 13 26a1.625 1.625 0 0 0 1.625-1.625Z"
+                />
+              </svg>
+            </div>
+
+            <div class="relative flex h-full flex-col justify-end z-10">
+              <h1 class="text-4xl font-medium text-white text-shadow-md">
+                Transportation
+              </h1>
+            </div>
+          </div>
+        </div>
+        <div
+          class="relative rounded-xl overflow-hidden group transition-transform duration-300 ease-in-out hover:scale-[1.03] hover:shadow-xl cursor-pointer"
+          onclick="window.location.href='buddySystem.html';"
+        >
+          <img
+            src="assets/images/eventsImage.png"
+            alt="Placeholder Image"
+            class="w-full h-full object-cover absolute inset-0 z-0"
+          />
+          <div class="relative p-8 z-10 h-full">
+            <!-- Progressive Blur Overlay -->
+            <div
+              class="absolute inset-x-0 bottom-0 h-64 z-0 pointer-events-none"
+            >
+              <div
+                class="w-full h-full bg-black/25 backdrop-blur-3xl"
+                style="
+                  mask-image: linear-gradient(to top, black, transparent);
+                  -webkit-mask-image: linear-gradient(
+                    to top,
+                    black,
+                    transparent
+                  );
+                "
+              ></div>
+            </div>
+
+            <div
+              class="absolute top-0 right-0 p-4 z-20 text-white font-semibold"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="52"
+                height="52"
+                fill="none"
+                viewBox="0 0 52 52"
+              >
+                <path
+                  fill="#FFFBFB"
+                  d="M49.725 30.55a1.625 1.625 0 0 1-2.275-.325A10.48 10.48 0 0 0 39 26a1.626 1.626 0 0 1 0-3.25 4.874 4.874 0 1 0-4.72-6.094 1.627 1.627 0 0 1-3.185-.179 1.627 1.627 0 0 1 .036-.633 8.126 8.126 0 0 1 15.95 1.22 8.125 8.125 0 0 1-2.597 6.805 13.8 13.8 0 0 1 5.572 4.404 1.626 1.626 0 0 1-.331 2.277ZM38.781 43.062a1.626 1.626 0 1 1-2.812 1.626 11.58 11.58 0 0 0-19.938 0 1.626 1.626 0 1 1-2.812-1.626 14.637 14.637 0 0 1 6.854-6.077 9.75 9.75 0 1 1 11.854 0 14.637 14.637 0 0 1 6.854 6.078ZM26 35.75a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13ZM14.625 24.375A1.625 1.625 0 0 0 13 22.75a4.874 4.874 0 1 1 4.72-6.094 1.626 1.626 0 0 0 3.15-.812 8.125 8.125 0 1 0-13.354 8.025 13.801 13.801 0 0 0-5.566 4.404 1.626 1.626 0 1 0 2.6 1.952A10.481 10.481 0 0 1 13 26a1.625 1.625 0 0 0 1.625-1.625Z"
+                />
+              </svg>
+            </div>
+
+            <div class="relative flex h-full flex-col justify-end z-10">
+              <h1 class="text-4xl font-medium text-white text-shadow-md">
+                Explore Events
+              </h1>
+            </div>
+          </div>
+        </div>
+        <div
+          class="relative rounded-xl overflow-hidden group transition-transform duration-300 ease-in-out hover:scale-[1.03] hover:shadow-xl cursor-pointer"
+          onclick="window.location.href='buddySystem.html';"
+        >
+          <img
+            src="assets/images/fitnessCoachImage.jpg"
+            alt="Placeholder Image"
+            class="w-full h-full object-cover absolute inset-0 z-0"
+          />
+          <div class="relative p-8 z-10 h-full">
+            <!-- Progressive Blur Overlay -->
+            <div
+              class="absolute inset-x-0 bottom-0 h-64 z-0 pointer-events-none"
+            >
+              <div
+                class="w-full h-full bg-black/25 backdrop-blur-3xl"
+                style="
+                  mask-image: linear-gradient(to top, black, transparent);
+                  -webkit-mask-image: linear-gradient(
+                    to top,
+                    black,
+                    transparent
+                  );
+                "
+              ></div>
+            </div>
+
+            <div
+              class="absolute top-0 right-0 p-4 z-20 text-white font-semibold"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="52"
+                height="52"
+                fill="none"
+                viewBox="0 0 52 52"
+              >
+                <path
+                  fill="#FFFBFB"
+                  d="M49.725 30.55a1.625 1.625 0 0 1-2.275-.325A10.48 10.48 0 0 0 39 26a1.626 1.626 0 0 1 0-3.25 4.874 4.874 0 1 0-4.72-6.094 1.627 1.627 0 0 1-3.185-.179 1.627 1.627 0 0 1 .036-.633 8.126 8.126 0 0 1 15.95 1.22 8.125 8.125 0 0 1-2.597 6.805 13.8 13.8 0 0 1 5.572 4.404 1.626 1.626 0 0 1-.331 2.277ZM38.781 43.062a1.626 1.626 0 1 1-2.812 1.626 11.58 11.58 0 0 0-19.938 0 1.626 1.626 0 1 1-2.812-1.626 14.637 14.637 0 0 1 6.854-6.077 9.75 9.75 0 1 1 11.854 0 14.637 14.637 0 0 1 6.854 6.078ZM26 35.75a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13ZM14.625 24.375A1.625 1.625 0 0 0 13 22.75a4.874 4.874 0 1 1 4.72-6.094 1.626 1.626 0 0 0 3.15-.812 8.125 8.125 0 1 0-13.354 8.025 13.801 13.801 0 0 0-5.566 4.404 1.626 1.626 0 1 0 2.6 1.952A10.481 10.481 0 0 1 13 26a1.625 1.625 0 0 0 1.625-1.625Z"
+                />
+              </svg>
+            </div>
+
+            <div class="relative flex h-full flex-col justify-end z-10">
+              <h1 class="text-4xl font-medium text-white text-shadow-md">
+                Excercise and Fitness
+              </h1>
+            </div>
+          </div>
+        </div>
+        <div
+          class="relative rounded-xl overflow-hidden group transition-transform duration-300 ease-in-out hover:scale-[1.03] hover:shadow-xl cursor-pointer"
+          onclick="window.location.href='buddySystem.html';"
+        >
+          <img
+            src="assets/images/buddySystemImage.png"
+            alt="Placeholder Image"
+            class="w-full h-full object-cover absolute inset-0 z-0"
+          />
+          <div class="relative p-8 z-10 h-full">
+            <!-- Progressive Blur Overlay -->
+            <div
+              class="absolute inset-x-0 bottom-0 h-64 z-0 pointer-events-none"
+            >
+              <div
+                class="w-full h-full bg-black/25 backdrop-blur-3xl"
+                style="
+                  mask-image: linear-gradient(to top, black, transparent);
+                  -webkit-mask-image: linear-gradient(
+                    to top,
+                    black,
+                    transparent
+                  );
+                "
+              ></div>
+            </div>
+
+            <div
+              class="absolute top-0 right-0 p-4 z-20 text-white font-semibold"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="52"
+                height="52"
+                fill="none"
+                viewBox="0 0 52 52"
+              >
+                <path
+                  fill="#FFFBFB"
+                  d="M49.725 30.55a1.625 1.625 0 0 1-2.275-.325A10.48 10.48 0 0 0 39 26a1.626 1.626 0 0 1 0-3.25 4.874 4.874 0 1 0-4.72-6.094 1.627 1.627 0 0 1-3.185-.179 1.627 1.627 0 0 1 .036-.633 8.126 8.126 0 0 1 15.95 1.22 8.125 8.125 0 0 1-2.597 6.805 13.8 13.8 0 0 1 5.572 4.404 1.626 1.626 0 0 1-.331 2.277ZM38.781 43.062a1.626 1.626 0 1 1-2.812 1.626 11.58 11.58 0 0 0-19.938 0 1.626 1.626 0 1 1-2.812-1.626 14.637 14.637 0 0 1 6.854-6.077 9.75 9.75 0 1 1 11.854 0 14.637 14.637 0 0 1 6.854 6.078ZM26 35.75a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13ZM14.625 24.375A1.625 1.625 0 0 0 13 22.75a4.874 4.874 0 1 1 4.72-6.094 1.626 1.626 0 0 0 3.15-.812 8.125 8.125 0 1 0-13.354 8.025 13.801 13.801 0 0 0-5.566 4.404 1.626 1.626 0 1 0 2.6 1.952A10.481 10.481 0 0 1 13 26a1.625 1.625 0 0 0 1.625-1.625Z"
+                />
+              </svg>
+            </div>
+
+            <div class="relative flex h-full flex-col justify-end z-10">
+              <h1 class="text-4xl font-medium text-white text-shadow-md">
+                Connect with friends
+              </h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
