@@ -8,9 +8,10 @@ dotenv.config();
 const userController = require("./controllers/userController.js");
 const {
   validateUserId,
-  validateSearchUser,
+  validateLoginUser,
   validateCreateUser,
-  validateUpdateUser
+  validateUpdateUser,
+  authenticateJWT
 } = require("./middlewares/userValidation");
 
 const app = express();
@@ -19,15 +20,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
-app.get("/users", validateSearchUser, userController.searchUser);
-
-app.get("/users/:ID", validateUserId, userController.getUserById);
+app.post("/users/login", validateLoginUser, userController.loginUser);
 
 app.post("/users", validateCreateUser, userController.createUser);
 
-app.put("/users/:ID", validateUserId, validateUpdateUser, userController.updateUser);
+app.get("/users/:ID", authenticateJWT, validateUserId, userController.getUserById);
 
-app.delete("/users/:ID", validateUserId, userController.deleteUser);
+app.put("/users/:ID", authenticateJWT, validateUserId, validateUpdateUser, userController.updateUser);
+
+app.delete("/users/:ID", authenticateJWT, validateUserId, userController.deleteUser);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
