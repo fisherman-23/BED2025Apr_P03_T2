@@ -18,7 +18,7 @@ nav {
     left: 0;
     right: 0;
 }
-.signUp {
+.login {
     background-color: #007bff;
     color: white;
     border: none;
@@ -28,7 +28,7 @@ nav {
     font-size: 0.9rem;
 }
 
-.signUp:hover {
+.login:hover {
     background-color: #0056b3;
 }
 
