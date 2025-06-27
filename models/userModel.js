@@ -19,11 +19,11 @@ async function loginUser(searchTerm, Password) {
     const user = result.recordset[0];
 
     if (!user) {
-      return null;
+      return { error: "Invalid Email or Phone number"};
     }
-
+    
     if  (!await compare(Password, user.Password)) {
-      return null;
+      return { error: "Invalid password"};
     }
 
     delete user.Password;

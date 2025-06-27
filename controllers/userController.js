@@ -5,8 +5,8 @@ async function loginUser(req, res) {
 
   try {
     const result = await userModel.loginUser(searchTerm, Password);
-    if (!result) {
-      return res.status(401).json({ error: "Invalid credentials" });
+    if (result.error) {
+      return res.status(401).json({ error: result.error });
     }
     const { user, token } = result;
     res.cookie("token", token, {

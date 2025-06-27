@@ -23,7 +23,7 @@ document
         return;
       }
 
-      alert(`Welcome, ${data.user.name}!`);
+      alert(`Welcome, ${data.user.Name}!`);
       window.location.href = "/index.html";
     } catch (error) {
       console.error("Login error:", error);
