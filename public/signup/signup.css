@@ -1,10 +1,7 @@
 * {
     box-sizing: border-box;
-}
-
-body {
     margin: 0;
-    font-family: "Poppins", sans-serif;
+    padding: 0;
 }
 
 nav {
@@ -18,7 +15,7 @@ nav {
     left: 0;
     right: 0;
 }
-.signUp {
+.login {
     background-color: #007bff;
     color: white;
     border: none;
@@ -28,7 +25,7 @@ nav {
     font-size: 0.9rem;
 }
 
-.signUp:hover {
+.login:hover {
     background-color: #0056b3;
 }
 

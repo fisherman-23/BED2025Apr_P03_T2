@@ -49,6 +49,9 @@ async function getUserById(req, res) {
 async function createUser(req, res) {
   try {
     const newUser = await userModel.createUser(req.body);
+    if (newUser.error) {
+      return res.status(400).json({ error: newUser.error });
+    }
     res.status(201).json(newUser);
   } catch (error) {
     console.error("Controller error in createUser:", error);
