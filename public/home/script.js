@@ -12,12 +12,25 @@ fetch("/me", {
       <p class="text-lg mb-2">Logged in as <strong>${data.username}</strong></p>
       <button
         class="px-6 py-2 rounded-xl border-2 border-black bg-transparent text-black"
-        onclick="window.location.href='logout.html';"
+        id="logout-btn"
       >
         Logout
       </button>
     `;
+
+    document.getElementById("logout-btn").addEventListener("click", () => {
+      fetch("/users/logout", {
+        method: "POST",
+        credentials: "include",
+      })
+        .then((res) => {
+          if (res.ok) {
+            window.location.href = "/login.html";
+          } else {
+            alert("Logout failed");
+          }
+        })
+        .catch(() => alert("Logout failed"));
+    });
   })
-  .catch(() => {
-    // fallback if not logged in
-  });
+  .catch(() => {});

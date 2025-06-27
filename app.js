@@ -13,41 +13,18 @@ const {
   validateUpdateUser,
   authenticateJWT,
 } = require("./middlewares/userValidation");
-const { protectRoute } = require("./middlewares/protectRoute.js");
+const {
+  protectSpecificRoutes,
+  redirectIfAuthenticated,
+} = require("./middlewares/protectRoute");
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-// Middleware to protect specific routes
-app.use((req, res, next) => {
-  const protectedFiles = [
-    "/dashboard.html",
-    "/profile.html",
-    "/something.html",
-  ];
-
-  if (protectedFiles.includes(req.path)) {
-    return protectRoute(req, res, next);
-  }
-
-  next();
-});
-// Middleware to redirect logged-in users from public pages
-app.use((req, res, next) => {
-  const publicOnlyFiles = ["/login.html", "/signup.html"];
-  if (publicOnlyFiles.includes(req.path)) {
-    const token = req.cookies.token;
-    if (token) {
-      try {
-        jwt.verify(token, process.env.JWT_SECRET);
-        return res.redirect("/index.html");
-      } catch {}
-    }
-  }
-  next();
-});
+app.use(protectSpecificRoutes);
+app.use(redirectIfAuthenticated);
 
 app.get("/me", authenticateJWT, (req, res) => {
   res.json({ username: req.user.email });
@@ -56,6 +33,7 @@ app.get("/me", authenticateJWT, (req, res) => {
 app.use(express.static(path.join(__dirname, "public")));
 
 app.post("/users/login", validateLoginUser, userController.loginUser);
+app.post("/users/logout", authenticateJWT, userController.logoutUser);
 
 app.post("/users", validateCreateUser, userController.createUser);
 

@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-// Middleware to protect routes
+// Core protectRoute middleware (already yours)
 function protectRoute(req, res, next) {
   const token = req.cookies?.token; // get token from cookies
 
@@ -23,6 +23,40 @@ function protectRoute(req, res, next) {
   }
 }
 
+// Middleware to protect specific routes
+function protectSpecificRoutes(req, res, next) {
+  const protectedFiles = [
+    "/dashboard.html",
+    "/profile.html",
+    "/something.html",
+  ];
+
+  if (protectedFiles.includes(req.path)) {
+    return protectRoute(req, res, next);
+  }
+
+  next();
+}
+
+// Middleware to redirect logged-in users from public pages
+function redirectIfAuthenticated(req, res, next) {
+  const publicOnlyFiles = ["/login.html", "/signup.html"];
+
+  if (publicOnlyFiles.includes(req.path)) {
+    const token = req.cookies.token;
+    if (token) {
+      try {
+        jwt.verify(token, process.env.JWT_SECRET || "your_jwt_secret");
+        return res.redirect("/index.html");
+      } catch {}
+    }
+  }
+
+  next();
+}
+
 module.exports = {
   protectRoute,
+  protectSpecificRoutes,
+  redirectIfAuthenticated,
 };

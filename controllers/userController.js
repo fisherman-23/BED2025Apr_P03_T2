@@ -11,14 +11,24 @@ async function loginUser(req, res) {
     const { user, token } = result;
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60     // expires in 1h
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60, // expires in 1h
     });
     res.json({ user });
   } catch (error) {
     console.error("Controller error in loginUser:", error);
     res.status(500).json({ error: "Error logging in user" });
+  }
+}
+
+function logoutUser(req, res) {
+  try {
+    res.clearCookie("token");
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Controller error in logoutUser:", error);
+    res.status(500).json({ error: "Error logging out user" });
   }
 }
 
@@ -51,7 +61,9 @@ async function updateUser(req, res) {
     const id = parseInt(req.params.ID, 10);
     const updatedUser = await userModel.updateUser(id, req.body);
     if (!updatedUser) {
-      return res.status(404).json({ error: "User not found or password incorrect" });
+      return res
+        .status(404)
+        .json({ error: "User not found or password incorrect" });
     }
     res.json(updatedUser);
   } catch (error) {
@@ -80,4 +92,5 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
+  logoutUser,
 };
