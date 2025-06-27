@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facilities - CircleAge</title>
+    <link rel="stylesheet" href="/global.css">
+    <link rel="stylesheet" href="/transportNavigator/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <img src="/assets/Logo.svg" alt="Logo">
+        <div class="nav-icons">
+            <a><img src="/assets/icons/NAV-House.svg" alt="home"></a>
+            <a><img src="/assets/icons/NAV-Hospital.svg" alt="medical"></a>
+            <a><img src="/assets/icons/NAV-Tram.svg" alt="transport"></a>
+            <a><img src="/assets/icons/NAV-exercise.svg" alt="exercise"></a>
+            <a><img src="/assets/icons/NAV-calendar.svg" alt="events"></a>
+            <a><img src="/assets/icons/NAV-users.svg" alt="user"></a>
+        </div>
+        <div class="profile-icon">
+            <img src="/assets/images/elderlyPFP.png" alt="Profile Picture">
+        </div>
+    </nav>
+    <main class="facilities-container">
+        <aside class="sidebar">
+            <div class="location-header" id="userLocation">
+                <img src="/assets/icons/location.svg" alt="Location Icon">
+                <span id="currentLocation">Choose your location</span>
+                <img src="/assets/icons/arrow-down.svg" alt="Dropdown Arrow">
+            </div>
+            <h1>Facilities near you</h1>
+            <div class="search-bar">
+                <img src="/assets/icons/search.svg" alt="Search Icon">
+                <input type="text" id="search" placeholder="Seach for facilities...">
+            </div>
+            <section class="filter-options">
+                <button class="filter-saved" id="filterBySaved">Saved Facilities</button>
+                <button class="filter-polyclinics" id="filterByPolyclinics">Polyclinics</button>
+                <button class="filter-community-centres" id="filterByCommunityCentres">Community Centres</button>
+                <button class="filter-parks" id="filterByParks">Parks</button>
+            </section>
+            <ul class="facility-list" id="facilityList">
+                <!-- Facilities will be dynamically inserted here -->
+            </ul>
+        </aside>
+        <section class="facility-details" id="facilityDetails">
+            <div class="details-placeholder" id="detailsPlaceholder">
+                <p>Select a facility to view details.</p>
+            </div>
+            <img id="facilityImage" src="" alt="Facility Image">
+            <div class="facility-header">
+                <h2 id="facilityName">Facility Name</h2>
+                <button id="bookmarkButton" class="icon-button">
+                    <img src="/assets/icons/bookmark.svg" alt="Bookmark" />
+                </button>
+                <button id="shareButton" class="icon-button">
+                    <img src="/assets/icons/share.svg" alt="Share" />
+                </button>
+            </div>
+            <div class="facility-info">
+                <p>Located in: <span id="facilityLocation"></span></p>
+                <p>Address: <span id="facilityAddress"></span></p>
+                <p>Phone: <span id="facilityPhone"></span></p>
+                <p>Hours: <span id="facilityHours"></span></p>
+            </div>
+            <button class="start-nav" id="startNavButton">
+                <img src="/assets/icons/compass.svg" alt="Compass Icon">
+                Start Navigation
+                <img src="/assets/icons/arrow-right.svg" alt="Arrow Right Icon">
+            </button>
+        </section>
+    </main>
+    <script src="/transportNavigator/script.js"></script>
+</body>
+</html>
