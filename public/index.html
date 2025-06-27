@@ -5,28 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="home/script.js"></script>
     <link rel="stylesheet" href="home/style.css" />
     <link rel="stylesheet" href="global.css" />
   </head>
   <body>
     <div class="flex flex-col items-center justify-center h-screen p-8">
       <div class="grid grid-rows-2 grid-cols-3 gap-6 w-full h-full">
-        <div class="flex flex-col items-center justify-center gap-2">
+        <div
+          class="flex flex-col items-center justify-center gap-2"
+          id="welcome-section"
+        >
           <h1 class="text-2xl">Welcome to</h1>
           <img src="assets/Logo.svg" class="w-1/2" />
-          <div class="flex flex-row gap-4">
-            <button
-              class="px-6 py-2 rounded-xl border-2 border-black bg-transparent text-black"
-              onclick="window.location.href='signup.html';"
-            >
-              Sign Up
-            </button>
-            <button
-              class="px-6 py-2 rounded-xl border-2 border-black bg-transparent text-black"
-              onclick="window.location.href='login.html';"
-            >
-              Login
-            </button>
+
+          <div id="auth-container" class="flex flex-col gap-2">
+            <div class="flex flex-row gap-4">
+              <button
+                class="px-6 py-2 rounded-xl border-2 border-black bg-transparent text-black"
+                onclick="window.location.href='signup.html';"
+              >
+                Sign Up
+              </button>
+              <button
+                class="px-6 py-2 rounded-xl border-2 border-black bg-transparent text-black"
+                onclick="window.location.href='login.html';"
+              >
+                Login
+              </button>
+            </div>
           </div>
         </div>
         <div

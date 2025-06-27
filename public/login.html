@@ -1,26 +1,38 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login page</title>
-    <link rel="stylesheet" href="/login/login.css">
-</head>
-<body>
+    <link rel="stylesheet" href="/login/login.css" />
+  </head>
+  <body>
     <nav>
-        <img src="/assets/Logo.svg" alt="Logo" class="logo">
-        <button class="signUp">Sign Up</button>
+      <img src="/assets/Logo.svg" alt="Logo" class="logo" />
+      <button class="signUp" onclick="window.location.href='/signup.html'">
+        Sign Up
+      </button>
     </nav>
     <div class="login-container">
-        <h1>Sign into CircleAge</h1>
-        <form id="loginForm">
-            <label>Email/Phone Number</label>
-            <input id="email" type="text" placeholder="Email/Phone Number" required><br>
-            <label>Password</label>
-            <input id="password" type="password" placeholder="Password" required><br>
-            <button class="signIn">Sign In</button>
-        </form>
+      <h1>Sign into CircleAge</h1>
+      <form id="loginForm">
+        <label>Email/Phone Number</label>
+        <input
+          id="email"
+          type="text"
+          placeholder="Email/Phone Number"
+          required
+        /><br />
+        <label>Password</label>
+        <input
+          id="password"
+          type="password"
+          placeholder="Password"
+          required
+        /><br />
+        <button class="signIn">Sign In</button>
+      </form>
     </div>
     <script src="/login/login.js"></script>
-</body>
+  </body>
 </html>
