@@ -80,7 +80,18 @@ async function getUserById(ID) {
 async function createUser(userData) {
   let connection;
   try {
-    connection = await sql.connect(dbConfig)
+    connection = await sql.connect(dbConfig);
+    const checkQuery = `
+      SELECT ID FROM Users WHERE Email = @Email OR PhoneNumber = @PhoneNumber
+    `;
+    const checkRequest = connection.request();
+    checkRequest.input("Email", userData.Email);
+    checkRequest.input("PhoneNumber", userData.PhoneNumber);
+    const checkResult = await checkRequest.query(checkQuery);
+
+    if (checkResult.recordset.length > 0) {
+      return { error: "Email or Phone number already in use" };
+    }
   const query = `
     INSERT INTO Users 
       (Email, Password, Name, AboutMe, PhoneNumber, DateOfBirth, ProfilePicture, IsActive)
