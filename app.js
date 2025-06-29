@@ -27,7 +27,7 @@ app.use(protectSpecificRoutes);
 app.use(redirectIfAuthenticated);
 
 app.get("/me", authenticateJWT, (req, res) => {
-  res.json({ username: req.user.email });
+  res.json({ username: req.user.email, id: req.user.id });
 });
 
 app.use(express.static(path.join(__dirname, "public")));

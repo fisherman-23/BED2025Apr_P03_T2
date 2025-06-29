@@ -19,21 +19,20 @@ async function loginUser(searchTerm, Password) {
     const user = result.recordset[0];
 
     if (!user) {
-      return { error: "Invalid Email or Phone number"};
+      return { error: "Invalid Email or Phone number" };
     }
-    
-    if  (!await compare(Password, user.Password)) {
-      return { error: "Invalid password"};
+
+    if (!(await compare(Password, user.Password))) {
+      return { error: "Invalid password" };
     }
 
     delete user.Password;
-        const token = jwt.sign(
+    const token = jwt.sign(
       { id: user.ID, email: user.Email },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
     return { user, token };
-
   } catch (error) {
     console.error("Database error in loginUser:", error);
     throw error;
@@ -52,7 +51,12 @@ async function getUserById(ID) {
   let connection;
   try {
     connection = await sql.connect(dbConfig);
-    const query = "SELECT ID, Email, Name, AboutMe, PhoneNumber, DateOfBirth, ProfilePicture, CreatedAt, UpdatedAt, IsActive FROM Users WHERE ID = @ID AND IsActive = 1";
+    const query = `
+    SELECT ID, PublicUUID, Email, Name, AboutMe, PhoneNumber, DateOfBirth, 
+          ProfilePicture, CreatedAt, UpdatedAt, IsActive 
+    FROM Users 
+    WHERE ID = @ID AND IsActive = 1
+  `;
     const request = connection.request();
     request.input("ID", ID);
     const result = await request.query(query);
@@ -63,7 +67,7 @@ async function getUserById(ID) {
 
     return result.recordset[0];
   } catch (e) {
-    console.error("Database error:", e)
+    console.error("Database error:", e);
     throw e;
   } finally {
     if (connection) {
@@ -75,7 +79,6 @@ async function getUserById(ID) {
     }
   }
 }
-    
 
 async function createUser(userData) {
   let connection;
@@ -92,7 +95,7 @@ async function createUser(userData) {
     if (checkResult.recordset.length > 0) {
       return { error: "Email or Phone number already in use" };
     }
-  const query = `
+    const query = `
     INSERT INTO Users 
       (Email, Password, Name, AboutMe, PhoneNumber, DateOfBirth, ProfilePicture, IsActive)
     VALUES 
@@ -100,16 +103,16 @@ async function createUser(userData) {
     SELECT SCOPE_IDENTITY() AS ID;
   `;
 
-  const request = connection.request();
-  const passwordHash = await hash(userData.Password);
-  request.input("Email", userData.Email);
-  request.input("Password", passwordHash);
-  request.input("Name", userData.Name);
-  request.input("AboutMe", null);
-  request.input("PhoneNumber", userData.PhoneNumber);
-  request.input("DateOfBirth", userData.DateOfBirth); //format: YYYY-MM-DD
-  request.input("ProfilePicture", userData.ProfilePicture || null);
-  request.input("IsActive", 1);
+    const request = connection.request();
+    const passwordHash = await hash(userData.Password);
+    request.input("Email", userData.Email);
+    request.input("Password", passwordHash);
+    request.input("Name", userData.Name);
+    request.input("AboutMe", null);
+    request.input("PhoneNumber", userData.PhoneNumber);
+    request.input("DateOfBirth", userData.DateOfBirth); //format: YYYY-MM-DD
+    request.input("ProfilePicture", userData.ProfilePicture || null);
+    request.input("IsActive", 1);
 
     const result = await request.query(query);
     const newUserId = result.recordset[0].ID;
@@ -123,11 +126,10 @@ async function createUser(userData) {
         await connection.close();
       } catch (e) {
         console.error("Error closing connection", e);
-      } 
+      }
     }
   }
 }
-
 
 async function updateUser(ID, userData) {
   let connection;
@@ -150,7 +152,7 @@ async function updateUser(ID, userData) {
         WHERE ID = @ID
       `;
 
-      const passwordQuery = `SELECT Password FROM Users WHERE ID = @ID`
+      const passwordQuery = `SELECT Password FROM Users WHERE ID = @ID`;
       const passwordRequest = connection.request();
       passwordRequest.input("ID", ID);
       const passwordResult = await passwordRequest.query(passwordQuery);
@@ -159,7 +161,7 @@ async function updateUser(ID, userData) {
         return null;
       }
       const currentPassword = passwordResult.recordset[0].Password;
-      if (!await compare(userData.Password, currentPassword)) {
+      if (!(await compare(userData.Password, currentPassword))) {
         console.log("Password does not match current password");
         return null;
       }
@@ -207,39 +209,34 @@ async function updateUser(ID, userData) {
   }
 }
 
-
-
 async function deleteUser(ID) {
   const userToDelete = await getUserById(ID);
   let connection;
   try {
-    connection = await sql.connect(dbConfig)
+    connection = await sql.connect(dbConfig);
 
-    const sqlQuery = `UPDATE Users SET IsActive = 0 WHERE ID = @ID`
-    const request = connection.request()
-    request.input("ID", ID)
-    const result = await request.query(sqlQuery)
+    const sqlQuery = `UPDATE Users SET IsActive = 0 WHERE ID = @ID`;
+    const request = connection.request();
+    request.input("ID", ID);
+    const result = await request.query(sqlQuery);
 
     if (result.rowsAffected[0] === 0) {
-      return null
+      return null;
     }
     return userToDelete;
   } catch (error) {
-        console.error("Database error:", error)
-        throw error
-    } finally {
-        if (connection) {
-            try {
-                await connection.close()
-            } catch (err) {
-                console.error("Error closing connection:", err)
-            }
-        }
+    console.error("Database error:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error("Error closing connection:", err);
+      }
     }
+  }
 }
-
-
-
 
 module.exports = {
   loginUser,
@@ -247,4 +244,4 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
-}
+};
