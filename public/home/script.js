@@ -23,8 +23,7 @@ fetch("/me", {
     //   .then((userData) => {
     //     console.log(userData);
     //   });
-
-    console.log(result);
+    console.log(data);
     const container = document.getElementById("auth-container");
     container.innerHTML = `
       <p class="text-lg mb-2">Logged in as <strong>${data.username}</strong></p>

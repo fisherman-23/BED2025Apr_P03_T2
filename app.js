@@ -64,6 +64,18 @@ app.post(
   authenticateJWT,
   friendController.sendFriendRequest
 );
+app.get(
+  "/friend-requests",
+  authenticateJWT,
+  friendController.listAllPendingRequests
+);
+app.get("/friends", authenticateJWT, friendController.listFriends);
+
+app.post(
+  "/friend-requests/:id/accept",
+  authenticateJWT,
+  friendController.acceptFriendRequest
+);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

@@ -39,4 +39,70 @@ async function sendFriendRequest(req, res) {
   }
 }
 
-module.exports = { sendFriendRequest };
+async function listAllPendingRequests(req, res) {
+  try {
+    const userId = req.user.id;
+    const requests = await friendModel.getAllPendingRequests(userId);
+
+    res.status(200).json({
+      incoming: requests.incoming,
+      outgoing: requests.outgoing,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch friend requests" });
+  }
+}
+async function listFriends(req, res) {
+  try {
+    const userId = req.user.id;
+    const friends = await friendModel.getFriends(userId);
+
+    res.status(200).json({ friends });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch friends list" });
+  }
+}
+
+async function acceptFriendRequest(req, res) {
+  const userId = req.user.id;
+  console.log("User ID:", userId);
+  const requestId = parseInt(req.params.id);
+  console.log("Request ID:", requestId);
+
+  try {
+    await friendModel.acceptFriendRequest(userId, requestId);
+    res.status(200).json({ message: "Friend request accepted" });
+  } catch (err) {
+    console.error(err);
+    if (err.message === "Friend request not found or unauthorized") {
+      return res.status(404).json({ message: err.message });
+    }
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+async function rejectFriendRequest(req, res) {
+  const userId = req.user.ID;
+  const requestId = parseInt(req.params.id);
+
+  try {
+    await friendModel.rejectFriendRequest(userId, requestId);
+    res.status(200).json({ message: "Friend request rejected" });
+  } catch (err) {
+    console.error(err);
+    if (err.message === "Friend request not found or unauthorized") {
+      return res.status(404).json({ message: err.message });
+    }
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+module.exports = {
+  sendFriendRequest,
+  listAllPendingRequests,
+  listFriends,
+  acceptFriendRequest,
+  rejectFriendRequest,
+};
