@@ -5,8 +5,12 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 dotenv.config();
 const jwt = require("jsonwebtoken");
+const { upload, handleUpload } = require("./utils/fileUpload.js");
+
 const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
+
+
 const {
   validateUserId,
   validateLoginUser,
@@ -76,6 +80,8 @@ app.post(
   authenticateJWT,
   friendController.acceptFriendRequest
 );
+
+app.post('/api/upload/:folder', /*authenticateJWT,*/ upload.single('file'), handleUpload);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
