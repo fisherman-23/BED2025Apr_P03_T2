@@ -1,0 +1,215 @@
+const friendModel = require("../../models/friendModel");
+const friendController = require("../../controllers/friendController");
+
+jest.mock("../../models/friendModel");
+
+describe("friendController", () => {
+  let req, res;
+
+  beforeEach(() => {
+    req = {
+      user: { id: 1, ID: 1 }, // some use `.id`, some `.ID`
+      params: {},
+    };
+
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+
+    jest.clearAllMocks();
+  });
+
+  describe("sendFriendRequest", () => {
+    it("sends a request successfully", async () => {
+      req.params.uuid = "uuid";
+      friendModel.getUserIdByUUID.mockResolvedValue(2);
+      friendModel.checkRequestOrFriendshipExists.mockResolvedValue(false);
+      friendModel.insertFriendRequest.mockResolvedValue();
+
+      await friendController.sendFriendRequest(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ message: "Friend request sent" });
+    });
+
+    it("returns 404 if user not found", async () => {
+      req.params.uuid = "uuid";
+      friendModel.getUserIdByUUID.mockResolvedValue(null);
+
+      await friendController.sendFriendRequest(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ message: "User not found" });
+    });
+
+    it("returns 400 if sending request to self", async () => {
+      req.params.uuid = "uuid";
+      friendModel.getUserIdByUUID.mockResolvedValue(1); // same as sender
+
+      await friendController.sendFriendRequest(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Can't send request to yourself",
+      });
+    });
+
+    it("returns 400 if request already exists", async () => {
+      req.params.uuid = "uuid";
+      friendModel.getUserIdByUUID.mockResolvedValue(2);
+      friendModel.checkRequestOrFriendshipExists.mockResolvedValue(true);
+
+      await friendController.sendFriendRequest(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Request or friendship already exists",
+      });
+    });
+
+    it("returns 500 on error", async () => {
+      req.params.uuid = "uuid";
+      friendModel.getUserIdByUUID.mockRejectedValue(new Error("DB error"));
+
+      await friendController.sendFriendRequest(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ message: "Server error" });
+    });
+  });
+
+  describe("listAllPendingRequests", () => {
+    it("returns incoming and outgoing requests", async () => {
+      friendModel.getAllPendingRequests.mockResolvedValue({
+        incoming: [{ id: 1 }],
+        outgoing: [{ id: 2 }],
+      });
+
+      await friendController.listAllPendingRequests(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        incoming: [{ id: 1 }],
+        outgoing: [{ id: 2 }],
+      });
+    });
+
+    it("returns 500 on error", async () => {
+      friendModel.getAllPendingRequests.mockRejectedValue(new Error("fail"));
+
+      await friendController.listAllPendingRequests(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Failed to fetch friend requests",
+      });
+    });
+  });
+
+  describe("listFriends", () => {
+    it("returns list of friends", async () => {
+      friendModel.getFriends.mockResolvedValue([{ id: 1, name: "Bob" }]);
+
+      await friendController.listFriends(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        friends: [{ id: 1, name: "Bob" }],
+      });
+    });
+
+    it("returns 500 on error", async () => {
+      friendModel.getFriends.mockRejectedValue(new Error("fail"));
+
+      await friendController.listFriends(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Failed to fetch friends list",
+      });
+    });
+  });
+
+  describe("acceptFriendRequest", () => {
+    it("accepts friend request successfully", async () => {
+      req.params.id = "5";
+      friendModel.acceptFriendRequest.mockResolvedValue();
+
+      await friendController.acceptFriendRequest(req, res);
+
+      expect(friendModel.acceptFriendRequest).toHaveBeenCalledWith(1, 5);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Friend request accepted",
+      });
+    });
+
+    it("returns 404 for not found request", async () => {
+      req.params.id = "5";
+      friendModel.acceptFriendRequest.mockRejectedValue(
+        new Error("Friend request not found or unauthorized")
+      );
+
+      await friendController.acceptFriendRequest(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Friend request not found or unauthorized",
+      });
+    });
+
+    it("returns 500 on server error", async () => {
+      req.params.id = "5";
+      friendModel.acceptFriendRequest.mockRejectedValue(new Error("DB fail"));
+
+      await friendController.acceptFriendRequest(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Server error",
+      });
+    });
+  });
+
+  describe("rejectFriendRequest", () => {
+    it("rejects request successfully", async () => {
+      req.params.id = "9";
+      friendModel.rejectFriendRequest.mockResolvedValue();
+
+      await friendController.rejectFriendRequest(req, res);
+
+      expect(friendModel.rejectFriendRequest).toHaveBeenCalledWith(1, 9);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Friend request rejected",
+      });
+    });
+
+    it("returns 404 if not found", async () => {
+      req.params.id = "9";
+      friendModel.rejectFriendRequest.mockRejectedValue(
+        new Error("Friend request not found or unauthorized")
+      );
+
+      await friendController.rejectFriendRequest(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Friend request not found or unauthorized",
+      });
+    });
+
+    it("returns 500 on server error", async () => {
+      req.params.id = "9";
+      friendModel.rejectFriendRequest.mockRejectedValue(new Error("DB error"));
+
+      await friendController.rejectFriendRequest(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Server error",
+      });
+    });
+  });
+});
