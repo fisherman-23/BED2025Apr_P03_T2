@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="/buddy-system/style.css" />
+    <script src="/buddy-system/script.js" defer></script>
+  </head>
+  <body>
+    <form id="buddyForm">
+      <h1>Buddy System</h1>
+      <label for="buddyName">Buddy UUID:</label>
+      <input type="text" id="uuid" name="uuid" required />
+
+      <button type="submit" id="button">Add Buddy</button>
+    </form>
+    <div id="incomingRequests"></div>
+    <div id="outgoingRequests"></div>
+
+    <form id="acceptRejectForm">
+      <h2>Accept/Reject Requests</h2>
+      <label for="requestId">Request ID:</label>
+      <input type="text" id="requestId" name="requestId" required />
+      <button type="button" id="acceptButton">Accept</button>
+      <button type="button" id="rejectButton">Reject</button>
+    </form>
+
+    <div id="friendsList">
+
+  </body>
+</html>

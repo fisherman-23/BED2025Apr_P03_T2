@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 dotenv.config();
 const jwt = require("jsonwebtoken");
 const userController = require("./controllers/userController.js");
+const friendController = require("./controllers/friendController.js");
 const {
   validateUserId,
   validateLoginUser,
@@ -27,14 +28,13 @@ app.use(protectSpecificRoutes);
 app.use(redirectIfAuthenticated);
 
 app.get("/me", authenticateJWT, (req, res) => {
-  res.json({ username: req.user.email });
+  res.json({ username: req.user.email, id: req.user.id });
 });
 
 app.use(express.static(path.join(__dirname, "public")));
 
 app.post("/users/login", validateLoginUser, userController.loginUser);
 app.post("/users/logout", authenticateJWT, userController.logoutUser);
-
 app.post("/users", validateCreateUser, userController.createUser);
 
 app.get(
@@ -57,6 +57,24 @@ app.delete(
   authenticateJWT,
   validateUserId,
   userController.deleteUser
+);
+
+app.post(
+  "/friend-request/:uuid",
+  authenticateJWT,
+  friendController.sendFriendRequest
+);
+app.get(
+  "/friend-requests",
+  authenticateJWT,
+  friendController.listAllPendingRequests
+);
+app.get("/friends", authenticateJWT, friendController.listFriends);
+
+app.post(
+  "/friend-requests/:id/accept",
+  authenticateJWT,
+  friendController.acceptFriendRequest
 );
 
 app.listen(port, () => {
