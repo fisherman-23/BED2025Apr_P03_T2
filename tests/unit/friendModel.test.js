@@ -167,4 +167,37 @@ describe("friendModel", () => {
       );
     });
   });
+
+  describe("removeFriend (model)", () => {
+    let mockRequest, mockQuery;
+
+    beforeEach(() => {
+      mockQuery = jest.fn().mockResolvedValue({ rowsAffected: [1] });
+      mockRequest = {
+        input: jest.fn().mockReturnThis(),
+        query: mockQuery,
+      };
+
+      sql.connect.mockResolvedValue({ request: () => mockRequest });
+    });
+
+    it("deletes a friend and returns true if rows affected", async () => {
+      const result = await friendModel.removeFriend(1, 2);
+      expect(sql.connect).toHaveBeenCalled();
+      expect(mockRequest.input).toHaveBeenCalledWith("userId", sql.Int, 1);
+      expect(mockRequest.input).toHaveBeenCalledWith("friendId", sql.Int, 2);
+      expect(result).toBe(true);
+    });
+
+    it("returns false if no rows affected", async () => {
+      mockQuery.mockResolvedValue({ rowsAffected: [0] });
+      const result = await friendModel.removeFriend(1, 2);
+      expect(result).toBe(false);
+    });
+
+    it("throws error if query fails", async () => {
+      mockQuery.mockRejectedValue(new Error("DB error"));
+      await expect(friendModel.removeFriend(1, 2)).rejects.toThrow("DB error");
+    });
+  });
 });

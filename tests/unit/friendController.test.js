@@ -212,4 +212,53 @@ describe("friendController", () => {
       });
     });
   });
+  describe("removeFriend (controller)", () => {
+    let req, res;
+
+    beforeEach(() => {
+      req = {
+        user: { id: 1 },
+        params: { friendId: "2" },
+      };
+
+      res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+    });
+
+    it("returns 400 if friendId is not a number", async () => {
+      req.params.friendId = "abc";
+      await friendController.removeFriend(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: "Invalid friend ID" });
+    });
+
+    it("returns 200 if friend was successfully removed", async () => {
+      friendModel.removeFriend.mockResolvedValue(true);
+      await friendController.removeFriend(req, res);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Friend removed successfully",
+      });
+    });
+
+    it("returns 404 if friend was not found", async () => {
+      friendModel.removeFriend.mockResolvedValue(false);
+      await friendController.removeFriend(req, res);
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Friend not found or already removed",
+      });
+    });
+
+    it("returns 500 on error", async () => {
+      friendModel.removeFriend.mockRejectedValue(new Error("DB error"));
+      await friendController.removeFriend(req, res);
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Internal server error",
+      });
+    });
+  });
 });

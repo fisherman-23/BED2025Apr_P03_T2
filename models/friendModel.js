@@ -66,7 +66,7 @@ async function getAllPendingRequests(userId) {
       FROM FriendRequests FR
       JOIN Users U ON FR.SenderID = U.ID
       WHERE FR.ReceiverID = @userId
-      AND FR.Status != 'pending'
+      AND FR.Status = 'pending'
     `);
 
   const outgoing = await connection.request().input("userId", sql.Int, userId)
@@ -80,7 +80,7 @@ async function getAllPendingRequests(userId) {
       FROM FriendRequests FR
       JOIN Users U ON FR.ReceiverID = U.ID
       WHERE FR.SenderID = @userId
-      AND FR.Status == 'pending'
+      AND FR.Status = 'pending'
 
     `);
 
@@ -168,6 +168,26 @@ async function rejectFriendRequest(userId, requestId) {
     );
 }
 
+async function removeFriend(userId, friendId) {
+  const connection = await sql.connect(dbConfig);
+  const result = await connection
+    .request()
+    .input("userId", sql.Int, userId)
+    .input("friendId", sql.Int, friendId).query(`
+    DELETE FROM Friends 
+    WHERE (UserID1 = @userId AND UserID2 = @friendId) 
+       OR (UserID1 = @friendId AND UserID2 = @userId);
+
+    DELETE FROM FriendRequests
+    WHERE 
+      ((SenderID = @userId AND ReceiverID = @friendId)
+      OR (SenderID = @friendId AND ReceiverID = @userId))
+      AND Status = 'accepted';
+  `);
+
+  return result.rowsAffected[0] > 0; // returns true if something was deleted
+}
+
 module.exports = {
   getUserIdByUUID,
   checkRequestOrFriendshipExists,
@@ -176,4 +196,5 @@ module.exports = {
   getFriends,
   acceptFriendRequest,
   rejectFriendRequest,
+  removeFriend,
 };

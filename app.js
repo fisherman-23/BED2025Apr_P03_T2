@@ -60,7 +60,7 @@ app.delete(
 );
 
 app.post(
-  "/friend-request/:uuid",
+  "/friend-invite/:uuid",
   authenticateJWT,
   friendController.sendFriendRequest
 );
@@ -71,10 +71,22 @@ app.get(
 );
 app.get("/friends", authenticateJWT, friendController.listFriends);
 
-app.post(
+app.patch(
   "/friend-requests/:id/accept",
   authenticateJWT,
   friendController.acceptFriendRequest
+);
+
+app.patch(
+  "/friend-requests/:id/reject",
+  authenticateJWT,
+  friendController.rejectFriendRequest
+);
+
+app.delete(
+  "/friends/:friendId",
+  authenticateJWT,
+  friendController.removeFriend
 );
 
 app.listen(port, () => {
