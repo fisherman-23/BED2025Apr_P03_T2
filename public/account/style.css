@@ -1,0 +1,231 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    margin: 0 1rem;
+}
+
+.account-container {
+    margin: 0 3rem;
+    padding: 3rem;
+}
+
+.profile-header {
+    margin-bottom: 3rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.profile-header h1 {
+    font-size: 2rem;
+}
+
+.profile-header .edit-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #FFFFFF;
+    color: #575DDF;
+    border: none;
+    border-radius: 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.edit-button img {
+    width: 1.75rem;
+    height: 1.75rem;
+}
+
+.edit-button:hover {
+    background-color: #F0F0F0;
+}
+
+.profile-section {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 5rem;
+}
+
+.profile-picture-container {
+    position: relative;
+    width: 14rem;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.profile-picture-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-picture-container::after {
+    content: 'Change Picture';
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4); /* semi-transparent dark overlay */
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 500;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.profile-picture-container:hover::after {
+  opacity: 1;
+}
+
+#profile-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+
+#profile-form input,
+.dob-container select {
+    width: 100%;
+    padding: 0.625rem;
+    border: 1px solid #ccc;
+    background-color: #FFFFFF;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.reset-password-container {
+    display: flex;
+    flex-direction: column;
+    gap:1rem;
+}
+
+.reset-password-container input {
+    padding-right: 2.5rem;
+    width: 100%;
+}
+
+.reset-password-link {
+    text-align: right;
+    font-size: 0.875rem;
+}
+
+.dob-label {
+    align-self: flex-start;
+}
+
+.dob-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.dob-container select {
+    width: 32%;
+}
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 2rem;
+    align-items: center;
+}
+
+.action-buttons button {
+    padding: 0.875rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.save-button {
+    background-color: #007bff;
+    color: #FFFFFF;
+}
+
+.save-button:disabled {
+    background-color: #c7d2fe;
+}
+
+.cancel-button {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.cancel-button:disabled {
+    background-color: #e5e7eb;
+    color: #9ca3af;
+}
+
+.delete-account-button {
+    color: #fee2e2;
+    background-color: #b91c1c;
+    border: 2px solid #fecaca;
+    margin-right: auto;
+}
+
+.navigation-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 5rem;
+}
+
+.view-bookmarks-button, .view-reports-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.5rem;
+    border-radius: 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.view-bookmarks-button {
+    background-color: rgba(189, 192, 249, 0.31);
+    border: 2px solid #575DDF;
+    color: #575DDF;
+}
+
+.view-reports-button {
+    background-color: rgba(249, 189, 189, 0.31);
+    border: 2px solid #F24E1E;
+    color: #F24E1E;
+}
+
+@media (max-width: 768px) {
+    #account-container {
+        width: 90%;
+    }
+    .profile-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .edit-button {
+        align-self: flex-end;
+    }
+    .profile-section {
+        flex-direction: column;
+        align-items: center;
+    }
+}

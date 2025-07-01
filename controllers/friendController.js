@@ -5,6 +5,7 @@ async function sendFriendRequest(req, res) {
   const senderId = req.user.id; // from JWT middleware
   console.log("Sender ID:", senderId);
   const receiverUUID = req.params.uuid;
+  console.log("Receiver UUID:", receiverUUID);
 
   try {
     const receiverId = await friendModel.getUserIdByUUID(receiverUUID);
@@ -99,10 +100,35 @@ async function rejectFriendRequest(req, res) {
   }
 }
 
+async function removeFriend(req, res) {
+  const userId = req.user.id;
+  const friendId = parseInt(req.params.friendId);
+
+  if (isNaN(friendId)) {
+    return res.status(400).json({ message: "Invalid friend ID" });
+  }
+
+  try {
+    const removed = await friendModel.removeFriend(userId, friendId);
+
+    if (removed) {
+      return res.status(200).json({ message: "Friend removed successfully" });
+    } else {
+      return res
+        .status(404)
+        .json({ message: "Friend not found or already removed" });
+    }
+  } catch (err) {
+    console.error("Error removing friend:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 module.exports = {
   sendFriendRequest,
   listAllPendingRequests,
   listFriends,
   acceptFriendRequest,
   rejectFriendRequest,
+  removeFriend,
 };

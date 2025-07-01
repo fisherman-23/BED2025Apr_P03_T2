@@ -3,7 +3,7 @@ document.getElementById("buddyForm").addEventListener("submit", async (e) => {
   const receiverUUID = document.getElementById("uuid").value.trim();
 
   try {
-    const response = await fetch(`/friend-request/${receiverUUID}`, {
+    const response = await fetch(`/friend-invite/${receiverUUID}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -58,13 +58,40 @@ const listFriends = (friends) => {
   console.log("Listing friends:", friends);
   const friendsList = document.getElementById("friendsList");
 
-  // Clear existing list
   friendsList.innerHTML = "";
 
-  // Populate friends list
   friends.forEach((friend) => {
     const li = document.createElement("li");
-    li.textContent = `${friend.Name} (${friend.PublicUUID})`;
+    li.textContent = `${friend.Name} (${friend.PublicUUID}) `;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.textContent = "Remove";
+    removeBtn.style.marginLeft = "8px";
+
+    removeBtn.addEventListener("click", async () => {
+      if (!confirm(`Remove ${friend.Name} as a buddy?`)) return;
+
+      try {
+        const response = await fetch(`/friends/${friend.FriendID}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert(`Removed ${friend.Name} successfully.`);
+          test2(); // re-fetch friend list
+        } else {
+          alert(`Error: ${data.message || "Something went wrong"}`);
+        }
+      } catch (err) {
+        console.error("Failed to remove friend:", err);
+        alert("Network error. Try again later.");
+      }
+    });
+
+    li.appendChild(removeBtn);
     friendsList.appendChild(li);
   });
 };
@@ -128,7 +155,7 @@ document.getElementById("acceptButton").addEventListener("click", async () => {
 
   try {
     const response = await fetch(`/friend-requests/${requestId}/accept`, {
-      method: "POST",
+      method: "PATCH",
       credentials: "include", // include cookies if needed for auth
       headers: { "Content-Type": "application/json" },
     });
@@ -155,7 +182,7 @@ document.getElementById("rejectButton").addEventListener("click", async () => {
 
   try {
     const response = await fetch(`/friendRequests/${requestId}/reject`, {
-      method: "POST",
+      method: "PATCH",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
     });
