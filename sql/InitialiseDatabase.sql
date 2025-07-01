@@ -45,3 +45,124 @@ CREATE TABLE Friends (
 
     CONSTRAINT UC_Friendship UNIQUE (UserID1, UserID2)
 );
+
+-- Module 1: Medication & Appointment Manager Tables
+-- Medications table
+CREATE TABLE Medications (
+    medicationId INT PRIMARY KEY IDENTITY(1,1),
+    userId INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    dosage VARCHAR(50) NOT NULL,
+    frequency VARCHAR(100) NOT NULL,
+    timing VARCHAR(100) NOT NULL,
+    startDate DATE NOT NULL,
+    endDate DATE NULL,
+    instructions TEXT,
+    prescribedBy VARCHAR(100),
+    active BIT DEFAULT 1,
+    qrCode VARCHAR(100),
+    category VARCHAR(50),
+    createdAt DATETIME DEFAULT GETDATE(),
+    updatedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (userId) REFERENCES Users(id)
+);
+
+-- Medication tracking table
+CREATE TABLE MedicationTracking (
+    trackingId INT PRIMARY KEY IDENTITY(1,1),
+    medicationId INT NOT NULL,
+    takenAt DATETIME NOT NULL,
+    missed BIT DEFAULT 0,
+    notes TEXT,
+    createdAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (medicationId) REFERENCES Medications(medicationId)
+);
+
+-- Doctors table
+CREATE TABLE Doctors (
+    doctorId INT PRIMARY KEY IDENTITY(1,1),
+    name VARCHAR(100) NOT NULL,
+    specialty VARCHAR(100),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    location VARCHAR(200),
+    address TEXT,
+    rating DECIMAL(2,1),
+    languages VARCHAR(200),
+    createdAt DATETIME DEFAULT GETDATE()
+);
+
+-- Appointments table
+CREATE TABLE Appointments (
+    appointmentId INT PRIMARY KEY IDENTITY(1,1),
+    userId INT NOT NULL,
+    doctorId INT NOT NULL,
+    appointmentDate DATETIME NOT NULL,
+    duration VARCHAR(20),
+    reason TEXT,
+    status VARCHAR(20) DEFAULT 'scheduled',
+    notes TEXT,
+    reminderSent BIT DEFAULT 0,
+    followUpNeeded BIT DEFAULT 0,
+    createdAt DATETIME DEFAULT GETDATE(),
+    updatedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (userId) REFERENCES Users(id),
+    FOREIGN KEY (doctorId) REFERENCES Doctors(doctorId)
+);
+
+-- Emergency contacts table
+CREATE TABLE EmergencyContacts (
+    contactId INT PRIMARY KEY IDENTITY(1,1),
+    userId INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    relationship VARCHAR(50),
+    phone VARCHAR(20) NOT NULL,
+    email VARCHAR(100),
+    isPrimary BIT DEFAULT 0,
+    alertOnMissedMeds BIT DEFAULT 1,
+    alertThresholdHours INT DEFAULT 2,
+    createdAt DATETIME DEFAULT GETDATE(),
+    updatedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (userId) REFERENCES Users(id)
+);
+
+-- Health data tracking table
+CREATE TABLE HealthData (
+    healthId INT PRIMARY KEY IDENTITY(1,1),
+    userId INT NOT NULL,
+    recordDate DATE NOT NULL,
+    bloodPressureSystolic INT,
+    bloodPressureDiastolic INT,
+    weight DECIMAL(5,2),
+    bloodSugar INT,
+    notes TEXT,
+    complianceScore INT,
+    createdAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (userId) REFERENCES Users(id)
+);
+
+-- Insert sample data
+INSERT INTO Doctors (name, specialty, phone, email, location, address, rating, languages) VALUES
+('Dr. Sarah Wilson', 'Cardiologist', '6737-8888', 'swilson@heartcenter.sg', 'Mount Elizabeth Hospital', '3 Mount Elizabeth, Singapore 228510', 4.9, 'English,Mandarin'),
+('Dr. Michael Brown', 'Endocrinologist', '6225-5555', 'mbrown@sgh.com.sg', 'Singapore General Hospital', 'Outram Road, Singapore 169608', 4.8, 'English,Hokkien'),
+('Dr. Lisa Tan', 'Family Medicine', '6444-3333', 'ltan@familyclinic.sg', 'Raffles Medical', '585 North Bridge Road, Singapore 188770', 4.7, 'English,Mandarin,Malay');
+
+-- Sample medications (assuming user with id 1 exists)
+INSERT INTO Medications (userId, name, dosage, frequency, timing, startDate, instructions, prescribedBy, category, qrCode) VALUES
+(1, 'Lisinopril', '10mg', 'Once daily', '08:00', '2024-01-15', 'Take with breakfast, avoid grapefruit', 'Dr. Sarah Wilson', 'Heart Health', 'MED001-LISINOPRIL-10MG'),
+(1, 'Metformin', '500mg', 'Twice daily', '08:00,20:00', '2024-02-01', 'Take with meals to reduce stomach upset', 'Dr. Michael Brown', 'Diabetes', 'MED002-METFORMIN-500MG');
+
+-- Sample appointments
+INSERT INTO Appointments (userId, doctorId, appointmentDate, duration, reason, status, notes) VALUES
+(1, 1, '2024-06-15 10:00:00', '45 min', 'Regular heart checkup', 'scheduled', 'Bring blood pressure readings from home'),
+(1, 2, '2024-06-08 14:30:00', '30 min', 'Diabetes management review', 'scheduled', 'Bring latest glucose monitor readings');
+
+-- Sample emergency contacts
+INSERT INTO EmergencyContacts (userId, name, relationship, phone, email, isPrimary, alertOnMissedMeds, alertThresholdHours) VALUES
+(1, 'Sarah Chen', 'Daughter', '+65 9111-2222', 'sarah.chen@email.com', 1, 1, 2),
+(1, 'David Chen', 'Son', '+65 9333-4444', 'david.chen@email.com', 0, 1, 4);
+
+-- Sample health data
+INSERT INTO HealthData (userId, recordDate, bloodPressureSystolic, bloodPressureDiastolic, weight, bloodSugar, notes, complianceScore) VALUES
+(1, '2024-06-05', 128, 78, 65.0, 110, 'Feeling good today, walked for 30 minutes', 95),
+(1, '2024-06-04', 135, 85, 65.2, 125, 'Forgot morning Metformin, took it at lunch', 75);
