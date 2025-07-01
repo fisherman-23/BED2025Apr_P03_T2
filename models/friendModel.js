@@ -66,6 +66,7 @@ async function getAllPendingRequests(userId) {
       FROM FriendRequests FR
       JOIN Users U ON FR.SenderID = U.ID
       WHERE FR.ReceiverID = @userId
+      AND FR.Status != 'pending'
     `);
 
   const outgoing = await connection.request().input("userId", sql.Int, userId)
@@ -79,6 +80,8 @@ async function getAllPendingRequests(userId) {
       FROM FriendRequests FR
       JOIN Users U ON FR.ReceiverID = U.ID
       WHERE FR.SenderID = @userId
+      AND FR.Status == 'pending'
+
     `);
 
   return {
