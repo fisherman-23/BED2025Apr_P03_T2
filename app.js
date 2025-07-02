@@ -7,6 +7,7 @@ dotenv.config();
 const jwt = require("jsonwebtoken");
 const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
+const matchController = require("./controllers/matchController.js");
 const {
   validateUserId,
   validateLoginUser,
@@ -18,6 +19,7 @@ const {
   protectSpecificRoutes,
   redirectIfAuthenticated,
 } = require("./middlewares/protectRoute");
+const validateMatchProfile = require("./middlewares/validateMatchProfile.js");
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(express.json());
@@ -87,6 +89,32 @@ app.delete(
   "/friends/:friendId",
   authenticateJWT,
   friendController.removeFriend
+);
+
+app.get(
+  "/match/profile/check",
+  authenticateJWT,
+  matchController.hasMatchProfile
+);
+
+app.put(
+  "/match/profile",
+  authenticateJWT,
+  validateMatchProfile,
+  matchController.updateMatchProfile
+);
+
+app.post(
+  "/match/profile",
+  authenticateJWT,
+  validateMatchProfile,
+  matchController.createMatchProfile
+);
+
+app.get(
+  "/match/potential",
+  authenticateJWT,
+  matchController.getPotentialMatches
 );
 
 app.listen(port, () => {
