@@ -19,48 +19,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const photoIcon = document.querySelector(".photo-icon");
     const removeButton = document.getElementById("remove-photo");
 
-    let uploadedImageUrl = null;
+    let selectedFile = null;
 
-    photoInput.addEventListener("change", async () => {
+    photoInput.addEventListener("change", () => {
       const file = photoInput.files[0];
-      if (!file) {
-        alert("Please select a file first.");
-        return;
-      }
+      if (file) {
+        selectedFile = file;
+        photoLabelSpan.textContent = file.name;
 
-      photoLabelSpan.textContent = file.name;
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        photoIcon.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-      removeButton.style.display = "inline-block";
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      try {
-        const response = await fetch("/api/upload/profile_pictures", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          const errorData = await response.text();
-          throw new Error(`Server error: ${response.status} - ${errorData}`);
-        }
-
-        const data = await response.json();
-        if (!data.url) {
-          throw new Error("No URL returned from server");
-        }
-        uploadedImageUrl = data.url;
-
-      } catch (e) {
-        console.log(e.message);
-        alert("Image upload failed. Try again or use a different image.");
-        uploadedImageUrl = null;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          photoIcon.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        removeButton.style.display = "inline-block";
       }
     });
 
@@ -95,6 +67,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // format DOB as YYYY-MM-DD with zero-padding
     const dob = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+
+    let uploadedImageUrl = null;
+    
+    // handle image upload if a file is selected
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      try {
+        const response = await fetch("/api/upload/profile_pictures", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.url) {
+          throw new Error("No URL returned from image upload");
+        }
+
+        uploadedImageUrl = data.url;
+
+      } catch (uploadError) {
+        console.error("Image upload error:", uploadError);
+        alert("Image upload failed. Please try again or use a different image.");
+        return;  // stop form submission if image upload fails
+      }
+    }
 
     const userData = {
       Email: email,
