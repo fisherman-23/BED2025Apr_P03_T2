@@ -85,31 +85,40 @@ async function getPotentialMatches(userId) {
   try {
     const pool = await sql.connect(dbConfig);
     const result = await pool.request().input("userId", sql.Int, userId).query(`
-        WITH CurrentUserProfile AS (
-          SELECT LikesHiking, LikesGardening, LikesBoardGames, LikesSinging, LikesReading,
-                 LikesWalking, LikesCooking, LikesMovies, LikesTaiChi
-          FROM MatchProfile
-          WHERE UserID = @userId
-        )
-        SELECT MP.UserID, MP.Bio,
-          (
-            CASE WHEN MP.LikesHiking = CUP.LikesHiking AND CUP.LikesHiking = 1 THEN 1 ELSE 0 END +
-            CASE WHEN MP.LikesGardening = CUP.LikesGardening AND CUP.LikesGardening = 1 THEN 1 ELSE 0 END +
-            CASE WHEN MP.LikesBoardGames = CUP.LikesBoardGames AND CUP.LikesBoardGames = 1 THEN 1 ELSE 0 END +
-            CASE WHEN MP.LikesSinging = CUP.LikesSinging AND CUP.LikesSinging = 1 THEN 1 ELSE 0 END +
-            CASE WHEN MP.LikesReading = CUP.LikesReading AND CUP.LikesReading = 1 THEN 1 ELSE 0 END +
-            CASE WHEN MP.LikesWalking = CUP.LikesWalking AND CUP.LikesWalking = 1 THEN 1 ELSE 0 END +
-            CASE WHEN MP.LikesCooking = CUP.LikesCooking AND CUP.LikesCooking = 1 THEN 1 ELSE 0 END +
-            CASE WHEN MP.LikesMovies = CUP.LikesMovies AND CUP.LikesMovies = 1 THEN 1 ELSE 0 END +
-            CASE WHEN MP.LikesTaiChi = CUP.LikesTaiChi AND CUP.LikesTaiChi = 1 THEN 1 ELSE 0 END
-          ) AS HobbyMatchScore
-        FROM MatchProfile MP
-        CROSS JOIN CurrentUserProfile CUP
-        WHERE MP.UserID != @userId
-          AND MP.UserID NOT IN (
-            SELECT TargetUserID FROM MatchInteractions WHERE UserID = @userId
-          )
-        ORDER BY HobbyMatchScore DESC, MP.LastUpdated DESC
+WITH CurrentUserProfile AS (
+  SELECT LikesHiking, LikesGardening, LikesBoardGames, LikesSinging, LikesReading,
+         LikesWalking, LikesCooking, LikesMovies, LikesTaiChi
+  FROM MatchProfile
+  WHERE UserID = @userId
+)
+SELECT MP.UserID, MP.Bio,
+  (
+    CASE WHEN MP.LikesHiking = CUP.LikesHiking AND CUP.LikesHiking = 1 THEN 1 ELSE 0 END +
+    CASE WHEN MP.LikesGardening = CUP.LikesGardening AND CUP.LikesGardening = 1 THEN 1 ELSE 0 END +
+    CASE WHEN MP.LikesBoardGames = CUP.LikesBoardGames AND CUP.LikesBoardGames = 1 THEN 1 ELSE 0 END +
+    CASE WHEN MP.LikesSinging = CUP.LikesSinging AND CUP.LikesSinging = 1 THEN 1 ELSE 0 END +
+    CASE WHEN MP.LikesReading = CUP.LikesReading AND CUP.LikesReading = 1 THEN 1 ELSE 0 END +
+    CASE WHEN MP.LikesWalking = CUP.LikesWalking AND CUP.LikesWalking = 1 THEN 1 ELSE 0 END +
+    CASE WHEN MP.LikesCooking = CUP.LikesCooking AND CUP.LikesCooking = 1 THEN 1 ELSE 0 END +
+    CASE WHEN MP.LikesMovies = CUP.LikesMovies AND CUP.LikesMovies = 1 THEN 1 ELSE 0 END +
+    CASE WHEN MP.LikesTaiChi = CUP.LikesTaiChi AND CUP.LikesTaiChi = 1 THEN 1 ELSE 0 END
+  ) AS HobbyMatchScore
+FROM MatchProfile MP
+CROSS JOIN CurrentUserProfile CUP
+WHERE MP.UserID != @userId
+  AND MP.UserID NOT IN (
+    SELECT TargetUserID FROM MatchInteractions WHERE UserID = @userId
+  )
+  AND MP.UserID NOT IN (
+    SELECT CASE 
+             WHEN UserID1 = @userId THEN UserID2 
+             ELSE UserID1 
+           END
+    FROM Friends
+    WHERE UserID1 = @userId OR UserID2 = @userId
+  )
+ORDER BY HobbyMatchScore DESC, MP.LastUpdated DESC
+
       `);
 
     return result.recordset;
@@ -117,6 +126,88 @@ async function getPotentialMatches(userId) {
     console.error("Error in getPotentialMatches:", error);
     throw error;
   }
+}
+
+async function likeUser(userId, targetUserId) {
+  const pool = await sql.connect(dbConfig);
+
+  // Step 1: Upsert like
+  await pool
+    .request()
+    .input("userId", sql.Int, userId)
+    .input("targetUserId", sql.Int, targetUserId).query(`
+      MERGE MatchInteractions AS target
+      USING (SELECT @userId AS UserID, @targetUserId AS TargetUserID) AS source
+      ON target.UserID = source.UserID AND target.TargetUserID = source.TargetUserID
+      WHEN MATCHED THEN
+        UPDATE SET Status = 'liked', Timestamp = GETDATE()
+      WHEN NOT MATCHED THEN
+        INSERT (UserID, TargetUserID, Status)
+        VALUES (@userId, @targetUserId, 'liked');
+    `);
+
+  // Step 2: Check reciprocal like
+  const reciprocal = await pool
+    .request()
+    .input("userId", sql.Int, userId)
+    .input("targetUserId", sql.Int, targetUserId).query(`
+      SELECT Status FROM MatchInteractions
+      WHERE UserID = @targetUserId AND TargetUserID = @userId
+    `);
+
+  if (
+    reciprocal.recordset.length > 0 &&
+    reciprocal.recordset[0].Status === "liked"
+  ) {
+    // Step 3: Update both to 'matched'
+    await pool
+      .request()
+      .input("userId", sql.Int, userId)
+      .input("targetUserId", sql.Int, targetUserId).query(`
+        UPDATE MatchInteractions
+        SET Status = 'matched', Timestamp = GETDATE()
+        WHERE (UserID = @userId AND TargetUserID = @targetUserId)
+           OR (UserID = @targetUserId AND TargetUserID = @userId);
+      `);
+
+    // Step 4: Create friendship
+    const user1 = Math.min(userId, targetUserId);
+    const user2 = Math.max(userId, targetUserId);
+
+    await pool
+      .request()
+      .input("user1", sql.Int, user1)
+      .input("user2", sql.Int, user2).query(`
+        IF NOT EXISTS (
+          SELECT 1 FROM Friends
+          WHERE UserID1 = @user1 AND UserID2 = @user2
+        )
+        INSERT INTO Friends (UserID1, UserID2)
+        VALUES (@user1, @user2);
+      `);
+
+    return { matched: true };
+  }
+
+  return { matched: false };
+}
+
+async function skipUser(userId, targetUserId) {
+  const pool = await sql.connect(dbConfig);
+
+  await pool
+    .request()
+    .input("userId", sql.Int, userId)
+    .input("targetUserId", sql.Int, targetUserId).query(`
+      MERGE MatchInteractions AS target
+      USING (SELECT @userId AS UserID, @targetUserId AS TargetUserID) AS source
+      ON target.UserID = source.UserID AND target.TargetUserID = source.TargetUserID
+      WHEN MATCHED THEN
+        UPDATE SET Status = 'skipped', Timestamp = GETDATE()
+      WHEN NOT MATCHED THEN
+        INSERT (UserID, TargetUserID, Status)
+        VALUES (@userId, @targetUserId, 'skipped');
+    `);
 }
 
 module.exports = {
@@ -129,4 +220,6 @@ module.exports = {
   updateMatchProfile,
   getMatchProfileByUserId,
   getPotentialMatches,
+  likeUser,
+  skipUser,
 };

@@ -117,6 +117,17 @@ app.get(
   matchController.getPotentialMatches
 );
 
+app.post(
+  "/match/like/:targetUserId",
+  authenticateJWT,
+  matchController.likeUser
+);
+app.post(
+  "/match/skip/:targetUserId",
+  authenticateJWT,
+  matchController.skipUser
+);
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

@@ -1,5 +1,3 @@
-const token = localStorage.getItem("token") || ""; // or sessionStorage
-
 // Helper: build profile data from form
 function getProfileFormData() {
   const form = document.getElementById("matchProfileForm");
@@ -28,6 +26,7 @@ function getProfileFormData() {
 document
   .getElementById("createProfileBtn")
   .addEventListener("click", async () => {
+    console.log("Creating profile...");
     const data = getProfileFormData();
 
     try {
@@ -113,14 +112,15 @@ document
       alert("Network error: " + e.message);
     }
   });
-
-// Load Potential Matches and display
 document
   .getElementById("loadPotentialBtn")
   .addEventListener("click", async () => {
     try {
       const res = await fetch("/match/potential", {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
       });
 
       const container = document.getElementById("potentialMatches");
@@ -144,9 +144,63 @@ document
           <strong>User ID:</strong> ${user.UserID} <br/>
           <strong>Bio:</strong> ${user.Bio || "No bio"} <br/>
           <strong>Hobby Match Score:</strong> ${user.HobbyMatchScore || 0} <br/>
+          <button class="likeBtn" data-userid="${user.UserID}">Like</button>
+          <button class="skipBtn" data-userid="${user.UserID}">Skip</button>
         `;
 
           container.appendChild(div);
+        });
+
+        // Attach click events for Like buttons
+        document.querySelectorAll(".likeBtn").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const targetUserId = btn.dataset.userid;
+            try {
+              const res = await fetch(`/match/like/${targetUserId}`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                credentials: "include",
+              });
+
+              const data = await res.json();
+              if (res.ok) {
+                alert(data.matched ? "It's a match!" : "You liked the user.");
+                btn.closest("div").remove(); // Remove from list
+              } else {
+                alert("Error liking user: " + (data.error || res.statusText));
+              }
+            } catch (e) {
+              alert("Network error: " + e.message);
+            }
+          });
+        });
+
+        // Attach click events for Skip buttons
+        document.querySelectorAll(".skipBtn").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const targetUserId = btn.dataset.userid;
+            try {
+              const res = await fetch(`/match/skip/${targetUserId}`, {
+                method: "POST",
+                headers: {
+                  contentType: "application/json",
+                },
+                credentials: "include",
+              });
+
+              if (res.ok) {
+                alert("User skipped.");
+                btn.closest("div").remove(); // Remove from list
+              } else {
+                const err = await res.json();
+                alert("Error skipping user: " + (err.error || res.statusText));
+              }
+            } catch (e) {
+              alert("Network error: " + e.message);
+            }
+          });
         });
       } else {
         container.textContent = "Failed to load potential matches.";

@@ -75,10 +75,46 @@ async function getPotentialMatches(req, res) {
   }
 }
 
+async function likeUser(req, res) {
+  const userId = req.user.id;
+  const targetUserId = parseInt(req.params.targetUserId, 10);
+
+  if (userId === targetUserId) {
+    return res.status(400).json({ error: "You cannot like yourself." });
+  }
+
+  try {
+    const result = await matchModel.likeUser(userId, targetUserId);
+    res.json({ success: true, matched: result.matched });
+  } catch (err) {
+    console.error("likeUser error:", err);
+    res.status(500).json({ error: "Failed to like user." });
+  }
+}
+
+async function skipUser(req, res) {
+  const userId = req.user.id;
+  const targetUserId = parseInt(req.params.targetUserId, 10);
+
+  if (userId === targetUserId) {
+    return res.status(400).json({ error: "You cannot skip yourself." });
+  }
+
+  try {
+    await matchModel.skipUser(userId, targetUserId);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("skipUser error:", err);
+    res.status(500).json({ error: "Failed to skip user." });
+  }
+}
+
 module.exports = {
   createMatchProfile,
   hasMatchProfile,
   updateMatchProfile,
   getMatchProfile,
   getPotentialMatches,
+  likeUser,
+  skipUser,
 };

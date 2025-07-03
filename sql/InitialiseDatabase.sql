@@ -29,6 +29,9 @@ IF OBJECT_ID('dbo.Friends', 'U') IS NOT NULL
 IF OBJECT_ID('dbo.MatchProfile', 'U') IS NOT NULL
     DROP TABLE dbo.MatchProfile;
 
+IF OBJECT_ID('dbo.MatchInteractions', 'U') IS NOT NULL
+    DROP TABLE dbo.MatchInteractions;
+
 
 CREATE TABLE Users (
     ID INT PRIMARY KEY IDENTITY(1,1),
