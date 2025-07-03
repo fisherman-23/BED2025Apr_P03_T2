@@ -29,7 +29,8 @@ function protectSpecificRoutes(req, res, next) {
     "/dashboard.html",
     "/profile.html",
     "/something.html",
-    "/buddy-system.html",
+    "/chat.html",
+    "/social.html",
   ];
 
   if (protectedFiles.includes(req.path)) {

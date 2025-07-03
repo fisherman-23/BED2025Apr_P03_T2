@@ -1,84 +1,60 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Home</title>
-    <script src="home/script.js" defer></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="home/style.css" />
-    <link rel="stylesheet" href="global.css" />
-  </head>
-  <body>
-    <div class="flex flex-col items-center justify-center h-screen p-8">
-      <div class="grid grid-rows-2 grid-cols-3 gap-6 w-full h-full">
-        <div
-          class="flex flex-col items-center justify-center gap-2"
-          id="welcome-section"
-        >
-          <h1 class="text-2xl">Welcome to</h1>
-          <img src="assets/Logo.svg" class="w-1/2" />
 
-          <div id="auth-container" class="flex flex-col gap-2">
-            <div class="flex flex-row gap-4">
-              <button
-                class="px-6 py-2 rounded-xl border-2 border-black bg-transparent text-black"
-                onclick="window.location.href='signup.html';"
-              >
-                Sign Up
-              </button>
-              <button
-                class="px-6 py-2 rounded-xl border-2 border-black bg-transparent text-black"
-                onclick="window.location.href='login.html';"
-              >
-                Login
-              </button>
-            </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home</title>
+  <script src="home/script.js" defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="home/style.css" />
+  <link rel="stylesheet" href="global.css" />
+</head>
+
+<body>
+  <div class="flex flex-col items-center justify-center h-screen p-8">
+    <div class="grid grid-rows-2 grid-cols-3 gap-6 w-full h-full">
+      <div class="flex flex-col items-center justify-center gap-2" id="welcome-section">
+        <h1 class="text-2xl">Welcome to</h1>
+        <img src="assets/Logo.svg" class="w-1/2" />
+
+        <div id="auth-container" class="flex flex-col gap-2">
+          <div class="flex flex-row gap-4">
+            <button class="px-6 py-2 rounded-xl border-2 border-black bg-transparent text-black"
+              onclick="window.location.href='signup.html';">
+              Sign Up
+            </button>
+            <button class="px-6 py-2 rounded-xl border-2 border-black bg-transparent text-black"
+              onclick="window.location.href='login.html';">
+              Login
+            </button>
           </div>
         </div>
-        <div
-          class="relative rounded-xl overflow-hidden group transition-transform duration-300 ease-in-out hover:scale-[1.03] hover:shadow-xl cursor-pointer"
-          onclick="window.location.href='something.html';"
-        >
-          <img
-            src="assets/images/healthcareImage.png"
-            alt="Healthcare Image"
-            class="w-full h-full object-cover absolute inset-0 z-0"
-          />
-          <div class="relative p-8 z-10 h-full">
-            <!-- Progressive Blur Overlay -->
-            <div
-              class="absolute inset-x-0 bottom-0 h-64 z-0 pointer-events-none"
-            >
-              <div
-                class="w-full h-full bg-black/25 backdrop-blur-3xl"
-                style="
+      </div>
+      <div
+        class="relative rounded-xl overflow-hidden group transition-transform duration-300 ease-in-out hover:scale-[1.03] hover:shadow-xl cursor-pointer"
+        onclick="window.location.href='something.html';">
+        <img src="assets/images/healthcareImage.png" alt="Healthcare Image"
+          class="w-full h-full object-cover absolute inset-0 z-0" />
+        <div class="relative p-8 z-10 h-full">
+          <!-- Progressive Blur Overlay -->
+          <div class="absolute inset-x-0 bottom-0 h-64 z-0 pointer-events-none">
+            <div class="w-full h-full bg-black/25 backdrop-blur-3xl" style="
                   mask-image: linear-gradient(to top, black, transparent);
                   -webkit-mask-image: linear-gradient(
                     to top,
                     black,
                     transparent
                   );
-                "
-              ></div>
-            </div>
+                "></div>
+          </div>
 
-            <div
-              class="absolute top-0 right-0 p-4 z-20 text-white font-semibold"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="52"
-                height="52"
-                fill="none"
-                viewBox="0 0 52 52"
-              >
-                <path
-                  fill="#fff"
-                  d="M50.375 42.25H48.75V26a3.25 3.25 0 0 0-3.25-3.25H34.125v-13a3.25 3.25 0 0 0-3.25-3.25h-19.5a3.25 3.25 0 0 0-3.25 3.25v32.5H6.5a1.625 1.625 0 1 0 0 3.25h43.875a1.625 1.625 0 1 0 0-3.25ZM45.5 26v16.25H34.125V26H45.5ZM11.375 9.75h19.5v32.5h-3.25V32.5A1.625 1.625 0 0 0 26 30.875h-9.75a1.625 1.625 0 0 0-1.625 1.625v9.75h-3.25V9.75Zm13 32.5h-6.5v-8.125h6.5v8.125Zm-9.75-22.75a1.625 1.625 0 0 1 1.625-1.625h3.25v-3.25a1.625 1.625 0 1 1 3.25 0v3.25H26a1.625 1.625 0 1 1 0 3.25h-3.25v3.25a1.625 1.625 0 1 1-3.25 0v-3.25h-3.25a1.625 1.625 0 0 1-1.625-1.625Z"
-                />
-              </svg>
-            </div>
+          <div class="absolute top-0 right-0 p-4 z-20 text-white font-semibold">
+            <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" fill="none" viewBox="0 0 52 52">
+              <path fill="#fff"
+                d="M50.375 42.25H48.75V26a3.25 3.25 0 0 0-3.25-3.25H34.125v-13a3.25 3.25 0 0 0-3.25-3.25h-19.5a3.25 3.25 0 0 0-3.25 3.25v32.5H6.5a1.625 1.625 0 1 0 0 3.25h43.875a1.625 1.625 0 1 0 0-3.25ZM45.5 26v16.25H34.125V26H45.5ZM11.375 9.75h19.5v32.5h-3.25V32.5A1.625 1.625 0 0 0 26 30.875h-9.75a1.625 1.625 0 0 0-1.625 1.625v9.75h-3.25V9.75Zm13 32.5h-6.5v-8.125h6.5v8.125Zm-9.75-22.75a1.625 1.625 0 0 1 1.625-1.625h3.25v-3.25a1.625 1.625 0 1 1 3.25 0v3.25H26a1.625 1.625 0 1 1 0 3.25h-3.25v3.25a1.625 1.625 0 1 1-3.25 0v-3.25h-3.25a1.625 1.625 0 0 1-1.625-1.625Z" />
+            </svg>
+          </div>
 
             <div class="relative flex h-full flex-col justify-end z-10">
               <h1 class="text-4xl font-medium text-white text-shadow-md">
@@ -110,188 +86,121 @@
                     black,
                     transparent
                   );
-                "
-              ></div>
-            </div>
+                "></div>
+          </div>
 
-            <div
-              class="absolute top-0 right-0 p-4 z-20 text-white font-semibold"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="52"
-                height="52"
-                fill="none"
-                viewBox="0 0 52 52"
-              >
-                <path
-                  fill="#fff"
-                  d="M37.375 9.75h-9.75V4.875h6.5a1.625 1.625 0 1 0 0-3.25h-16.25a1.625 1.625 0 1 0 0 3.25h6.5V9.75h-9.75a6.5 6.5 0 0 0-6.5 6.5v21.125a6.5 6.5 0 0 0 6.5 6.5h1.625l-2.925 3.9a1.626 1.626 0 0 0 1.53 2.584 1.625 1.625 0 0 0 1.07-.634l4.387-5.85h11.375l4.388 5.85a1.625 1.625 0 1 0 2.6-1.95l-2.925-3.9h1.625a6.5 6.5 0 0 0 6.5-6.5V16.25a6.5 6.5 0 0 0-6.5-6.5ZM14.625 13h22.75a3.25 3.25 0 0 1 3.25 3.25v8.125h-29.25V16.25a3.25 3.25 0 0 1 3.25-3.25Zm22.75 27.625h-22.75a3.25 3.25 0 0 1-3.25-3.25v-9.75h29.25v9.75a3.25 3.25 0 0 1-3.25 3.25ZM19.5 34.937a2.438 2.438 0 1 1-4.875 0 2.438 2.438 0 0 1 4.875 0Zm17.875 0a2.438 2.438 0 1 1-4.875 0 2.438 2.438 0 0 1 4.875 0Z"
-                />
-              </svg>
-            </div>
+          <div class="absolute top-0 right-0 p-4 z-20 text-white font-semibold">
+            <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" fill="none" viewBox="0 0 52 52">
+              <path fill="#fff"
+                d="M37.375 9.75h-9.75V4.875h6.5a1.625 1.625 0 1 0 0-3.25h-16.25a1.625 1.625 0 1 0 0 3.25h6.5V9.75h-9.75a6.5 6.5 0 0 0-6.5 6.5v21.125a6.5 6.5 0 0 0 6.5 6.5h1.625l-2.925 3.9a1.626 1.626 0 0 0 1.53 2.584 1.625 1.625 0 0 0 1.07-.634l4.387-5.85h11.375l4.388 5.85a1.625 1.625 0 1 0 2.6-1.95l-2.925-3.9h1.625a6.5 6.5 0 0 0 6.5-6.5V16.25a6.5 6.5 0 0 0-6.5-6.5ZM14.625 13h22.75a3.25 3.25 0 0 1 3.25 3.25v8.125h-29.25V16.25a3.25 3.25 0 0 1 3.25-3.25Zm22.75 27.625h-22.75a3.25 3.25 0 0 1-3.25-3.25v-9.75h29.25v9.75a3.25 3.25 0 0 1-3.25 3.25ZM19.5 34.937a2.438 2.438 0 1 1-4.875 0 2.438 2.438 0 0 1 4.875 0Zm17.875 0a2.438 2.438 0 1 1-4.875 0 2.438 2.438 0 0 1 4.875 0Z" />
+            </svg>
+          </div>
 
-            <div class="relative flex h-full flex-col justify-end z-10">
-              <h1 class="text-4xl font-medium text-white text-shadow-md">
-                Transportation
-              </h1>
-            </div>
+          <div class="relative flex h-full flex-col justify-end z-10">
+            <h1 class="text-4xl font-medium text-white text-shadow-md">
+              Transportation
+            </h1>
           </div>
         </div>
-        <div
-          class="relative rounded-xl overflow-hidden group transition-transform duration-300 ease-in-out hover:scale-[1.03] hover:shadow-xl cursor-pointer"
-          onclick="window.location.href='something.html';"
-        >
-          <img
-            src="assets/images/eventsImage.png"
-            alt="Placeholder Image"
-            class="w-full h-full object-cover absolute inset-0 z-0"
-          />
-          <div class="relative p-8 z-10 h-full">
-            <!-- Progressive Blur Overlay -->
-            <div
-              class="absolute inset-x-0 bottom-0 h-64 z-0 pointer-events-none"
-            >
-              <div
-                class="w-full h-full bg-black/25 backdrop-blur-3xl"
-                style="
+      </div>
+      <div
+        class="relative rounded-xl overflow-hidden group transition-transform duration-300 ease-in-out hover:scale-[1.03] hover:shadow-xl cursor-pointer"
+        onclick="window.location.href='something.html';">
+        <img src="assets/images/eventsImage.png" alt="Placeholder Image"
+          class="w-full h-full object-cover absolute inset-0 z-0" />
+        <div class="relative p-8 z-10 h-full">
+          <!-- Progressive Blur Overlay -->
+          <div class="absolute inset-x-0 bottom-0 h-64 z-0 pointer-events-none">
+            <div class="w-full h-full bg-black/25 backdrop-blur-3xl" style="
                   mask-image: linear-gradient(to top, black, transparent);
                   -webkit-mask-image: linear-gradient(
                     to top,
                     black,
                     transparent
                   );
-                "
-              ></div>
-            </div>
+                "></div>
+          </div>
 
-            <div
-              class="absolute top-0 right-0 p-4 z-20 text-white font-semibold"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="52"
-                height="52"
-                fill="none"
-                viewBox="0 0 52 52"
-              >
-                <path
-                  fill="#fff"
-                  d="M42.25 6.5h-4.875V4.875a1.625 1.625 0 1 0-3.25 0V6.5h-16.25V4.875a1.625 1.625 0 1 0-3.25 0V6.5H9.75A3.25 3.25 0 0 0 6.5 9.75v32.5a3.25 3.25 0 0 0 3.25 3.25h32.5a3.25 3.25 0 0 0 3.25-3.25V9.75a3.25 3.25 0 0 0-3.25-3.25ZM14.625 9.75v1.625a1.625 1.625 0 1 0 3.25 0V9.75h16.25v1.625a1.625 1.625 0 1 0 3.25 0V9.75h4.875v6.5H9.75v-6.5h4.875Zm27.625 32.5H9.75V19.5h32.5v22.75ZM28.437 26.812a2.438 2.438 0 1 1-4.875 0 2.438 2.438 0 0 1 4.875 0Zm8.938 0a2.438 2.438 0 1 1-4.875 0 2.438 2.438 0 0 1 4.875 0ZM19.5 34.938a2.438 2.438 0 1 1-4.875 0 2.438 2.438 0 0 1 4.875 0Zm8.938 0a2.438 2.438 0 1 1-4.876 0 2.438 2.438 0 0 1 4.875 0Zm8.937 0a2.438 2.438 0 1 1-4.875 0 2.438 2.438 0 0 1 4.875 0Z"
-                />
-              </svg>
-            </div>
+          <div class="absolute top-0 right-0 p-4 z-20 text-white font-semibold">
+            <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" fill="none" viewBox="0 0 52 52">
+              <path fill="#fff"
+                d="M42.25 6.5h-4.875V4.875a1.625 1.625 0 1 0-3.25 0V6.5h-16.25V4.875a1.625 1.625 0 1 0-3.25 0V6.5H9.75A3.25 3.25 0 0 0 6.5 9.75v32.5a3.25 3.25 0 0 0 3.25 3.25h32.5a3.25 3.25 0 0 0 3.25-3.25V9.75a3.25 3.25 0 0 0-3.25-3.25ZM14.625 9.75v1.625a1.625 1.625 0 1 0 3.25 0V9.75h16.25v1.625a1.625 1.625 0 1 0 3.25 0V9.75h4.875v6.5H9.75v-6.5h4.875Zm27.625 32.5H9.75V19.5h32.5v22.75ZM28.437 26.812a2.438 2.438 0 1 1-4.875 0 2.438 2.438 0 0 1 4.875 0Zm8.938 0a2.438 2.438 0 1 1-4.875 0 2.438 2.438 0 0 1 4.875 0ZM19.5 34.938a2.438 2.438 0 1 1-4.875 0 2.438 2.438 0 0 1 4.875 0Zm8.938 0a2.438 2.438 0 1 1-4.876 0 2.438 2.438 0 0 1 4.875 0Zm8.937 0a2.438 2.438 0 1 1-4.875 0 2.438 2.438 0 0 1 4.875 0Z" />
+            </svg>
+          </div>
 
-            <div class="relative flex h-full flex-col justify-end z-10">
-              <h1 class="text-4xl font-medium text-white text-shadow-md">
-                Explore Events
-              </h1>
-            </div>
+          <div class="relative flex h-full flex-col justify-end z-10">
+            <h1 class="text-4xl font-medium text-white text-shadow-md">
+              Explore Events
+            </h1>
           </div>
         </div>
-        <div
-          class="relative rounded-xl overflow-hidden group transition-transform duration-300 ease-in-out hover:scale-[1.03] hover:shadow-xl cursor-pointer"
-          onclick="window.location.href='exercise.html';"
-        >
-          <img
-            src="assets/images/fitnessCoachImage.jpg"
-            alt="Placeholder Image"
-            class="w-full h-full object-cover absolute inset-0 z-0"
-          />
-          <div class="relative p-8 z-10 h-full">
-            <!-- Progressive Blur Overlay -->
-            <div
-              class="absolute inset-x-0 bottom-0 h-64 z-0 pointer-events-none"
-            >
-              <div
-                class="w-full h-full bg-black/25 backdrop-blur-3xl"
-                style="
+      </div>
+      <div
+        class="relative rounded-xl overflow-hidden group transition-transform duration-300 ease-in-out hover:scale-[1.03] hover:shadow-xl cursor-pointer"
+        onclick="window.location.href='exercise.html';">
+        <img src="assets/images/fitnessCoachImage.jpg" alt="Placeholder Image"
+          class="w-full h-full object-cover absolute inset-0 z-0" />
+        <div class="relative p-8 z-10 h-full">
+          <!-- Progressive Blur Overlay -->
+          <div class="absolute inset-x-0 bottom-0 h-64 z-0 pointer-events-none">
+            <div class="w-full h-full bg-black/25 backdrop-blur-3xl" style="
                   mask-image: linear-gradient(to top, black, transparent);
                   -webkit-mask-image: linear-gradient(
                     to top,
                     black,
                     transparent
                   );
-                "
-              ></div>
-            </div>
+                "></div>
+          </div>
 
-            <div
-              class="absolute top-0 right-0 p-4 z-20 text-white font-semibold"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="52"
-                height="52"
-                fill="none"
-                viewBox="0 0 52 52"
-              >
-                <path
-                  fill="#fff"
-                  d="M48.75 39.813a3.25 3.25 0 0 0-1.35-2.377l-7.72-5.515 3.454-3.443a8.06 8.06 0 0 0 2.234-7.27 20.215 20.215 0 0 0-7.19-11.759 20.704 20.704 0 0 0-13.279-4.574A20.371 20.371 0 0 0 4.875 24.899a20.743 20.743 0 0 0 4.58 13.26 20.215 20.215 0 0 0 11.76 7.19 8.06 8.06 0 0 0 7.27-2.234l3.442-3.453 5.515 7.719a3.251 3.251 0 0 0 2.37 1.369c.09 0 .18.01.269.01a3.25 3.25 0 0 0 2.297-.953l5.411-5.41a3.25 3.25 0 0 0 .961-2.584Zm-36.766-3.691A17.487 17.487 0 0 1 8.125 24.95 17.118 17.118 0 0 1 24.944 8.125a17.526 17.526 0 0 1 11.172 3.86 17.283 17.283 0 0 1 3.814 4.285L16.27 39.93a17.28 17.28 0 0 1-4.286-3.808ZM40.087 45.5l-6.628-9.28a1.625 1.625 0 0 0-1.189-.675h-.134a1.623 1.623 0 0 0-1.15.475l-4.8 4.8a4.81 4.81 0 0 1-4.338 1.347c-.85-.17-1.686-.408-2.498-.711l22.1-22.1c.302.813.54 1.648.71 2.498a4.807 4.807 0 0 1-1.346 4.339l-4.8 4.794a1.625 1.625 0 0 0 .203 2.472l9.283 6.628-5.413 5.413Z"
-                />
-              </svg>
-            </div>
+          <div class="absolute top-0 right-0 p-4 z-20 text-white font-semibold">
+            <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" fill="none" viewBox="0 0 52 52">
+              <path fill="#fff"
+                d="M48.75 39.813a3.25 3.25 0 0 0-1.35-2.377l-7.72-5.515 3.454-3.443a8.06 8.06 0 0 0 2.234-7.27 20.215 20.215 0 0 0-7.19-11.759 20.704 20.704 0 0 0-13.279-4.574A20.371 20.371 0 0 0 4.875 24.899a20.743 20.743 0 0 0 4.58 13.26 20.215 20.215 0 0 0 11.76 7.19 8.06 8.06 0 0 0 7.27-2.234l3.442-3.453 5.515 7.719a3.251 3.251 0 0 0 2.37 1.369c.09 0 .18.01.269.01a3.25 3.25 0 0 0 2.297-.953l5.411-5.41a3.25 3.25 0 0 0 .961-2.584Zm-36.766-3.691A17.487 17.487 0 0 1 8.125 24.95 17.118 17.118 0 0 1 24.944 8.125a17.526 17.526 0 0 1 11.172 3.86 17.283 17.283 0 0 1 3.814 4.285L16.27 39.93a17.28 17.28 0 0 1-4.286-3.808ZM40.087 45.5l-6.628-9.28a1.625 1.625 0 0 0-1.189-.675h-.134a1.623 1.623 0 0 0-1.15.475l-4.8 4.8a4.81 4.81 0 0 1-4.338 1.347c-.85-.17-1.686-.408-2.498-.711l22.1-22.1c.302.813.54 1.648.71 2.498a4.807 4.807 0 0 1-1.346 4.339l-4.8 4.794a1.625 1.625 0 0 0 .203 2.472l9.283 6.628-5.413 5.413Z" />
+            </svg>
+          </div>
 
-            <div class="relative flex h-full flex-col justify-end z-10">
-              <h1 class="text-4xl font-medium text-white text-shadow-md">
-                Excercise and Fitness
-              </h1>
-            </div>
+          <div class="relative flex h-full flex-col justify-end z-10">
+            <h1 class="text-4xl font-medium text-white text-shadow-md">
+              Excercise and Fitness
+            </h1>
           </div>
         </div>
-        <div
-          class="relative rounded-xl overflow-hidden group transition-transform duration-300 ease-in-out hover:scale-[1.03] hover:shadow-xl cursor-pointer"
-          onclick="window.location.href='buddy-system.html';"
-        >
-          <img
-            src="assets/images/buddySystemImage.png"
-            alt="Placeholder Image"
-            class="w-full h-full object-cover absolute inset-0 z-0"
-          />
-          <div class="relative p-8 z-10 h-full">
-            <!-- Progressive Blur Overlay -->
-            <div
-              class="absolute inset-x-0 bottom-0 h-64 z-0 pointer-events-none"
-            >
-              <div
-                class="w-full h-full bg-black/25 backdrop-blur-3xl"
-                style="
+      </div>
+      <div
+        class="relative rounded-xl overflow-hidden group transition-transform duration-300 ease-in-out hover:scale-[1.03] hover:shadow-xl cursor-pointer"
+        onclick="window.location.href='chat.html';">
+        <img src="assets/images/buddySystemImage.png" alt="Placeholder Image"
+          class="w-full h-full object-cover absolute inset-0 z-0" />
+        <div class="relative p-8 z-10 h-full">
+          <!-- Progressive Blur Overlay -->
+          <div class="absolute inset-x-0 bottom-0 h-64 z-0 pointer-events-none">
+            <div class="w-full h-full bg-black/25 backdrop-blur-3xl" style="
                   mask-image: linear-gradient(to top, black, transparent);
                   -webkit-mask-image: linear-gradient(
                     to top,
                     black,
                     transparent
                   );
-                "
-              ></div>
-            </div>
+                "></div>
+          </div>
 
-            <div
-              class="absolute top-0 right-0 p-4 z-20 text-white font-semibold"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="52"
-                height="52"
-                fill="none"
-                viewBox="0 0 52 52"
-              >
-                <path
-                  fill="#FFFBFB"
-                  d="M49.725 30.55a1.625 1.625 0 0 1-2.275-.325A10.48 10.48 0 0 0 39 26a1.626 1.626 0 0 1 0-3.25 4.874 4.874 0 1 0-4.72-6.094 1.627 1.627 0 0 1-3.185-.179 1.627 1.627 0 0 1 .036-.633 8.126 8.126 0 0 1 15.95 1.22 8.125 8.125 0 0 1-2.597 6.805 13.8 13.8 0 0 1 5.572 4.404 1.626 1.626 0 0 1-.331 2.277ZM38.781 43.062a1.626 1.626 0 1 1-2.812 1.626 11.58 11.58 0 0 0-19.938 0 1.626 1.626 0 1 1-2.812-1.626 14.637 14.637 0 0 1 6.854-6.077 9.75 9.75 0 1 1 11.854 0 14.637 14.637 0 0 1 6.854 6.078ZM26 35.75a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13ZM14.625 24.375A1.625 1.625 0 0 0 13 22.75a4.874 4.874 0 1 1 4.72-6.094 1.626 1.626 0 0 0 3.15-.812 8.125 8.125 0 1 0-13.354 8.025 13.801 13.801 0 0 0-5.566 4.404 1.626 1.626 0 1 0 2.6 1.952A10.481 10.481 0 0 1 13 26a1.625 1.625 0 0 0 1.625-1.625Z"
-                />
-              </svg>
-            </div>
+          <div class="absolute top-0 right-0 p-4 z-20 text-white font-semibold">
+            <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" fill="none" viewBox="0 0 52 52">
+              <path fill="#FFFBFB"
+                d="M49.725 30.55a1.625 1.625 0 0 1-2.275-.325A10.48 10.48 0 0 0 39 26a1.626 1.626 0 0 1 0-3.25 4.874 4.874 0 1 0-4.72-6.094 1.627 1.627 0 0 1-3.185-.179 1.627 1.627 0 0 1 .036-.633 8.126 8.126 0 0 1 15.95 1.22 8.125 8.125 0 0 1-2.597 6.805 13.8 13.8 0 0 1 5.572 4.404 1.626 1.626 0 0 1-.331 2.277ZM38.781 43.062a1.626 1.626 0 1 1-2.812 1.626 11.58 11.58 0 0 0-19.938 0 1.626 1.626 0 1 1-2.812-1.626 14.637 14.637 0 0 1 6.854-6.077 9.75 9.75 0 1 1 11.854 0 14.637 14.637 0 0 1 6.854 6.078ZM26 35.75a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13ZM14.625 24.375A1.625 1.625 0 0 0 13 22.75a4.874 4.874 0 1 1 4.72-6.094 1.626 1.626 0 0 0 3.15-.812 8.125 8.125 0 1 0-13.354 8.025 13.801 13.801 0 0 0-5.566 4.404 1.626 1.626 0 1 0 2.6 1.952A10.481 10.481 0 0 1 13 26a1.625 1.625 0 0 0 1.625-1.625Z" />
+            </svg>
+          </div>
 
-            <div class="relative flex h-full flex-col justify-end z-10">
-              <h1 class="text-4xl font-medium text-white text-shadow-md">
-                Connect with friends
-              </h1>
-            </div>
+          <div class="relative flex h-full flex-col justify-end z-10">
+            <h1 class="text-4xl font-medium text-white text-shadow-md">
+              Connect with friends
+            </h1>
           </div>
         </div>
       </div>
     </div>
-  </body>
+  </div>
+</body>
+
 </html>

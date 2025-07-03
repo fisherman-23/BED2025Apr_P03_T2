@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chats</title>
+  <link rel="stylesheet" href="global.css" />
+  <link rel="stylesheet" href="/buddy-system/style.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- <script src="/buddy-system/script.js" defer></script> -->
+  <script src="/buddy-system/match.js" defer></script>
+</head>
+
+<body>
+  <div class="flex flex-col h-screen">
+    <nav class="navbar">
+      <img src="/assets/Logo.svg" alt="Logo">
+      <div class="nav-icons">
+        <a><img src="/assets/icons/NAV-House.svg" alt="home"></a>
+        <a><img src="/assets/icons/NAV-Hospital.svg" alt="medical"></a>
+        <a><img src="/assets/icons/NAV-Tram.svg" alt="transport"></a>
+        <a><img src="/assets/icons/NAV-exercise.svg" alt="exercise"></a>
+        <a><img src="/assets/icons/NAV-calendar.svg" alt="events"></a>
+        <a><img src="/assets/icons/NAV-users.svg" alt="user"></a>
+      </div>
+      <div class="profile-icon">
+        <img src="/assets/images/elderlyPFP.png" alt="Profile Picture">
+      </div>
+    </nav>
+    <div class="h-full flex px-16 py-10 row pb-32">
+      <div class="flex flex-col w-2/5">
+        <h1 class="text-3xl font-bold">Find topics to chat about</h1>
+        <!--Search bar-->
+        <div class="flex mt-4">
+          <input type="text" id="searchInput" placeholder="Search for topics..."
+            class="border-2 border-slate rounded-2xl p-2 w-full" />
+          <button id="searchButton"
+            class="ml-2 bg-transparent border-slate border-2 px-4 py-2 rounded-2xl">Search</button>
+
+        </div>
+        <!--Search chips-->
+        <div id="searchChips" class="flex flex-row mt-2 gap-2">
+          <!-- Search chips will be dynamically added here -->
+          <div class="px-6 py-2 bg-blue-200 rounded-2xl">Hiking</div>
+          <div class="px-6 py-2 bg-lime-300 rounded-2xl">Cooking</div>
+          <div class="px-6 py-2 bg-indigo-500 rounded-2xl text-white">Gardening</div>
+        </div>
+
+
+        <!--Hot Action Buttons - Fixed to Bottom-->
+        <div class="fixed bottom-0 left-0 w-full bg-white px-16 py-8 shadow-md z-50">
+          <div class="flex justify-start gap-4">
+            <button class="py-4 px-6 bg-[#D7E961] rounded-2xl shadow-md" onclick="location.href='/social.html'">
+              <div class="flex flex-row items-center gap-2">
+                <img src="/assets/icons/NAV-users.svg" alt="Social Icon" class="w-8 h-8 mr-2">
+                <p class="text-lg text-center">Socials</p>
+              </div>
+            </button>
+            <button class="py-4 px-6 bg-[#D7E961] rounded-2xl shadow-md">
+              <div class="flex flex-row items-center gap-2">
+                <img src="/assets/icons/pencil.svg" alt="Pencil Icon" class="w-8 h-8 mr-2">
+                <p class="text-lg text-center">Edit Profile</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- <form id="buddyForm">
+    <h1>Buddy System</h1>
+    <label for="buddyName">Buddy UUID:</label>
+    <input type="text" id="uuid" name="uuid" required />
+
+    <button type="submit" id="button">Add Buddy</button>
+  </form>
+  <div id="incomingRequests"></div>
+  <div id="outgoingRequests"></div>
+
+  <form id="acceptRejectForm">
+    <h2>Accept/Reject Requests</h2>
+    <label for="requestId">Request ID:</label>
+    <input type="text" id="requestId" name="requestId" required />
+    <button type="button" id="acceptButton">Accept</button>
+    <button type="button" id="rejectButton">Reject</button>
+  </form>
+
+  <div id="friendsList">
+
+
+    <div id="profileStatus"></div>
+
+    <form id="matchProfileForm">
+      <textarea name="bio" placeholder="bio"></textarea><br>
+
+      <label><input type="checkbox" name="likesHiking" /> Hiking</label><br>
+      <label><input type="checkbox" name="likesGardening" /> Gardening</label><br>
+      <label><input type="checkbox" name="likesBoardGames" /> Board Games</label><br>
+      <label><input type="checkbox" name="likesSinging" /> Singing</label><br>
+      <label><input type="checkbox" name="likesReading" /> Reading</label><br>
+      <label><input type="checkbox" name="likesWalking" /> Walking</label><br>
+      <label><input type="checkbox" name="likesCooking" /> Cooking</label><br>
+      <label><input type="checkbox" name="likesMovies" /> Movies</label><br>
+      <label><input type="checkbox" name="likesTaiChi" /> Tai Chi</label><br>
+
+      <button type="button" id="createProfileBtn">Create Profile</button>
+      <button type="button" id="updateProfileBtn">Update Profile</button>
+    </form>
+
+    <button id="checkProfileBtn">Check Profile Exists</button>
+    <button id="loadPotentialBtn">Load Potential Matches</button>
+
+    <div id="potentialMatches"></div> -->
+
+
+</body>
+
+</html>
