@@ -10,7 +10,7 @@ const { upload, handleUpload } = require("./utils/fileUpload.js");
 const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
-
+const exerciseController = require("./controllers/exerciseController.js");
 
 const {
   validateUserId,
@@ -24,6 +24,7 @@ const {
   redirectIfAuthenticated,
 } = require("./middlewares/protectRoute");
 const validateMatchProfile = require("./middlewares/validateMatchProfile.js");
+const { compareSync } = require("bcrypt");
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(express.json());
@@ -133,6 +134,18 @@ app.post(
   "/match/skip/:targetUserId",
   authenticateJWT,
   matchController.skipUser
+);
+
+app.get(
+  "/exercises",
+  authenticateJWT,
+  exerciseController.getExercises
+);
+
+app.get(
+  "/exercises/steps/:exerciseId",
+  authenticateJWT,
+  exerciseController.getSteps
 );
 
 app.listen(port, () => {

@@ -225,3 +225,43 @@ CREATE TABLE MatchInteractions (
     FOREIGN KEY (TargetUserID) REFERENCES Users(ID)
 );
 
+
+
+-- Module 4: Senior Fitness Coach
+
+-- Exercise data table
+CREATE TABLE exercises (
+  exerciseId INT PRIMARY KEY IDENTITY(1,1),
+  title VARCHAR(100) NOT NULL,
+  description TEXT,
+  image_url TEXT,
+);
+
+-- Exercise steps data table
+CREATE TABLE exercise_steps (
+  stepId INT PRIMARY KEY IDENTITY(1,1),
+  exerciseId INT NOT NULL,
+  step_number INT NOT NULL, 
+  instruction TEXT NOT NULL,
+  FOREIGN KEY (exerciseId) REFERENCES exercises(exerciseId) 
+);
+
+-- Sample data
+
+-- Sample exercises
+INSERT INTO exercises (title, description, image_url)
+VALUES (
+  'Chair Yoga',
+  'A gentle form of yoga performed while seated or using a chair for support. Great for beginners and people with limited mobility.',
+  '/exercise/images/chairyoga.png'
+);
+
+-- Sample exercise steps
+INSERT INTO exercise_steps (exerciseId, step_number, instruction)
+VALUES
+(1, 1, 'Sit comfortably on the chair with your feet flat on the floor, back straight.'),
+(1, 2, 'Inhale and raise both arms above your head.'),
+(1, 3, 'Exhale and gently twist your torso to the right, placing your left hand on your right knee. Hold for a few breaths.'),
+(1, 4, 'Inhale to return to center, then exhale and twist to the left. Hold.'),
+(1, 5, 'Place your hands on your thighs and perform gentle neck rolls.'),
+(1, 6, 'Inhale deeply, exhale slowly. Repeat 3 times to end.');
