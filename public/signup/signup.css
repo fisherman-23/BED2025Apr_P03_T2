@@ -107,8 +107,11 @@ nav {
     height: 3rem;
 }
 .photo-label span {
+    display: block;
     font-size: 1rem;
     text-align: center;
+    word-wrap: break-word;
+    max-width: 100%;
 }
 .remove-photo-button {
     background-color: #dc3545;
