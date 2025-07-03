@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("registration-form");
 
-  // Toggle password visibility
+  // toggle password visibility
   const togglePassword = document.getElementById("eye-icon");
   const passwordInput = document.getElementById("Password");
 
@@ -13,40 +13,44 @@ document.addEventListener("DOMContentLoaded", () => {
       : "/assets/icons/eye-hidden.svg";
   });
 
-    // Handle photo upload
+    // handle photo upload
     const photoInput = document.getElementById("photo-input");
     const photoLabelSpan = document.querySelector(".photo-label span");
     const photoIcon = document.querySelector(".photo-icon");
     const removeButton = document.getElementById("remove-photo");
 
+    let selectedFile = null;
+
     photoInput.addEventListener("change", () => {
-    const file = photoInput.files[0];
-    if (file) {
+      const file = photoInput.files[0];
+      if (file) {
+        selectedFile = file;
         photoLabelSpan.textContent = file.name;
+
         const reader = new FileReader();
         reader.onload = (e) => {
-        photoIcon.src = e.target.result;
+          photoIcon.src = e.target.result;
         };
         reader.readAsDataURL(file);
-        removeButton.style.display = "inline-block"; // Show the remove button
-    }
+        removeButton.style.display = "inline-block";
+      }
     });
 
-    // Handle removal/reset
+    // handle removal/reset
     removeButton.addEventListener("click", () => {
-    photoInput.value = ""; // Clear file input
-    photoIcon.src = "/assets/icons/add_a_photo.svg"; // Reset to default image
-    photoLabelSpan.textContent = "Add Photo"; // Reset label text
-    removeButton.style.display = "none"; // Hide the remove button
+    photoInput.value = "";
+    photoIcon.src = "/assets/icons/add-a-photo.svg";
+    photoLabelSpan.textContent = "Add Photo";
+    removeButton.style.display = "none";
     });
 
-  // Populate dropdowns for DOB
+  // populate dropdowns for DOB
   populateDOB();
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Get form values
+    // get form values
     const email = document.getElementById("Email").value.trim();
     const password = document.getElementById("Password").value;
     const name = document.getElementById("Name").value.trim();
@@ -55,17 +59,47 @@ document.addEventListener("DOMContentLoaded", () => {
     const month = document.getElementById("dob-month").value;
     const year = document.getElementById("dob-year").value;
 
-    // Validate DOB fields are selected (extra guard)
+    // validate DOB fields are selected (extra guard)
     if (!day || !month || !year) {
       alert("Please select your complete Date of Birth.");
       return;
     }
 
-    // Format DOB as YYYY-MM-DD with zero-padding
+    // format DOB as YYYY-MM-DD with zero-padding
     const dob = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 
-    // Profile picture is optional and currently not handled for upload
-    const profilePicture = null;
+    let uploadedImageUrl = null;
+    
+    // handle image upload if a file is selected
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      try {
+        const response = await fetch("/api/upload/profile_pictures", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.url) {
+          throw new Error("No URL returned from image upload");
+        }
+
+        uploadedImageUrl = data.url;
+
+      } catch (uploadError) {
+        console.error("Image upload error:", uploadError);
+        alert("Image upload failed. Please try again or use a different image.");
+        return;  // stop form submission if image upload fails
+      }
+    }
 
     const userData = {
       Email: email,
@@ -73,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
       Name: name,
       PhoneNumber: phoneNumber,
       DateOfBirth: dob,
-      ProfilePicture: profilePicture
+      ProfilePicture: uploadedImageUrl || null // use uploaded image URL or null if not uploaded
     };
 
     try {
@@ -89,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (res.ok) {
         alert("🎉 Account created successfully!");
-        window.location.href = "/login.html"; // Redirect to login page
+        window.location.href = "/login.html"; // redirect to login page
       } else {
         alert("⚠️ " + (result.error || "Unknown error occurred"));
       }
@@ -100,13 +134,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Helper: populate DOB dropdowns dynamically
+// populate DOB dropdowns dynamically
 function populateDOB() {
   const daySelect = document.getElementById("dob-day");
   const monthSelect = document.getElementById("dob-month");
   const yearSelect = document.getElementById("dob-year");
 
-  // Populate days 1-31
+  // populate days 1-31
   for (let d = 1; d <= 31; d++) {
     const option = document.createElement("option");
     option.value = d.toString();
@@ -114,7 +148,7 @@ function populateDOB() {
     daySelect.appendChild(option);
   }
 
-  // Populate months with long names, values as "01".."12"
+  // populate months with long names, values as "01".."12"
   const months = [
     "01", "02", "03", "04", "05", "06",
     "07", "08", "09", "10", "11", "12"
@@ -126,7 +160,7 @@ function populateDOB() {
     monthSelect.appendChild(option);
   });
 
-  // Populate years from current down to 1900
+  // populate years from current down to 1900
   const currentYear = new Date().getFullYear();
   for (let y = currentYear; y >= 1900; y--) {
     const option = document.createElement("option");

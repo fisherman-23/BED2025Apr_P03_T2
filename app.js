@@ -5,9 +5,13 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 dotenv.config();
 const jwt = require("jsonwebtoken");
+const { upload, handleUpload } = require("./utils/fileUpload.js");
+
 const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
+
+
 const {
   validateUserId,
   validateLoginUser,
@@ -79,6 +83,8 @@ app.patch(
   friendController.acceptFriendRequest
 );
 
+app.post('/api/upload/:folder', /*authenticateJWT,*/ upload.single('file'), handleUpload);
+
 app.patch(
   "/friend-requests/:id/reject",
   authenticateJWT,
@@ -90,6 +96,7 @@ app.delete(
   authenticateJWT,
   friendController.removeFriend
 );
+
 
 app.get(
   "/match/profile/check",
@@ -131,6 +138,15 @@ app.post(
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
+
+module.exports = app; // export for testing
+
 
 process.on("SIGINT", async () => {
   console.log("Server is gracefully shutting down");
