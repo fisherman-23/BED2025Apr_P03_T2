@@ -98,7 +98,7 @@ const updateUserSchema = Joi.object({
       "string.pattern.base": "Phone number must contain only digits",
       "any.required": "Phone number is required",
     }),
-  Password: Joi.string().required().messages({
+  Password: Joi.string().messages({
     "string.base": "Current password must be a string",
     "string.empty": "Current password cannot be empty",
     "any.required": "Current password is required",
