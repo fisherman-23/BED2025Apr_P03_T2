@@ -230,10 +230,12 @@
     .facilities-container {
         flex-direction: column;
         margin: 0 2rem;
+        max-height: none;
     }
 
     .sidebar, .facility-details {
         width: 100%;
+        padding-bottom: 2rem;
     }
 
     .facility-card {

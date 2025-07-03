@@ -10,7 +10,7 @@ const { upload, handleUpload } = require("./utils/fileUpload.js");
 const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
-
+const facilitiesController = require("./controllers/facilitiesController.js");
 
 const {
   validateUserId,
@@ -133,6 +133,18 @@ app.post(
   "/match/skip/:targetUserId",
   authenticateJWT,
   matchController.skipUser
+);
+
+app.get(
+  "/facilities",
+  authenticateJWT,
+  facilitiesController.getFacilities
+);
+
+app.get(
+  "/facilities/:type",
+  authenticateJWT,
+  facilitiesController.getFacilitiesByType
 );
 
 app.listen(port, () => {

@@ -171,6 +171,54 @@ INSERT INTO HealthData (userId, recordDate, bloodPressureSystolic, bloodPressure
 (1, '2024-06-05', 128, 78, 65.0, 110, 'Feeling good today, walked for 30 minutes', 95),
 (1, '2024-06-04', 135, 85, 65.2, 125, 'Forgot morning Metformin, took it at lunch', 75);
 
+-- Module 3: Transport Navigator
+-- Facilities data table
+CREATE TABLE Facilities (
+    facilityId INT PRIMARY KEY IDENTITY(1,1),
+    name VARCHAR(100) NOT NULL,
+    location VARCHAR(200) NOT NULL,
+    address TEXT NOT NULL,
+    postalCode VARCHAR(10) NOT NULL,
+    facilityType VARCHAR(50) NOT NULL CHECK (facilityType IN ('Polyclinic', 'Hospital', 'Park', 'Community Center')),
+    phoneNo VARCHAR(20) NOT NULL,
+    hours VARCHAR(100) NOT NULL,
+    image_url TEXT NULL
+)
+
+-- Sample data for Facilities table
+INSERT INTO Facilities (name, location, address, postalCode, facilityType, phoneNo, hours, image_url) 
+VALUES (
+    'Raffles Medical - Clementi',
+    'Blk 446 Clementi Ave 3',
+    'Clementi Ave 3, #01-189, Singapore 120446',
+    '120446',
+    'Polyclinic',
+    '+65 6872 9043',
+    'Mon-Fri: 8:00 AM - 9:00 PM, Sat: 8:00 AM - 1:00 PM, Sun: Closed',
+    '/transportNavigator/images/raffles-medical.png'
+),
+(
+    'West Coast Community Centre',
+    '2 Clementi West St 2',
+    '2 Clementi West St 2, Singapore 129605',
+    '129605',
+    'Community Centre',
+    '+65 6779 1098',
+    'Mon-Fri: 10:00 AM - 10:00 PM, Sat: 10:00 AM - 5:00 PM, Sun: Closed',
+    '/transportNavigator/images/west-coast-cc.jpg'
+),
+(
+    'Clementi Woods Park',
+    'West Coast Rd',
+    'West Coast Rd, Singapore 126800',
+    '126800',
+    'Park',
+    '',
+    'Open 24 hours',
+    '/transportNavigator/images/clementi-woods-park.jpg'
+)
+
+
 
 -- Module 5: Buddy System
 -- Friend Functionality

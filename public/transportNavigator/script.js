@@ -1,15 +1,59 @@
 class FacilityManager {
-  constructor(facilities) {
-    this.facilities = facilities;
-    this.filtered = facilities;
+  constructor() {
+    this.facilities = [];
+    this.filtered = []
 
     this.list = document.getElementById('facilityList');
     this.placeholder = document.getElementById('detailsPlaceholder');
     this.details = document.getElementById('facilityDetails');
     this.startNavigation = document.getElementById('startNavButton');
 
+    this.init();
+  }
+
+  async init() {
+    await this.fetchFacilities();
     this.bindSearch();
+    this.bindFilters();
     this.renderList();
+  }
+
+  async fetchFacilities() {
+    try {
+      const res = await fetch(`/facilities`, {
+        method: "GET",
+        credentials: "include"
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch facilities: ${res.statusText}`);
+      }
+      this.facilities = await res.json();
+      this.filtered = this.facilities; // initialize filtered with all facilities
+    } catch (error) {
+      console.error("Error fetching facilities:", error);
+      this.list.innerHTML = '<p>Error loading facilities. Please try again later.</p>';
+      this.placeholder.style.display = 'none';
+    }
+  }
+
+  async fetchFacilitiesByType(facilityType) {
+    try {
+      const encodedType = encodeURIComponent(facilityType);
+      const res = await fetch(`/facilities/${encodedType}`, {
+        method: "GET",
+        credentials: "include"
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch facilities by type: ${res.statusText}`);
+      }
+      this.facilities = await res.json();
+      this.filtered = this.facilities; // reset filtered to the new facilities
+      this.renderList();
+    } catch (error) {
+      console.error("Error fetching facilities by type:", error);
+      this.list.innerHTML = '<p>Error loading facilities. Please try again later.</p>';
+      this.placeholder.style.display = 'none';
+    }
   }
 
   bindSearch() {
@@ -23,6 +67,12 @@ class FacilityManager {
       );
       this.renderList();
     });
+  }
+
+  bindFilters() {
+    document.getElementById('filterByPolyclinics').addEventListener('click', () => this.fetchFacilitiesByType('Polyclinic'));
+    document.getElementById('filterByCommunityCentres').addEventListener('click', () => this.fetchFacilitiesByType('Community Centre'));
+    document.getElementById('filterByParks').addEventListener('click', () => this.fetchFacilitiesByType('Park'));
   }
 
   renderList() {
@@ -58,7 +108,7 @@ class FacilityManager {
     document.querySelector('.facility-info').classList.add('visible');
     document.getElementById('startNavButton').classList.add('visible');
 
-    document.getElementById('facilityImage').src = facility.image;
+    document.getElementById('facilityImage').src = facility.image_url;
     document.getElementById('facilityName').innerText = facility.name;
     document.getElementById('facilityLocation').innerText = facility.location;
     document.getElementById('facilityAddress').innerText = facility.address;
@@ -67,41 +117,6 @@ class FacilityManager {
     }
 }
 
-// Sample data for facilities
-const sampleFacilities = [
-  {
-    facilityID: 1,
-    name: "Raffles Medical - Clementi",
-    location: "Blk 446 Clementi Ave 3",
-    address: "Clementi Ave 3, #01-189, Singapore 120446",
-    postalCode: "120446",
-    facilityType: "polyclinic",
-    phone: "6872 9043",
-    hours: "8:00 AM - 9:30 PM",
-    image: "/transportNavigator/images/raffles-medical.png"
-  },
-  {
-    facilityID: 2,
-    name: "West Coast Community Centre",
-    location: "2 Clementi West St 2",
-    address: "2 Clementi West St 2, Singapore 129605",
-    postalCode: "129605",
-    facilityType: "community centre",
-    phone: "6779 1098",
-    hours: "10:00 AM - 10:00 PM",
-    image: "https://www.pa.gov.sg/images/default-source/pa-community-centres/west-coast-community-club.jpg"
-  },
-  {
-    facilityID: 3,
-    name: "Clementi Woods Park",
-    location: "West Coast Rd",
-    address: "West Coast Rd, Singapore 126800",
-    postalCode: "126800",
-    facilityType: "park",
-    phone: "",
-    hours: "Open 24 hours",
-    image: "https://www.nparks.gov.sg/-/media/nparks-real-content/gardens-parks-and-nature/parks-and-nature-reserves/clementi-woods-park/1.jpg"
-  }
-];
-
-const facilityManager = new FacilityManager(sampleFacilities);
+document.addEventListener('DOMContentLoaded', () => {
+  const facilityManager = new FacilityManager();
+});
