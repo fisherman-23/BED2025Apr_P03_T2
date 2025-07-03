@@ -9,6 +9,7 @@ const { upload, handleUpload } = require("./utils/fileUpload.js");
 
 const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
+const matchController = require("./controllers/matchController.js");
 
 
 const {
@@ -22,6 +23,7 @@ const {
   protectSpecificRoutes,
   redirectIfAuthenticated,
 } = require("./middlewares/protectRoute");
+const validateMatchProfile = require("./middlewares/validateMatchProfile.js");
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(express.json());
@@ -95,6 +97,48 @@ app.delete(
   friendController.removeFriend
 );
 
+
+app.get(
+  "/match/profile/check",
+  authenticateJWT,
+  matchController.hasMatchProfile
+);
+
+app.put(
+  "/match/profile",
+  authenticateJWT,
+  validateMatchProfile,
+  matchController.updateMatchProfile
+);
+
+app.post(
+  "/match/profile",
+  authenticateJWT,
+  validateMatchProfile,
+  matchController.createMatchProfile
+);
+
+app.get(
+  "/match/potential",
+  authenticateJWT,
+  matchController.getPotentialMatches
+);
+
+app.post(
+  "/match/like/:targetUserId",
+  authenticateJWT,
+  matchController.likeUser
+);
+app.post(
+  "/match/skip/:targetUserId",
+  authenticateJWT,
+  matchController.skipUser
+);
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
+
 if (require.main === module) {
   app.listen(port, () => {
     console.log(`Server running on port ${port}`);
@@ -102,6 +146,7 @@ if (require.main === module) {
 }
 
 module.exports = app; // export for testing
+
 
 process.on("SIGINT", async () => {
   console.log("Server is gracefully shutting down");

@@ -2,6 +2,37 @@
 IF OBJECT_ID('dbo.Users', 'U') IS NOT NULL
     DROP TABLE dbo.Users;
 
+IF OBJECT_ID('dbo.Medications', 'U') IS NOT NULL
+    DROP TABLE dbo.Medications;
+
+IF OBJECT_ID('dbo.MedicationTracking', 'U') IS NOT NULL
+    DROP TABLE dbo.MedicationTracking;
+
+IF OBJECT_ID('dbo.Doctors', 'U') IS NOT NULL
+    DROP TABLE dbo.Doctors; 
+
+IF OBJECT_ID('dbo.Appointments', 'U') IS NOT NULL
+    DROP TABLE dbo.Appointments;
+
+IF OBJECT_ID('dbo.EmergencyContacts', 'U') IS NOT NULL
+    DROP TABLE dbo.EmergencyContacts;
+
+IF OBJECT_ID('dbo.HealthData', 'U') IS NOT NULL
+    DROP TABLE dbo.HealthData;
+
+IF OBJECT_ID('dbo.FriendRequests', 'U') IS NOT NULL
+    DROP TABLE dbo.FriendRequests;
+
+IF OBJECT_ID('dbo.Friends', 'U') IS NOT NULL
+    DROP TABLE dbo.Friends;
+
+IF OBJECT_ID('dbo.MatchProfile', 'U') IS NOT NULL
+    DROP TABLE dbo.MatchProfile;
+
+IF OBJECT_ID('dbo.MatchInteractions', 'U') IS NOT NULL
+    DROP TABLE dbo.MatchInteractions;
+
+
 CREATE TABLE Users (
     ID INT PRIMARY KEY IDENTITY(1,1),
     PublicUUID UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
@@ -19,33 +50,6 @@ CREATE TABLE Users (
 );
 
 CREATE UNIQUE INDEX idx_users_publicuuid ON Users(PublicUUID);
-
--- Friend Functionality
-CREATE TABLE FriendRequests (
-    ID INT PRIMARY KEY IDENTITY(1,1),
-    SenderID INT NOT NULL,
-    ReceiverID INT NOT NULL,
-    Status VARCHAR(10) NOT NULL DEFAULT 'pending',  -- 'pending', 'accepted', 'rejected'
-    CreatedAt DATETIME DEFAULT GETDATE(),
-
-    FOREIGN KEY (SenderID) REFERENCES Users(ID),
-    FOREIGN KEY (ReceiverID) REFERENCES Users(ID),
-
-    CONSTRAINT UC_FriendRequest UNIQUE (SenderID, ReceiverID)
-);
-
-CREATE TABLE Friends (
-    ID INT PRIMARY KEY IDENTITY(1,1),
-    UserID1 INT NOT NULL,
-    UserID2 INT NOT NULL,
-    CreatedAt DATETIME DEFAULT GETDATE(),
-
-    FOREIGN KEY (UserID1) REFERENCES Users(ID),
-    FOREIGN KEY (UserID2) REFERENCES Users(ID),
-
-    CONSTRAINT UC_Friendship UNIQUE (UserID1, UserID2)
-);
-
 -- Module 1: Medication & Appointment Manager Tables
 -- Medications table
 CREATE TABLE Medications (
@@ -166,3 +170,58 @@ INSERT INTO EmergencyContacts (userId, name, relationship, phone, email, isPrima
 INSERT INTO HealthData (userId, recordDate, bloodPressureSystolic, bloodPressureDiastolic, weight, bloodSugar, notes, complianceScore) VALUES
 (1, '2024-06-05', 128, 78, 65.0, 110, 'Feeling good today, walked for 30 minutes', 95),
 (1, '2024-06-04', 135, 85, 65.2, 125, 'Forgot morning Metformin, took it at lunch', 75);
+
+
+-- Module 5: Buddy System
+-- Friend Functionality
+CREATE TABLE FriendRequests (
+    ID INT PRIMARY KEY IDENTITY(1,1),
+    SenderID INT NOT NULL,
+    ReceiverID INT NOT NULL,
+    Status VARCHAR(10) NOT NULL DEFAULT 'pending',  -- 'pending', 'accepted', 'rejected'
+    CreatedAt DATETIME DEFAULT GETDATE(),
+
+    FOREIGN KEY (SenderID) REFERENCES Users(ID),
+    FOREIGN KEY (ReceiverID) REFERENCES Users(ID),
+
+    CONSTRAINT UC_FriendRequest UNIQUE (SenderID, ReceiverID)
+);
+
+CREATE TABLE Friends (
+    ID INT PRIMARY KEY IDENTITY(1,1),
+    UserID1 INT NOT NULL,
+    UserID2 INT NOT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+
+    FOREIGN KEY (UserID1) REFERENCES Users(ID),
+    FOREIGN KEY (UserID2) REFERENCES Users(ID),
+
+    CONSTRAINT UC_Friendship UNIQUE (UserID1, UserID2)
+);
+
+CREATE TABLE MatchProfile (
+    UserID INT PRIMARY KEY FOREIGN KEY REFERENCES Users(ID),
+    Bio NVARCHAR(MAX),
+    
+    LikesHiking BIT DEFAULT 0,
+    LikesGardening BIT DEFAULT 0,
+    LikesBoardGames BIT DEFAULT 0,
+    LikesSinging BIT DEFAULT 0,
+    LikesReading BIT DEFAULT 0,
+    LikesWalking BIT DEFAULT 0,
+    LikesCooking BIT DEFAULT 0,
+    LikesMovies BIT DEFAULT 0,
+    LikesTaiChi BIT DEFAULT 0,
+    LastUpdated DATETIME DEFAULT GETDATE()
+);
+
+CREATE TABLE MatchInteractions (
+    UserID INT NOT NULL,
+    TargetUserID INT NOT NULL,
+    Status VARCHAR(10) CHECK (Status IN ('liked', 'skipped', 'matched')),
+    Timestamp DATETIME DEFAULT GETDATE(),
+    PRIMARY KEY (UserID, TargetUserID),
+    FOREIGN KEY (UserID) REFERENCES Users(ID),
+    FOREIGN KEY (TargetUserID) REFERENCES Users(ID)
+);
+
