@@ -52,7 +52,14 @@ const handleUpload = (req, res) => {
   const destination = `${folder}/${Date.now()}_${req.file.originalname}`;
   const blob = bucket.file(destination);
 
-  const blobStream = blob.createWriteStream({ resumable: false });
+  const metadata = {
+    metadata: {
+      cacheControl: "public, max-age=172800"
+    },
+    resumable: false
+  };
+
+  const blobStream = blob.createWriteStream(metadata);
 
   blobStream.on('error', (err) => res.status(500).send({ message: err.message }));
 
