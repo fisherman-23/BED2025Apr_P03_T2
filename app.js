@@ -11,7 +11,6 @@ const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
 
-
 const {
   validateUserId,
   validateLoginUser,
@@ -34,7 +33,7 @@ app.use(protectSpecificRoutes);
 app.use(redirectIfAuthenticated);
 
 app.get("/me", authenticateJWT, (req, res) => {
-  res.json({ username: req.user.email, id: req.user.id });
+  res.json({ username: req.user.email, id: req.user.id, uuid: req.user.uuid });
 });
 
 app.use(express.static(path.join(__dirname, "public")));
@@ -83,7 +82,11 @@ app.patch(
   friendController.acceptFriendRequest
 );
 
-app.post('/api/upload/:folder', /*authenticateJWT,*/ upload.single('file'), handleUpload);
+app.post(
+  "/api/upload/:folder",
+  /*authenticateJWT,*/ upload.single("file"),
+  handleUpload
+);
 
 app.patch(
   "/friend-requests/:id/reject",
@@ -96,7 +99,6 @@ app.delete(
   authenticateJWT,
   friendController.removeFriend
 );
-
 
 app.get(
   "/match/profile/check",
@@ -146,7 +148,6 @@ if (require.main === module) {
 }
 
 module.exports = app; // export for testing
-
 
 process.on("SIGINT", async () => {
   console.log("Server is gracefully shutting down");

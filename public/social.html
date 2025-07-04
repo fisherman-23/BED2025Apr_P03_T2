@@ -8,14 +8,88 @@
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="/buddy-system/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="/buddy-system/match.js" defer></script>
-    <script src="/buddy-system/script.js" defer></script>
+    <script src="/buddy-system/social.js"></script>
 </head>
 
 <body>
+    <div id="popup"
+        class="fixed z-[9999] inset-0 hidden bg-black bg-opacity-50 flex items-center justify-center backdrop-blur-lg">
+
+        <div class="popup-content relative bg-white p-8 rounded-2xl shadow-lg w-2/3 h-4/5 flex flex-col">
+            <!-- Close button -->
+            <button id="close-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="37" height="37" fill="none" viewBox="0 0 37 37">
+                    <path stroke="#000" stroke-linecap="round" stroke-width="2"
+                        d="m27.75 9.25-18.5 18.5m18.5 0L9.25 9.25" />
+                </svg>
+            </button>
+
+            <!-- Tab content wrapper -->
+            <div class="flex-1 overflow-y-auto">
+                <!-- Add Friend tab -->
+                <div id="tab-add" class="tab-content">
+                    <h2 class="text-2xl font-bold mb-4">Add Friend</h2>
+                    <p class="mb-4">Enter the UUID of the person you want to add:</p>
+                    <input type="text" id="friendUUID" placeholder="UUID"
+                        class="border-2 border-slate rounded-2xl p-2 w-full mb-4">
+                    <button id="addFriendButton" onclick="addFriend()"
+                        class="bg-blue-500 text-white px-6 py-2 rounded-2xl w-full hover:bg-blue-600 transition-colors mb-4">
+                        Add Friend
+                    </button>
+                    <p class="mb-4">Scan QR Code</p>
+                    <!--Take picture or insert QR code image-->
+                    <input type="file" id="qrCodeInput" accept="image/*"
+                        class="border-2 border-slate rounded-2xl p-2 w-full mb-4">
+                    <button id="scanQRCodeButton"
+                        class="bg-blue-500 text-white px-6 py-2 rounded-2xl w-full hover:bg-blue-600 transition-colors">
+                        Scan QR Code
+                    </button>
+                    <p class="mt-4 text-sm text-gray-500">Note: You can also scan a QR code to add friends.</p>
+
+
+                </div>
+
+                <!-- Friend sharing tab -->
+                <div id="tab-share" class="tab-content hidden">
+                    <h2 class="text-2xl font-bold mb-4">Share Code</h2>
+
+                    <p class="mb-2">Your Profile UUID</p>
+                    <div class="bg-gray-100 p-4 rounded-2xl mb-4 flex justify-between items-center">
+                        <p id="profileUUID" class="text-lg font-semibold break-all">123e4567-e89b-12d3-a456-426614174000
+                        </p>
+                        <button onclick="copyToClipboard('profileUUID')"
+                            class="ml-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                            Copy
+                        </button>
+                    </div>
+
+                    <p class="mb-2">Your Share Link</p>
+                    <div class="bg-gray-100 p-4 rounded-2xl mb-4 flex justify-between items-center">
+                        <p id="shareLink" class="text-lg font-semibold break-all">
+                            https://example.com/share/123e4567-e89b-12d3-a456-426614174000
+                        </p>
+                        <button onclick="copyToClipboard('shareLink')"
+                            class="ml-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                            Copy
+                        </button>
+                    </div>
+
+                    <p class="mb-2">QR Code</p>
+
+                </div>
+            </div>
+
+            <!-- Bottom tab nav -->
+            <div class="mt-4 pt-4 border-t flex justify-around">
+                <button class="tab-button text-blue-600 font-semibold" data-tab="add">Add Friend</button>
+                <button class="tab-button text-gray-500 hover:text-blue-600" data-tab="share">Requests</button>
+            </div>
+        </div>
+    </div>
+
     <div class="flex flex-col h-screen">
         <nav class="navbar">
-            <img src="/assets/Logo.svg" alt="Logo">
+            <a href="index.html"><img src="/assets/Logo.svg" alt="Logo"></a>
             <div class="nav-icons">
                 <a><img src="/assets/icons/NAV-House.svg" alt="home"></a>
                 <a><img src="/assets/icons/NAV-Hospital.svg" alt="medical"></a>
@@ -30,7 +104,7 @@
         </nav>
         <div class="h-full flex px-16 py-10 row pb-32">
             <div class="flex flex-col w-2/5">
-                <h1 class="text-3xl font-bold">Friends & Requests</h1>
+                <h1 class="text-4xl font-bold">Friends & Requests</h1>
                 <!--Search bar-->
                 <div class="flex mt-4">
                     <input type="text" id="searchInput" placeholder="Search for friends..."
@@ -42,13 +116,17 @@
                 <!--Search chips-->
                 <div id="searchChips" class="flex flex-row mt-2 gap-2">
                     <!-- Search chips will be dynamically added here -->
-                    <div class="px-6 py-2 bg-blue-200 rounded-2xl">Friends</div>
-                    <div class="px-6 py-2 bg-lime-300 rounded-2xl">Requests</div>
-                    <div class="px-6 py-2 bg-indigo-500 rounded-2xl text-white">Rejected</div>
+                    <button class="px-4 py-2 bg-blue-200 rounded-3xl filter-chip font-semibold"
+                        data-filter="all">All</button>
+                    <button class="px-4 py-2 bg-lime-300 rounded-3xl filter-chip font-semibold"
+                        data-filter="friends">Friends</button>
+                    <button class="px-4 py-2 bg-indigo-500 rounded-3xl text-white filter-chip font-semibold"
+                        data-filter="requests">Requests</button>
+
                 </div>
                 <!--List of friends and requests-->
                 <div id="friends-requests-list" class="mt-8 flex flex-col gap-2">
-                    <!--Card starts here-->
+                    <!-- Card starts here
                     <div class="flex flex-row bg-gray-100 p-4 rounded-2xl items-center gap-4">
                         <img src="/assets/images/elderlyPFP.png" alt="Friend's Profile Picture"
                             class="w-16 h-16 rounded-full mr-4 object-cover">
@@ -56,7 +134,7 @@
                             <p class="text-lg font-semibold">John Doe</p>
                             <p class="text-sm text-gray-500">Friends since 1 mth ago</p>
                         </div>
-                        <button class="ml-auto bg-blue-500 text-white px-4 py-2 rounded-xl">Remove</button>
+                        <button class="ml-auto bg-[#D7E961] text-black px-4 py-2 rounded-xl">Remove</button>
                     </div>
                     <div class="flex flex-row bg-gray-100 p-4 rounded-2xl items-center gap-4">
                         <img src="/assets/images/elderlyPFP.png" alt="Friend's Profile Picture"
@@ -65,7 +143,7 @@
                             <p class="text-lg font-semibold">Jane Doe</p>
                             <p class="text-sm text-gray-500">Friends since 1 mth ago</p>
                         </div>
-                        <button class="ml-auto bg-blue-500 text-white px-4 py-2 rounded-xl">Remove</button>
+                        <button class="ml-auto bg-[#D7E961] text-black px-4 py-2 rounded-xl">Remove</button>
                     </div>
                     <div class="flex flex-row bg-gray-100 p-4 rounded-2xl items-center gap-4">
                         <img src="/assets/images/elderlyPFP.png" alt="Friend's Profile Picture"
@@ -75,10 +153,10 @@
                             <p class="text-sm text-gray-500">Pending</p>
                         </div>
                         <div class="ml-auto">
-                            <button class="ml-auto bg-blue-500 text-white px-4 py-2 rounded-xl">Accept</button>
-                            <button class="ml-auto bg-blue-500 text-white px-4 py-2 rounded-xl">Reject</button>
+                            <button class="ml-auto bg-lime-600 text-white px-4 py-2 rounded-xl">Accept</button>
+                            <button class="ml-auto bg-red-500 text-white px-4 py-2 rounded-xl">Reject</button>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
                 <!--Hot Action Buttons - Fixed to Bottom-->
                 <div class="fixed bottom-0 left-0 w-full bg-white px-16 py-8 shadow-md z-50">
@@ -96,7 +174,7 @@
                                 <p class="text-lg text-center">Edit Profile</p>
                             </div>
                         </button>
-                        <button class="py-4 px-6 bg-[#D7E961] rounded-2xl shadow-md">
+                        <button class="py-4 px-6 bg-[#D7E961] rounded-2xl shadow-md" id="add-friend-btn">
                             <div class="flex flex-row items-center gap-2">
                                 <img src="/assets/icons/share.svg" alt="Share Icon" class="w-8 h-8 mr-2">
                                 <p class="text-lg text-center">Share</p>
