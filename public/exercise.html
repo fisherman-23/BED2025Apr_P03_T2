@@ -32,7 +32,7 @@
         <section class="exercise-section">
             <div class="exercise-header">
                 <h1>Recommanded plan for today</h1>
-                <button class="personalise"><img src="/assets/icons/personalise.svg">Personalise</button>
+                <button class="personalise" id="personalise"><img src="/assets/icons/personalise.svg">Personalise</button>
             </div>
             <div class="exercise-cards">
                 <div class="card-wrapper">
@@ -132,6 +132,19 @@
             </div>
         </section>
     </main>
+    <div id="personalise-popup" class="personalise-popup">
+        <div class="personalise-popup-content">
+            <button id="personalise-close" class="personalise-close">&#10006;</button>
+            <h2>Please select which type of exercises you prefer</h2>
+            <div class="exercise-options">
+                <button class="exercise-option" data-exercise-type="chair-yoga">🪑 Limited Mobility / Seated exercises</button>
+                <button class="exercise-option" data-exercise-type="stretching">🤸‍♂️ Full Mobility / Active Seniors</button>
+                <button class="exercise-option" data-exercise-type="walking">❤️ Heart Health & Light Cardio</button>
+                <button class="exercise-option" data-exercise-type="strength-training">🧘 Relaxation & Flexibility</button>
+            </div>
+            <button id="personalise-add" class="personalise-add">Add</button>
+        </div>
+    </div>
     <script src="/exercise/script.js"></script>
 </body>
 </html>

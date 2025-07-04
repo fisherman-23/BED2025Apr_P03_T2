@@ -31,3 +31,29 @@ document.getElementById("steps").addEventListener("click", async function () {
         alert("Failed to fetch steps. Please try again later.");
     }
 });
+
+document.querySelectorAll('.exercise-option').forEach(btn => {
+btn.addEventListener('click', () => {
+    btn.classList.toggle('selected');
+});
+});
+
+const personalise_popup = document.getElementById('personalise-popup');
+
+document.getElementById('personalise-close').addEventListener("click", () => {
+  personalise_popup.style.opacity = 0;
+  personalise_popup.style.visibility = "hidden";
+});
+
+personalise_popup.addEventListener("click", (e) => {
+  if (e.target === personalise_popup) {
+    personalise_popup.style.opacity = 0;
+    personalise_popup.style.visibility = "hidden";
+  }
+});
+
+document.getElementById('personalise').addEventListener("click", () => {
+  document.querySelectorAll('.exercise-option').forEach(btn => {btn.classList.remove('selected');});
+  personalise_popup.style.opacity = 1;
+  personalise_popup.style.visibility = "visible";
+});
