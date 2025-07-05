@@ -1,7 +1,9 @@
 class FacilityManager {
   constructor() {
     this.facilities = [];
-    this.filtered = []
+    this.filtered = [];
+    this.selectedFilter = null;
+    this.activeFiltersContainer = document.getElementById('activeFilters');
 
     this.list = document.getElementById('facilityList');
     this.placeholder = document.getElementById('detailsPlaceholder');
@@ -22,7 +24,7 @@ class FacilityManager {
     try {
       const res = await fetch(`/facilities`, {
         method: "GET",
-        credentials: "include"
+        /*credentials: "include"*/
       });
       if (!res.ok) {
         throw new Error(`Failed to fetch facilities: ${res.statusText}`);
@@ -41,7 +43,7 @@ class FacilityManager {
       const encodedType = encodeURIComponent(facilityType);
       const res = await fetch(`/facilities/${encodedType}`, {
         method: "GET",
-        credentials: "include"
+        /*credentials: "include"*/
       });
       if (!res.ok) {
         throw new Error(`Failed to fetch facilities by type: ${res.statusText}`);
@@ -70,9 +72,43 @@ class FacilityManager {
   }
 
   bindFilters() {
-    document.getElementById('filterByPolyclinics').addEventListener('click', () => this.fetchFacilitiesByType('Polyclinic'));
-    document.getElementById('filterByCommunityCentres').addEventListener('click', () => this.fetchFacilitiesByType('Community Centre'));
-    document.getElementById('filterByParks').addEventListener('click', () => this.fetchFacilitiesByType('Park'));
+    document.getElementById('filterByPolyclinics').addEventListener('click', () => this.applyFilter('Polyclinic'));
+    document.getElementById('filterByCommunityCentres').addEventListener('click', () => this.applyFilter('Community Centre'));
+    document.getElementById('filterByParks').addEventListener('click', () => this.applyFilter('Park'));
+    document.getElementById('filterBySaved').addEventListener('click', () => this.applyFilter('Saved'));
+  }
+
+  applyFilter(facilityType) {
+      if (this.selectedFilter === facilityType) {
+        this.removeFilter();
+        return;
+      }
+
+      this.selectedFilter = facilityType;
+      this.updateActiveFilters(facilityType);
+
+      if (facilityType === 'Saved') {
+        // Implement logic to filter saved facilities
+      } else {
+        this.filtered = this.facilities.filter(f => f.facilityType === facilityType);
+      }
+      this.renderList();
+    }
+
+    updateActiveFilters(facilityType) {
+      this.activeFiltersContainer.innerHTML = '<h3>Active Filters:</h3>';
+      const button = document.createElement('button');
+      button.className = 'active-filter';
+      button.innerHTML = `${facilityType} <span class="remove-filter">&times;</span>`;
+      button.addEventListener('click', () => this.removeFilter());
+      this.activeFiltersContainer.appendChild(button);
+    }
+
+  removeFilter() {
+    this.selectedFilter = null;
+    this.activeFiltersContainer.innerHTML = '';
+    this.filtered = this.facilities;
+    this.renderList();
   }
 
   renderList() {
