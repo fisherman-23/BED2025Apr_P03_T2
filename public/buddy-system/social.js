@@ -279,15 +279,19 @@ window.addEventListener("DOMContentLoaded", async () => {
   const userProfile = await getMatchProfile();
   const lastUpdated = document.getElementById("lastUpdated");
   const editCreateHeader = document.getElementById("edit-create-match-header");
+  const profileButtonPopupText = document.getElementById(
+    "profile-popup-button-text"
+  );
 
   if (!userProfile) {
     console.log("No match profile found, skipping hobby checkboxes.");
     lastUpdated.innerText = "Profile not created yet.";
     editCreateHeader.innerText = "Create Match Profile";
-
+    profileButtonPopupText.innerText = "Create Profile";
     return;
   }
   editCreateHeader.innerText = "Edit Match Profile";
+  profileButtonPopupText.innerText = "Edit Profile";
   console.log("Match profile found:", userProfile);
   const hobbies = [
     "likesHiking",
@@ -479,4 +483,137 @@ function openPopup(contentId) {
 
   // Show the one you want
   document.getElementById(contentId).classList.remove("hidden");
+}
+
+window.addEventListener("DOMContentLoaded", async () => {
+  console.log("DOM fully loaded and parsed");
+
+  try {
+    const res = await fetch("/match/potential", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    const container = document.getElementById("potentialMatches");
+    container.innerHTML = "";
+
+    if (res.ok) {
+      const data = await res.json();
+
+      if (data.length === 0) {
+        container.textContent =
+          "No potential matches found. Ensure that you have created a match profile.";
+        return;
+      }
+      console.log("Potential matches data:", data);
+      data.forEach((user) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "flex flex-col items-center mt-8";
+        const dob = new Date(user.DateOfBirth);
+        const today = new Date();
+
+        if (dob instanceof Date && !isNaN(dob)) {
+          let age = today.getFullYear() - dob.getFullYear();
+          const monthDiff = today.getMonth() - dob.getMonth();
+
+          if (
+            monthDiff < 0 ||
+            (monthDiff === 0 && today.getDate() < dob.getDate())
+          ) {
+            age--;
+          }
+
+          user.Age = age >= 0 ? age : 0;
+        } else {
+          user.Age = "N/A";
+        }
+
+        wrapper.innerHTML = `
+            <img src="/assets/images/elderlyPFP.png" alt="Profile Picture"
+                class="w-32 h-32 rounded-full mb-4 object-cover">
+
+            <p class="text-lg font-semibold">${user.Name || "Anonymous"}</p>
+            <p class="text-sm text-gray-500">Age: ${user.Age}</p>
+            <p class="text-sm text-gray-500">Bio: ${user.Bio || "No bio"}</p>
+            <p class="text-sm text-gray-500">Likes: ${formatHobbies(user)}</p>
+            <div class="mt-4">
+                <button class="bg-red-500 text-white px-4 py-2 rounded-xl mr-2 skipBtn" data-userid="${user.UserID}">Dislike</button>
+                <button class="bg-blue-500 text-white px-4 py-2 rounded-xl likeBtn" data-userid="${user.UserID}">Like</button>
+            </div>
+          `;
+
+        container.appendChild(wrapper);
+      });
+
+      // Like button handler
+      document.querySelectorAll(".likeBtn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const targetUserId = btn.dataset.userid;
+          try {
+            const res = await fetch(`/match/like/${targetUserId}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "include",
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+              alert(data.matched ? "It's a match!" : "You liked the user.");
+              btn.closest("div.flex").remove(); // Remove the entire card
+            } else {
+              alert("Error liking user: " + (data.error || res.statusText));
+            }
+          } catch (e) {
+            alert("Network error: " + e.message);
+          }
+        });
+      });
+
+      // Skip button handler
+      document.querySelectorAll(".skipBtn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const targetUserId = btn.dataset.userid;
+          try {
+            const res = await fetch(`/match/skip/${targetUserId}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "include",
+            });
+
+            if (res.ok) {
+              alert("User skipped.");
+              btn.closest("div.flex").remove();
+            } else {
+              const err = await res.json();
+              alert("Error skipping user: " + (err.error || res.statusText));
+            }
+          } catch (e) {
+            alert("Network error: " + e.message);
+          }
+        });
+      });
+    } else {
+      container.textContent = "Failed to load potential matches.";
+    }
+  } catch (e) {
+    alert("Network error: " + e.message);
+  }
+});
+function formatHobbies(user) {
+  const hobbies = [];
+  if (user.LikesHiking) hobbies.push("Hiking");
+  if (user.LikesCooking) hobbies.push("Cooking");
+  if (user.LikesGardening) hobbies.push("Gardening");
+  if (user.LikesBoardGames) hobbies.push("Board Games");
+  if (user.LikesMovies) hobbies.push("Movies");
+  if (user.LikesSinging) hobbies.push("Singing");
+  if (user.LikesReading) hobbies.push("Reading");
+  if (user.LikesWalking) hobbies.push("Walking");
+  return hobbies.length > 0 ? hobbies.join(", ") : "None listed";
 }
