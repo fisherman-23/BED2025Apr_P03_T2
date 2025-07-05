@@ -106,6 +106,8 @@ app.get(
   matchController.hasMatchProfile
 );
 
+app.get("/match/profile", authenticateJWT, matchController.getMatchProfile);
+
 app.put(
   "/match/profile",
   authenticateJWT,

@@ -155,6 +155,46 @@ document.querySelectorAll(".filter-chip").forEach((chip) => {
   });
 });
 
+async function checkMatchProfile() {
+  try {
+    const res = await fetch("/match/profile/check", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    return data.exists; // true or false
+  } catch (e) {
+    console.error("Network error:", e);
+    return null;
+  }
+}
+
+async function getMatchProfile() {
+  try {
+    const res = await fetch("/match/profile/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    return data; // assumes it's the profile directly
+  } catch (e) {
+    console.error("Error fetching match profile:", e);
+    return null;
+  }
+}
+
 // --- Run on page load ---
 window.addEventListener("DOMContentLoaded", () => {
   testAll();
@@ -172,7 +212,194 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+async function createOrUpdateMatchProfile() {
+  const hobbies = [
+    "likesHiking",
+    "likesGardening",
+    "likesSinging",
+    "likesReading",
+    "likesWalking",
+    "likesCooking",
+    "likesMovies",
+    "likesTaiChi",
+  ];
+
+  const profileData = {
+    bio: document.getElementById("bio").value,
+  };
+
+  hobbies.forEach((hobby) => {
+    const checkbox = document.getElementById(hobby);
+    if (checkbox) {
+      profileData[hobby.charAt(0).toLowerCase() + hobby.slice(1)] =
+        checkbox.checked;
+    }
+  });
+
+  try {
+    const exists = await checkMatchProfile(); // true / false / null
+
+    if (exists === null) {
+      throw new Error("Unable to check profile existence");
+    }
+
+    const method = exists ? "PUT" : "POST";
+    console.log(profileData);
+    const res = await fetch("/match/profile", {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(profileData),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      alert(
+        method === "POST"
+          ? "Profile created successfully!"
+          : "Profile updated successfully!"
+      );
+      console.log("Profile saved:", data);
+      window.location.reload();
+    } else {
+      const error = await res.json();
+      throw new Error(error.error || "Something went wrong");
+    }
+  } catch (err) {
+    console.error("Error saving profile:", err);
+    alert("Failed to save profile. Please try again.");
+  }
+}
+
+// async DOMContentLoaded function to check match profile
+window.addEventListener("DOMContentLoaded", async () => {
+  const userProfile = await getMatchProfile();
+  const lastUpdated = document.getElementById("lastUpdated");
+  const editCreateHeader = document.getElementById("edit-create-match-header");
+
+  if (!userProfile) {
+    console.log("No match profile found, skipping hobby checkboxes.");
+    lastUpdated.innerText = "Profile not created yet.";
+    editCreateHeader.innerText = "Create Match Profile";
+
+    return;
+  }
+  editCreateHeader.innerText = "Edit Match Profile";
+  console.log("Match profile found:", userProfile);
+  const hobbies = [
+    "likesHiking",
+    "likesGardening",
+    "likesBoardGames",
+    "likesSinging",
+    "likesReading",
+    "likesWalking",
+    "likesCooking",
+    "likesMovies",
+    "likesTaiChi",
+  ];
+
+  hobbies.forEach((hobby) => {
+    const checkbox = document.getElementById(hobby);
+    if (checkbox)
+      checkbox.checked =
+        userProfile[hobby.charAt(0).toUpperCase() + hobby.slice(1)];
+  });
+
+  const bio = document.getElementById("bio");
+  bio.value = userProfile.Bio || "";
+
+  if (userProfile.LastUpdated) {
+    const date = new Date(userProfile.LastUpdated);
+    lastUpdated.innerText = `Last updated: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+  }
+});
+
 window.addEventListener("DOMContentLoaded", () => {
+  // Close buttons
+  document.getElementById("close-btn-1").addEventListener("click", () => {
+    event.stopPropagation(); // stops it from triggering parent's onclick
+    console.log("Close button 1 clicked");
+    document.getElementById("popup").classList.add("hidden");
+    document.getElementById("popupContent1").classList.add("hidden");
+  });
+
+  document.getElementById("close-btn-2")?.addEventListener("click", () => {
+    event.stopPropagation(); // stops it from triggering parent's onclick
+    document.getElementById("popup").classList.add("hidden");
+    document.getElementById("popupContent2").classList.add("hidden");
+  });
+
+  const popup = document.getElementById("popup");
+
+  popup.addEventListener("click", (event) => {
+    // If click target is exactly the overlay (popup div), close popup
+    if (event.target === popup) {
+      console.log("Popup background clicked");
+      popup.classList.add("hidden");
+      document.getElementById("popupContent1").classList.add("hidden");
+      document.getElementById("popupContent2").classList.add("hidden");
+    }
+  });
+
+  const profileUUIDElement = document.getElementById("profileUUID");
+  const name = document.getElementById("profile-name");
+  const age = document.getElementById("profile-age");
+  fetch("/me", {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+  })
+    .then((response) => response.json())
+    .then((meData) => {
+      const id = meData.id; // Assuming the response contains an 'id' field
+      return fetch(`/users/${id}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      profileUUIDElement.innerText = data.PublicUUID || "No UUID found";
+      name.innerText = data.Name || "No Name";
+      const birthDate = data.DateOfBirth;
+      console.log("Birth Date:", birthDate);
+      if (birthDate) {
+        const today = new Date();
+        const birth = new Date(birthDate);
+        const ageInMilliseconds = today - birth;
+        const ageInYears = Math.floor(
+          ageInMilliseconds / (1000 * 60 * 60 * 24 * 365.25)
+        );
+        age.innerText =
+          ageInYears >= 0 ? `${ageInYears} years old` : "Age not available";
+      } else {
+        age.innerText = "Date of Birth not available";
+      }
+      console.log("Profile data fetched:", data);
+
+      console.log("Profile UUID:", data.PublicUUID);
+    })
+    .catch((error) => {
+      console.error("Error fetching profile UUID:", error);
+
+      profileUUIDElement.innerText = "Error fetching UUID";
+    });
+
+  const shareLink = document.getElementById("shareLink").innerText.trim();
+  // Generate QR Code
+  new QRCode(document.getElementById("qrcode"), {
+    text: shareLink,
+    width: 256,
+    height: 256,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H,
+  });
+
   const tabButtons = document.querySelectorAll(".tab-button");
   const tabs = document.querySelectorAll(".tab-content");
 
@@ -196,57 +423,6 @@ window.addEventListener("DOMContentLoaded", () => {
       button.classList.add("text-blue-600", "font-semibold");
       button.classList.remove("text-gray-500");
     });
-  });
-  const closeButton = document.getElementById("close-btn");
-  const popup = document.getElementById("popup");
-
-  function hidePopup() {
-    popup.classList.add("hidden");
-    popup.style.opacity = 0;
-    popup.style.visibility = "hidden";
-  }
-
-  function showPopup() {
-    popup.classList.remove("hidden");
-    popup.style.opacity = 1;
-    popup.style.visibility = "visible";
-  }
-
-  closeButton.addEventListener("click", hidePopup);
-
-  popup.addEventListener("click", (e) => {
-    if (e.target === popup) hidePopup();
-  });
-
-  document.getElementById("add-friend-btn").addEventListener("click", () => {
-    console.log("Send request button clicked");
-    showPopup();
-
-    // display profile uuid
-    const profileUUIDElement = document.getElementById("profileUUID");
-    fetch("/me", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    })
-      .then((response) => response.json())
-      .then((meData) => {
-        const id = meData.id; // Assuming the response contains an 'id' field
-        return fetch(`/users/${id}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
-      })
-      .then((response) => response.json())
-      .then((data) => {
-        profileUUIDElement.innerText = data.PublicUUID || "No UUID found";
-        console.log("Profile UUID:", data.PublicUUID);
-      })
-      .catch((error) => {
-        console.error("Error fetching profile UUID:", error);
-        profileUUIDElement.innerText = "Error fetching UUID";
-      });
   });
 });
 
@@ -288,4 +464,19 @@ function addFriend() {
       console.error("Error:", error.message);
       alert(error.message); // optional
     });
+}
+function openPopup(contentId) {
+  console.log("Opening popup with content ID:", contentId);
+  const popup = document.getElementById("popup");
+  const contents = document.querySelectorAll(
+    '#popup > div[id^="popupContent"]'
+  );
+
+  popup.classList.remove("hidden");
+
+  // Hide all popup contents
+  contents.forEach((c) => c.classList.add("hidden"));
+
+  // Show the one you want
+  document.getElementById(contentId).classList.remove("hidden");
 }
