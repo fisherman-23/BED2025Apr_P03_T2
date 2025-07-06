@@ -97,7 +97,8 @@ async function getFriends(userId) {
       SELECT 
         U.ID AS FriendID,
         U.Name,
-        U.PublicUUID
+        U.PublicUUID,
+        F.CreatedAt
       FROM Friends F
       JOIN Users U ON 
         (U.ID = F.UserID1 AND F.UserID2 = @userId)

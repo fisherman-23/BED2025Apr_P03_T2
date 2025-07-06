@@ -32,7 +32,12 @@ async function loginUser(searchTerm, Password) {
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
-    return { user, token };
+    const refreshToken = jwt.sign(
+      { id: user.ID, email: user.Email },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN }
+    );
+    return { user, token, refreshToken };
   } catch (error) {
     console.error("Database error in loginUser:", error);
     throw error;
