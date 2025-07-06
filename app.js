@@ -10,6 +10,7 @@ const { upload, handleUpload } = require("./utils/fileUpload.js");
 const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
+const eventsController = require("./controllers/eventsController.js");
 
 const {
   validateUserId,
@@ -22,6 +23,7 @@ const {
   protectSpecificRoutes,
   redirectIfAuthenticated,
 } = require("./middlewares/protectRoute");
+
 const validateMatchProfile = require("./middlewares/validateMatchProfile.js");
 const app = express();
 const port = process.env.PORT || 3000;
@@ -139,9 +141,29 @@ app.post(
   matchController.skipUser
 );
 
+//community events
+
+app.get(
+  "/groups/joined",
+  authenticateJWT,
+  eventsController.getJoinedGroups
+);
+
+app.get(
+  "/groups/available",
+  authenticateJWT,
+  eventsController.getAvailableGroups
+);
+
+app.post(
+  "/groups",
+  authenticateJWT,
+  eventsController.createGroup
+)
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
-});
+});  
 
 if (require.main === module) {
   app.listen(port, () => {
