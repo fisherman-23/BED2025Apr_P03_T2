@@ -15,6 +15,7 @@ async function sendFriendRequest(req, res) {
     }
 
     if (senderId === receiverId) {
+      console.log("Sender and receiver are the same user");
       return res
         .status(400)
         .json({ message: "Can't send request to yourself" });
