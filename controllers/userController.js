@@ -1,3 +1,4 @@
+const { user } = require("../dbConfig");
 const userModel = require("../models/userModel");
 
 async function loginUser(req, res) {
@@ -8,12 +9,18 @@ async function loginUser(req, res) {
     if (result.error) {
       return res.status(401).json({ error: result.error });
     }
-    const { user, token } = result;
+    const { user, token, refreshToken } = result;
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 1000 * 60 * 60, // expires in 1h
+    });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24 * 7, // expires in 7 days
     });
     res.json({ user });
   } catch (error) {

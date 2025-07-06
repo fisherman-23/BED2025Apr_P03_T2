@@ -1,5 +1,4 @@
 const Joi = require("joi");
-
 const IdSchema = Joi.object({
   ID: Joi.number().integer().positive().required().messages({
     "number.base": "ID must be a number",
@@ -119,7 +118,7 @@ const jwt = require("jsonwebtoken");
 
 function authenticateJWT(req, res, next) {
   let token;
-
+  let refreshToken;
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith("Bearer ")) {
     token = authHeader.split(" ")[1];
@@ -136,7 +135,34 @@ function authenticateJWT(req, res, next) {
     req.user = decoded;
     next();
   } catch (err) {
-    return res.status(403).json({ error: "Invalid or expired token" });
+    if( err.name === "TokenExpiredError") {
+      console.error("Token expired, checking for refresh token...");
+      if (req.cookies && req.cookies.refreshToken) {
+        refreshToken = req.cookies.refreshToken;
+        try{
+          decodedRefresh = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+        }
+        catch (error) {
+          console.error("Refresh token verification failed:", error);
+          return res.status(403).redirect("/login.html");
+        }
+        newToken = jwt.sign(
+              { id: decodedRefresh.ID, email: decodedRefresh.Email },
+              process.env.JWT_SECRET,
+              { expiresIn: process.env.JWT_EXPIRES_IN }
+            );
+        res.cookie("token", newToken, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: "lax",
+              maxAge: 1000 * 60 * 60, // expires in 1h
+            });
+        req.user = decodedRefresh;
+        return next();
+      }
+    }else{
+      return res.status(403).json({ error: "Invalid token" });
+    }
   }
 }
 
