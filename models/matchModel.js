@@ -91,7 +91,20 @@ WITH CurrentUserProfile AS (
   FROM MatchProfile
   WHERE UserID = @userId
 )
-SELECT MP.UserID, MP.Bio,
+SELECT 
+  MP.UserID,
+  U.Name,
+  U.DateOfBirth,
+  MP.Bio,
+  MP.LikesHiking,
+  MP.LikesGardening,
+  MP.LikesBoardGames,
+  MP.LikesSinging,
+  MP.LikesReading,
+  MP.LikesWalking,
+  MP.LikesCooking,
+  MP.LikesMovies,
+  MP.LikesTaiChi,
   (
     CASE WHEN MP.LikesHiking = CUP.LikesHiking AND CUP.LikesHiking = 1 THEN 1 ELSE 0 END +
     CASE WHEN MP.LikesGardening = CUP.LikesGardening AND CUP.LikesGardening = 1 THEN 1 ELSE 0 END +
@@ -104,6 +117,7 @@ SELECT MP.UserID, MP.Bio,
     CASE WHEN MP.LikesTaiChi = CUP.LikesTaiChi AND CUP.LikesTaiChi = 1 THEN 1 ELSE 0 END
   ) AS HobbyMatchScore
 FROM MatchProfile MP
+JOIN Users U ON MP.UserID = U.ID
 CROSS JOIN CurrentUserProfile CUP
 WHERE MP.UserID != @userId
   AND MP.UserID NOT IN (
@@ -117,7 +131,8 @@ WHERE MP.UserID != @userId
     FROM Friends
     WHERE UserID1 = @userId OR UserID2 = @userId
   )
-ORDER BY HobbyMatchScore DESC, MP.LastUpdated DESC
+ORDER BY HobbyMatchScore DESC, MP.LastUpdated DESC;
+
 
       `);
 

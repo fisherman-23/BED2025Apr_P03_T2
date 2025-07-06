@@ -8,14 +8,176 @@
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="/buddy-system/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="/buddy-system/match.js" defer></script>
-    <script src="/buddy-system/script.js" defer></script>
+    <script src="/buddy-system/social.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 
 <body>
+    <div id="popup"
+        class="fixed z-[9999] inset-0 hidden bg-black bg-opacity-50 flex items-center justify-center backdrop-blur-lg">
+        <!-- Popup content 1 (Add Request Friend) -->
+        <div class="popup-content-1 hidden relative bg-white p-8 rounded-2xl shadow-lg w-2/3 h-4/5 flex flex-col"
+            id="popupContent1" onclick="openPopup('popupContent1')"">
+            <!-- Close button -->
+            <button class=" absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none"
+            id="close-btn-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="37" height="37" fill="none" viewBox="0 0 37 37">
+                <path stroke="#000" stroke-linecap="round" stroke-width="2"
+                    d="m27.75 9.25-18.5 18.5m18.5 0L9.25 9.25" />
+            </svg>
+            </button>
+
+            <!-- Tab content wrapper -->
+            <div class="flex-1 overflow-y-auto">
+                <!-- Add Friend tab -->
+                <div id="tab-add" class="tab-content flex h-full flex-col justify-center items-center mx-10">
+                    <h2 class="text-2xl font-bold mb-4">Add Friend</h2>
+                    <p class="mb-4">Enter the UUID of the person you want to add:</p>
+                    <input type="text" id="friendUUID" placeholder="UUID"
+                        class="border-2 border-slate rounded-2xl p-2 w-2/3 mb-4">
+                    <button id="addFriendButton" onclick="addFriend()"
+                        class="bg-blue-500 text-white px-6 py-2 rounded-2xl w-1/2 hover:bg-blue-600 transition-colors mb-4 ">
+                        Add Friend
+                    </button>
+
+                </div>
+
+                <!-- Friend sharing tab -->
+                <div id="tab-share" class="tab-content hidden">
+                    <h2 class="text-2xl font-bold mb-4">Share Code</h2>
+
+                    <p class="mb-2">Your Profile UUID</p>
+                    <div class="bg-gray-100 p-4 rounded-2xl mb-4 flex justify-between items-center">
+                        <p id="profileUUID" class="text-lg font-semibold break-all">123e4567-e89b-12d3-a456-426614174000
+                        </p>
+                        <button onclick="copyToClipboard('profileUUID')"
+                            class="ml-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                            Copy
+                        </button>
+                    </div>
+
+                    <p class="mb-2">Your Share Link</p>
+                    <div class="bg-gray-100 p-4 rounded-2xl mb-4 flex justify-between items-center">
+                        <p id="shareLink" class="text-lg font-semibold break-all">
+                            https://example.com/share/123e4567-e89b-12d3-a456-426614174000
+                        </p>
+                        <button onclick="copyToClipboard('shareLink')"
+                            class="ml-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                            Copy
+                        </button>
+                    </div>
+
+                    <p class="mb-2">QR Code</p>
+                    <div class="w-full flex justify-center items-center h-full">
+                        <div id="qrcode" class="bg-white p-4 rounded-2xl shadow-md w-fit"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Bottom tab nav -->
+            <div class="mt-4 pt-4 border-t flex justify-around">
+                <button class="tab-button text-blue-600 font-semibold" data-tab="add">Add</button>
+                <button class="tab-button text-gray-500 hover:text-blue-600" data-tab="share">Share</button>
+            </div>
+        </div>
+
+        <!-- Popup Content 2 (Edit Profile)-->
+        <div class="popup-content-2 relative hidden bg-white p-8 rounded-2xl shadow-lg w-2/3 h-4/5 flex flex-col"
+            id="popupContent2">
+
+            <h2 class="text-2xl font-bold mb-4" id="edit-create-match-header">Edit Match Profile</h2>
+            <!-- Profile Picture, Name shown but not editable, editable fields are Bio, Hobbies and location-->
+            <div class="flex flex-col items-center mb-4">
+                <img src="/assets/images/elderlyPFP.png" alt="Profile Picture"
+                    class="w-32 h-32 rounded-full mb-4 object-cover">
+                <p class="text-lg font-semibold" id="profile-name">John Doe</p>
+                <p class="text-sm text-gray-500" id="profile-age">Age: 65</p>
+                <!-- Button to go to account page for these basic fields-->
+                <button class=" text-blue-600 my-2" onclick="location.href='/account.html'">
+                    Edit in Account Page
+                </button>
+            </div>
+
+            <div class="flex flex-col gap-4 h-full overflow-y-auto">
+                <label class="flex flex-col">
+                    <span class="text-sm font-semibold mb-2">Bio</span>
+                    <textarea id="bio" rows="3" placeholder="Tell us about yourself"
+                        class="border-2 border-slate rounded-2xl p-2"></textarea>
+                </label>
+                <label class="flex flex-col">
+                    <label class="block mb-2">
+                        <span class="text-sm font-semibold">Hobbies</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="likesHiking" name="likesHiking" />
+                            Hiking
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="likesGardening" name="likesGardening" />
+                            Gardening
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="likesBoardGames" name="likesBoardGames" />
+                            Board Games
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="likesSinging" name="likesSinging" />
+                            Singing
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="likesReading" name="likesReading" />
+                            Reading
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="likesWalking" name="likesWalking" />
+                            Walking
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="likesCooking" name="likesCooking" />
+                            Cooking
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="likesMovies" name="likesMovies" />
+                            Movies
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="likesTaiChi" name="likesTaiChi" />
+                            Tai Chi
+                        </label>
+                    </div>
+
+                </label>
+                <!-- <label class="flex flex-col">
+                    <span class="text-sm font-semibold mb-2">Location</span>
+                    <input type="text" id="location" placeholder="e.g. Singapore"
+                        class="border-2 border-slate rounded-2xl p-2">
+                </label> -->
+                <div class="flex justify-center mt-auto flex-col items-center gap-2">
+                    <p id="lastUpdated"></p>
+                    <button id="saveProfileButton" onclick="createOrUpdateMatchProfile()"
+                        class="bg-blue-500 text-white px-6 py-2 rounded-2xl w-1/2 hover:bg-blue-600 transition-colors">
+                        Save Profile
+                    </button>
+                </div>
+            </div>
+
+            <button class=" absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none"
+                id="close-btn-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="37" height="37" fill="none" viewBox="0 0 37 37">
+                    <path stroke="#000" stroke-linecap="round" stroke-width="2"
+                        d="m27.75 9.25-18.5 18.5m18.5 0L9.25 9.25" />
+                </svg>
+            </button>
+        </div>
+
+
+    </div>
+
     <div class="flex flex-col h-screen">
         <nav class="navbar">
-            <img src="/assets/Logo.svg" alt="Logo">
+            <a href="index.html"><img src="/assets/Logo.svg" alt="Logo"></a>
             <div class="nav-icons">
                 <a><img src="/assets/icons/NAV-House.svg" alt="home"></a>
                 <a><img src="/assets/icons/NAV-Hospital.svg" alt="medical"></a>
@@ -30,7 +192,7 @@
         </nav>
         <div class="h-full flex px-16 py-10 row pb-32">
             <div class="flex flex-col w-2/5">
-                <h1 class="text-3xl font-bold">Friends & Requests</h1>
+                <h1 class="text-4xl font-bold">Friends & Requests</h1>
                 <!--Search bar-->
                 <div class="flex mt-4">
                     <input type="text" id="searchInput" placeholder="Search for friends..."
@@ -42,13 +204,17 @@
                 <!--Search chips-->
                 <div id="searchChips" class="flex flex-row mt-2 gap-2">
                     <!-- Search chips will be dynamically added here -->
-                    <div class="px-6 py-2 bg-blue-200 rounded-2xl">Friends</div>
-                    <div class="px-6 py-2 bg-lime-300 rounded-2xl">Requests</div>
-                    <div class="px-6 py-2 bg-indigo-500 rounded-2xl text-white">Rejected</div>
+                    <button class="px-4 py-2 bg-blue-200 rounded-3xl filter-chip font-semibold"
+                        data-filter="all">All</button>
+                    <button class="px-4 py-2 bg-lime-300 rounded-3xl filter-chip font-semibold"
+                        data-filter="friends">Friends</button>
+                    <button class="px-4 py-2 bg-indigo-500 rounded-3xl text-white filter-chip font-semibold"
+                        data-filter="requests">Requests</button>
+
                 </div>
                 <!--List of friends and requests-->
                 <div id="friends-requests-list" class="mt-8 flex flex-col gap-2">
-                    <!--Card starts here-->
+                    <!-- Card starts here
                     <div class="flex flex-row bg-gray-100 p-4 rounded-2xl items-center gap-4">
                         <img src="/assets/images/elderlyPFP.png" alt="Friend's Profile Picture"
                             class="w-16 h-16 rounded-full mr-4 object-cover">
@@ -56,7 +222,7 @@
                             <p class="text-lg font-semibold">John Doe</p>
                             <p class="text-sm text-gray-500">Friends since 1 mth ago</p>
                         </div>
-                        <button class="ml-auto bg-blue-500 text-white px-4 py-2 rounded-xl">Remove</button>
+                        <button class="ml-auto bg-[#D7E961] text-black px-4 py-2 rounded-xl">Remove</button>
                     </div>
                     <div class="flex flex-row bg-gray-100 p-4 rounded-2xl items-center gap-4">
                         <img src="/assets/images/elderlyPFP.png" alt="Friend's Profile Picture"
@@ -65,7 +231,7 @@
                             <p class="text-lg font-semibold">Jane Doe</p>
                             <p class="text-sm text-gray-500">Friends since 1 mth ago</p>
                         </div>
-                        <button class="ml-auto bg-blue-500 text-white px-4 py-2 rounded-xl">Remove</button>
+                        <button class="ml-auto bg-[#D7E961] text-black px-4 py-2 rounded-xl">Remove</button>
                     </div>
                     <div class="flex flex-row bg-gray-100 p-4 rounded-2xl items-center gap-4">
                         <img src="/assets/images/elderlyPFP.png" alt="Friend's Profile Picture"
@@ -75,10 +241,10 @@
                             <p class="text-sm text-gray-500">Pending</p>
                         </div>
                         <div class="ml-auto">
-                            <button class="ml-auto bg-blue-500 text-white px-4 py-2 rounded-xl">Accept</button>
-                            <button class="ml-auto bg-blue-500 text-white px-4 py-2 rounded-xl">Reject</button>
+                            <button class="ml-auto bg-lime-600 text-white px-4 py-2 rounded-xl">Accept</button>
+                            <button class="ml-auto bg-red-500 text-white px-4 py-2 rounded-xl">Reject</button>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
                 <!--Hot Action Buttons - Fixed to Bottom-->
                 <div class="fixed bottom-0 left-0 w-full bg-white px-16 py-8 shadow-md z-50">
@@ -90,16 +256,18 @@
                                 <p class="text-lg text-center">Chat</p>
                             </div>
                         </button>
-                        <button class="py-4 px-6 bg-[#D7E961] rounded-2xl shadow-md">
+                        <button class="py-4 px-6 bg-[#D7E961] rounded-2xl shadow-md"
+                            onclick="openPopup('popupContent2')">
                             <div class="flex flex-row items-center gap-2">
                                 <img src="/assets/icons/pencil.svg" alt="Pencil Icon" class="w-8 h-8 mr-2">
-                                <p class="text-lg text-center">Edit Profile</p>
+                                <p class="text-lg text-center" id="profile-popup-button-text">Edit Profile</p>
                             </div>
                         </button>
-                        <button class="py-4 px-6 bg-[#D7E961] rounded-2xl shadow-md">
+                        <button class="py-4 px-6 bg-[#D7E961] rounded-2xl shadow-md"
+                            onclick="openPopup('popupContent1')">
                             <div class="flex flex-row items-center gap-2">
-                                <img src="/assets/icons/share.svg" alt="Share Icon" class="w-8 h-8 mr-2">
-                                <p class="text-lg text-center">Share</p>
+                                <img src="/assets/icons/add.svg" alt="Add Icon" class="w-8 h-8 mr-2">
+                                <p class="text-lg text-center">Add Friend</p>
                             </div>
                         </button>
                     </div>
@@ -112,17 +280,16 @@
                 <div
                     class="flex flex-col items-center justify-center bg-gray-100 p-8 rounded-2xl shadow-md w-full max-w-md">
                     <h1 class="text-3xl font-bold">Find new friends</h1>
-                    <div class="flex flex-col items-center mt-8">
-                        <img src="/assets/images/elderlyPFP.png" alt="Profile Picture"
-                            class="w-32 h-32 rounded-full mb-4 object-cover">
+                    <div class="flex flex-col items-center mt-8" id="potentialMatches">
+                        <img src="" alt="Profile Picture" class="w-32 h-32 rounded-full mb-4 object-cover">
 
-                        <p class="text-lg font-semibold">John Doe</p>
-                        <p class="text-sm text-gray-500">Age: 65</p>
-                        <p class="text-sm text-gray-500">Bio: I like to garden</p>
-                        <p class="text-sm text-gray-500">Likes: Hiking, Cooking, Gardening</p>
+                        <p class="text-lg font-semibold" id="name-potential"></p>
+                        <p class="text-sm text-gray-500" id="age-potential"></p>
+                        <p class="text-sm text-gray-500" id="bio-potential"></p>
+                        <p class="text-sm text-gray-500" id="hobbies-potential"></p>
                         <div class="mt-4">
-                            <button class="bg-red-500 text-white px-4 py-2 rounded-xl">Dislike</button>
-                            <button class="bg-blue-500 text-white px-4 py-2 rounded-xl mr-2">Like</button>
+                            <button class="bg-red-500 text-white px-4 py-2 rounded-xl" id="dislike">Dislike</button>
+                            <button class="bg-blue-500 text-white px-4 py-2 rounded-xl mr-2" id="like">Like</button>
                         </div>
                     </div>
                 </div>
