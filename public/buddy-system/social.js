@@ -322,6 +322,36 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 
 window.addEventListener("DOMContentLoaded", () => {
+  const searchInput = document.getElementById("searchInput");
+  const searchButton = document.getElementById("searchButton");
+  const friendList = document.getElementById("friends-requests-list");
+
+  // Reusable search function
+  function filterFriends() {
+    const query = searchInput.value.toLowerCase();
+    const cards = friendList.querySelectorAll("div.flex-row");
+
+    cards.forEach((card) => {
+      const nameElement = card.querySelector("p.text-lg");
+      if (!nameElement) return; // skip if name not found
+
+      const name = nameElement.textContent.toLowerCase();
+      if (name.includes(query)) {
+        card.style.display = "flex"; // show match
+      } else {
+        card.style.display = "none"; // hide non-match
+      }
+    });
+  }
+
+  // Trigger search on button click or Enter key
+  searchButton.addEventListener("click", filterFriends);
+  searchInput.addEventListener("keyup", (e) => {
+    if (e.key === "Enter") {
+      console.log("Enter key pressed, filtering friends");
+      filterFriends();
+    }
+  });
   // Close buttons
   document.getElementById("close-btn-1").addEventListener("click", () => {
     event.stopPropagation(); // stops it from triggering parent's onclick
@@ -347,7 +377,8 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("popupContent2").classList.add("hidden");
     }
   });
-
+  const fullUrl = `${window.location.origin}`;
+  const shareLinkElement = document.getElementById("shareLink");
   const profileUUIDElement = document.getElementById("profileUUID");
   const name = document.getElementById("profile-name");
   const age = document.getElementById("profile-age");
@@ -368,6 +399,18 @@ window.addEventListener("DOMContentLoaded", () => {
     .then((response) => response.json())
     .then((data) => {
       profileUUIDElement.innerText = data.PublicUUID || "No UUID found";
+      shareLinkElement.innerText = `${fullUrl}?uuid=${data.PublicUUID}`;
+
+      // Generate QR Code
+      new QRCode(document.getElementById("qrcode"), {
+        text: shareLink,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H,
+      });
+
       name.innerText = data.Name || "No Name";
       const birthDate = data.DateOfBirth;
       console.log("Birth Date:", birthDate);
@@ -392,17 +435,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
       profileUUIDElement.innerText = "Error fetching UUID";
     });
-
-  const shareLink = document.getElementById("shareLink").innerText.trim();
-  // Generate QR Code
-  new QRCode(document.getElementById("qrcode"), {
-    text: shareLink,
-    width: 256,
-    height: 256,
-    colorDark: "#000000",
-    colorLight: "#ffffff",
-    correctLevel: QRCode.CorrectLevel.H,
-  });
 
   const tabButtons = document.querySelectorAll(".tab-button");
   const tabs = document.querySelectorAll(".tab-content");
