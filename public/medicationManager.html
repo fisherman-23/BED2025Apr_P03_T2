@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medication & Appointment Manager - CircleAge</title>
+    <link rel="stylesheet" href="medicationManager/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-heart"></i>
+                    <h1>CircleAge</h1>
+                </div>
+                <nav class="nav-menu">
+                    <a href="../index.html">Home</a>
+                    <a href="medicationManager.html" class="active">Medication Manager</a>
+                    <a href="#" onclick="logout()">Logout</a>
+                </nav>
+                <div class="user-info">
+                    <span id="userName">Welcome</span>
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="dashboard">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </button>
+                <button class="tab-btn" data-tab="medications">
+                    <i class="fas fa-pills"></i>
+                    Medications
+                </button>
+                <button class="tab-btn" data-tab="appointments">
+                    <i class="fas fa-calendar-alt"></i>
+                    Appointments
+                </button>
+                <button class="tab-btn" data-tab="emergency">
+                    <i class="fas fa-shield-alt"></i>
+                    Emergency Contacts
+                </button>
+                <button class="tab-btn" data-tab="health">
+                    <i class="fas fa-chart-line"></i>
+                    Health Tracking
+                </button>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="dashboard-header">
+                    <h2>Good Morning! 👋</h2>
+                    <p>Here's your health overview for today</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="activeMedications">0</h3>
+                            <p>Active Medications</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="upcomingAppointments">0</h3>
+                            <p>Upcoming Appointments</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="emergencyContacts">0</h3>
+                            <p>Emergency Contacts</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="complianceRate">0%</h3>
+                            <p>Medication Compliance</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-sections">
+                    <div class="section">
+                        <h3>Today's Medications</h3>
+                        <div id="todayMedications" class="medication-list">
+                            <p class="loading">Loading...</p>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <h3>Upcoming Appointments</h3>
+                        <div id="upcomingAppointmentsList" class="appointment-list">
+                            <p class="loading">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medications Tab -->
+            <div id="medications" class="tab-content">
+                <div class="section-header">
+                    <h2>Medication Management</h2>
+                    <button class="btn-primary" onclick="showAddMedicationModal()">
+                        <i class="fas fa-plus"></i>
+                        Add Medication
+                    </button>
+                </div>
+                <div id="medicationsList" class="cards-grid">
+                    <p class="loading">Loading medications...</p>
+                </div>
+            </div>
+
+            <!-- Appointments Tab -->
+            <div id="appointments" class="tab-content">
+                <div class="section-header">
+                    <h2>Appointment Management</h2>
+                    <button class="btn-primary" onclick="showAddAppointmentModal()">
+                        <i class="fas fa-plus"></i>
+                        Book Appointment
+                    </button>
+                </div>
+                <div id="appointmentsList" class="cards-grid">
+                    <p class="loading">Loading appointments...</p>
+                </div>
+            </div>
+
+            <!-- Emergency Contacts Tab -->
+            <div id="emergency" class="tab-content">
+                <div class="section-header">
+                    <h2>Emergency Contacts</h2>
+                    <button class="btn-primary" onclick="showAddContactModal()">
+                        <i class="fas fa-plus"></i>
+                        Add Contact
+                    </button>
+                </div>
+                <div id="emergencyContactsList" class="cards-grid">
+                    <p class="loading">Loading emergency contacts...</p>
+                </div>
+            </div>
+
+            <!-- Health Tracking Tab -->
+            <div id="health" class="tab-content">
+                <div class="section-header">
+                    <h2>Health Tracking</h2>
+                    <button class="btn-primary" onclick="showAddHealthDataModal()">
+                        <i class="fas fa-plus"></i>
+                        Log Health Data
+                    </button>
+                </div>
+                
+                <div class="health-stats">
+                    <div class="stats-summary">
+                        <h3>30-Day Health Summary</h3>
+                        <div id="healthStatistics" class="health-stats-grid">
+                            <p class="loading">Loading statistics...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="healthDataList" class="cards-grid">
+                    <p class="loading">Loading health data...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Medication Modal -->
+    <div id="addMedicationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Medication</h3>
+                <span class="close" onclick="closeModal('addMedicationModal')">&times;</span>
+            </div>
+            <form id="addMedicationForm">
+                <div class="form-group">
+                    <label for="medName">Medication Name *</label>
+                    <input type="text" id="medName" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="medDosage">Dosage *</label>
+                        <input type="text" id="medDosage" placeholder="e.g., 10mg" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="medCategory">Category</label>
+                        <select id="medCategory">
+                            <option value="General">General</option>
+                            <option value="Heart Health">Heart Health</option>
+                            <option value="Diabetes">Diabetes</option>
+                            <option value="Blood Pressure">Blood Pressure</option>
+                            <option value="Supplements">Supplements</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="medFrequency">Frequency *</label>
+                        <select id="medFrequency" required>
+                            <option value="">Select frequency</option>
+                            <option value="Once daily">Once daily</option>
+                            <option value="Twice daily">Twice daily</option>
+                            <option value="Three times daily">Three times daily</option>
+                            <option value="Four times daily">Four times daily</option>
+                            <option value="As needed">As needed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="medTiming">Timing *</label>
+                        <input type="text" id="medTiming" placeholder="e.g., 08:00,20:00" required>
+                        <small>For multiple times, separate with commas</small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="medStartDate">Start Date *</label>
+                    <input type="date" id="medStartDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="medEndDate">End Date (Optional)</label>
+                    <input type="date" id="medEndDate">
+                </div>
+                <div class="form-group">
+                    <label for="medPrescriber">Prescribed By</label>
+                    <input type="text" id="medPrescriber" placeholder="Doctor's name">
+                </div>
+                <div class="form-group">
+                    <label for="medInstructions">Instructions</label>
+                    <textarea id="medInstructions" rows="3" placeholder="Special instructions for taking this medication"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('addMedicationModal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Medication</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Appointment Modal -->
+    <div id="addAppointmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Book New Appointment</h3>
+                <span class="close" onclick="closeModal('addAppointmentModal')">&times;</span>
+            </div>
+            <form id="addAppointmentForm">
+                <div class="form-group">
+                    <label for="appointmentDoctor">Select Doctor *</label>
+                    <select id="appointmentDoctor" required>
+                        <option value="">Loading doctors...</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="appointmentDate">Date *</label>
+                        <input type="date" id="appointmentDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointmentTime">Time *</label>
+                        <input type="time" id="appointmentTime" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="appointmentDuration">Duration</label>
+                    <select id="appointmentDuration">
+                        <option value="30 min">30 minutes</option>
+                        <option value="45 min">45 minutes</option>
+                        <option value="60 min">1 hour</option>
+                        <option value="90 min">1.5 hours</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="appointmentReason">Reason for Visit *</label>
+                    <textarea id="appointmentReason" rows="3" required placeholder="Describe the reason for your visit"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="appointmentNotes">Additional Notes</label>
+                    <textarea id="appointmentNotes" rows="2" placeholder="Any special instructions or preparations"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="followUpNeeded">
+                        Follow-up appointment may be needed
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('addAppointmentModal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Book Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Emergency Contact Modal -->
+    <div id="addContactModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Emergency Contact</h3>
+                <span class="close" onclick="closeModal('addContactModal')">&times;</span>
+            </div>
+            <form id="addContactForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contactName">Full Name *</label>
+                        <input type="text" id="contactName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactRelationship">Relationship *</label>
+                        <select id="contactRelationship" required>
+                            <option value="">Select relationship</option>
+                            <option value="Spouse">Spouse</option>
+                            <option value="Son">Son</option>
+                            <option value="Daughter">Daughter</option>
+                            <option value="Sibling">Sibling</option>
+                            <option value="Friend">Friend</option>
+                            <option value="Caregiver">Caregiver</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contactPhone">Phone Number *</label>
+                        <input type="tel" id="contactPhone" required placeholder="+65 XXXX-XXXX">
+                    </div>
+                    <div class="form-group">
+                        <label for="contactEmail">Email (Optional)</label>
+                        <input type="email" id="contactEmail" placeholder="email@example.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="isPrimaryContact">
+                        Set as primary contact
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="alertOnMissedMeds" checked>
+                        Send alerts for missed medications
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="alertThreshold">Alert after how many hours?</label>
+                    <select id="alertThreshold">
+                        <option value="1">1 hour</option>
+                        <option value="2" selected>2 hours</option>
+                        <option value="3">3 hours</option>
+                        <option value="4">4 hours</option>
+                        <option value="6">6 hours</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('addContactModal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Contact</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Health Data Modal -->
+    <div id="addHealthDataModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Log Health Data</h3>
+                <span class="close" onclick="closeModal('addHealthDataModal')">&times;</span>
+            </div>
+            <form id="addHealthDataForm">
+                <div class="form-group">
+                    <label for="healthDate">Date *</label>
+                    <input type="date" id="healthDate" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="systolicBP">Systolic BP</label>
+                        <input type="number" id="systolicBP" min="50" max="300" placeholder="120">
+                        <small>mmHg</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="diastolicBP">Diastolic BP</label>
+                        <input type="number" id="diastolicBP" min="30" max="200" placeholder="80">
+                        <small>mmHg</small>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="weight">Weight</label>
+                        <input type="number" id="weight" min="20" max="300" step="0.1" placeholder="70.5">
+                        <small>kg</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="bloodSugar">Blood Sugar</label>
+                        <input type="number" id="bloodSugar" min="30" max="600" placeholder="95">
+                        <small>mg/dL</small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="complianceScore">Medication Compliance Score</label>
+                    <input type="number" id="complianceScore" min="0" max="100" placeholder="95">
+                    <small>Percentage (0-100)</small>
+                </div>
+                <div class="form-group">
+                    <label for="healthNotes">Notes</label>
+                    <textarea id="healthNotes" rows="3" placeholder="How are you feeling today? Any observations?"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('addHealthDataModal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Health Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Modals (similar structure, will be populated dynamically) -->
+    <div id="editMedicationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Medication</h3>
+                <span class="close" onclick="closeModal('editMedicationModal')">&times;</span>
+            </div>
+            <form id="editMedicationForm">
+                <!-- Same form fields as add medication -->
+                <input type="hidden" id="editMedId">
+                <!-- ... form fields ... -->
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('editMedicationModal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Update Medication</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div id="qrCodeModal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3>Medication QR Code</h3>
+                <span class="close" onclick="closeModal('qrCodeModal')">&times;</span>
+            </div>
+            <div class="qr-code-content">
+                <div class="qr-placeholder">
+                    <i class="fas fa-qrcode"></i>
+                    <p>QR Code for Pill Bottle</p>
+                    <div id="qrCodeValue" class="qr-code-value"></div>
+                </div>
+                <p class="qr-instructions">
+                    Scan this code to verify correct medication and get reminders
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="toast"></div>
+
+    <script src="medicationManager/script.js"></script>
+</body>
+</html>
