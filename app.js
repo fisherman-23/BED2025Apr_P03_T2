@@ -136,8 +136,9 @@ app.post(
   matchController.skipUser
 );
 
+
 app.get(
-  "/exercises",
+  "/exercises/:userId",
   authenticateJWT,
   exerciseController.getExercises
 );
@@ -147,6 +148,32 @@ app.get(
   authenticateJWT,
   exerciseController.getSteps
 );
+
+app.get(
+  "/exercises/preferences/:userId",
+  authenticateJWT,
+  exerciseController.getExercisePreferences
+);
+
+app.put(
+  "/exercises/preferences",
+  authenticateJWT,
+  exerciseController.updateExercisePreferences
+);
+
+app.post(
+  "/exercises/personalisation",
+  authenticateJWT,
+  exerciseController.personalisation
+);
+
+app.delete(
+  "/exercises/preferences/:userId",
+  authenticateJWT,
+  exerciseController.deleteExercisePreference
+);
+
+
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
