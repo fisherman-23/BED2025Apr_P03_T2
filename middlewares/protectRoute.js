@@ -55,7 +55,7 @@ function protectSpecificRoutes(req, res, next) {
   const protectedFiles = [
     "/dashboard.html",
     "/profile.html",
-    "/something.html",
+    "/events.html",
     "/chat.html",
     "/social.html",
   ];
