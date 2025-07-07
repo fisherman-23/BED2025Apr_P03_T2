@@ -10,6 +10,7 @@ class FacilityManager {
     this.list = document.getElementById('facilityList');
     this.placeholder = document.getElementById('detailsPlaceholder');
     this.details = document.getElementById('facilityDetails');
+    this.facilityMap = document.getElementById('facilityMap');
     this.startNavigation = document.getElementById('startNavButton');
 
     this.init();
@@ -227,11 +228,13 @@ class FacilityManager {
     document.querySelector('.facility-header').classList.add('visible');
     document.querySelector('.facility-info').classList.add('visible');
     document.getElementById('startNavButton').classList.add('visible');
+    document.getElementById('facilityMap').classList.add('visible');
     document.getElementById('facilityImage').src = facility.image_url;
     document.getElementById('facilityName').innerText = facility.name;
     document.getElementById('facilityAddress').innerText = facility.address;
     document.getElementById('facilityPhone').innerText = facility.phoneNo || 'N/A';
     document.getElementById('facilityHours').innerText = facility.hours;
+    document.getElementById('facilityMap').src = facility.static_map_url;
     }
 }
 
