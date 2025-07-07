@@ -80,8 +80,15 @@ class FacilityManager {
         throw new Error(`Failed to fetch nearby facilities: ${res.statusText}`);
       }
       const facilities = await res.json();
-      this.facilities = facilities;
-      this.filtered = this.facilities; // reset filtered to the new facilities
+
+      if (facilities.length === 0) {
+        this.list.innerHTML = '<p>No nearby facilities found. Getting all facilities...</p>';
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await this.fetchFacilities();
+      } else {
+        this.facilities = facilities; 
+      }
+      this.filtered = this.facilities;
       this.renderList();
     } catch (error) {
       console.error("Error loading nearby facilities:", error);
@@ -100,6 +107,9 @@ class FacilityManager {
       }
       this.facilities = await res.json();
       this.filtered = this.facilities; // initialize filtered with all facilities
+      this.selectedFilter = null;
+      this.activeFiltersContainer.innerHTML = '';
+      this.renderList();
     } catch (error) {
       console.error("Error fetching facilities:", error);
       this.list.innerHTML = '<p>Error loading facilities. Please try again later.</p>';
@@ -146,12 +156,8 @@ class FacilityManager {
 
   // Binds filter buttons to fetch facilities by type
   bindFilters() {
-    document.getElementById('filterByAll').addEventListener('click', async () => {
-      this.selectedFilter = null;
-      this.activeFiltersContainer.innerHTML = '';
-      await this.fetchFacilities();
-      this.filtered = this.facilities;
-      this.renderList();
+    document.getElementById('filterByAll').addEventListener('click', () => {
+      this.fetchFacilities();
     });
     document.getElementById('filterByPolyclinics').addEventListener('click', () => {
       this.fetchFacilitiesByType('Polyclinic');
