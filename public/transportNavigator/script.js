@@ -1,10 +1,12 @@
 class FacilityManager {
   constructor() {
+    this.currentLocation = null;
     this.facilities = [];
     this.filtered = [];
     this.selectedFilter = null;
-    this.activeFiltersContainer = document.getElementById('activeFilters');
 
+    this.locationElement = document.getElementById('currentLocation');
+    this.activeFiltersContainer = document.getElementById('activeFilters');
     this.list = document.getElementById('facilityList');
     this.placeholder = document.getElementById('detailsPlaceholder');
     this.details = document.getElementById('facilityDetails');
@@ -15,16 +17,83 @@ class FacilityManager {
 
   async init() {
     await this.fetchFacilities();
+    document.getElementById('userLocation').addEventListener('click', () => {
+      this.handleLocationAccess();
+    });
     this.bindSearch();
     this.bindFilters();
     this.renderList();
   }
 
+  // Handles the user's request to access their current location
+  async handleLocationAccess() {
+    this.locationElement.innerText = "Finding your current location...";
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          this.currentLocation = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          };
+          await this.updateLocationName();
+          await this.loadNearbyFacilities();
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          alert("Unable to access your location. Please enable location services.");
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+      this.locationElement.innerText = "Geolocation is not supported by this browser.";
+    }
+  }
+
+  // Updates the location name based on the current location
+  async updateLocationName() {
+    try {
+      const res = await fetch (`/api/geocode?lat=${this.currentLocation.latitude}&lng=${this.currentLocation.longitude}`, {
+        method: "GET",
+        credentials: "include"
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch location name: ${res.statusText}`);
+      }
+      const data = await res.json();
+      const displaylocation = data.district || data.address || "Unknown Location";
+      this.locationElement.innerText = displaylocation;
+    } catch (error) {
+      console.error("Error updating location name:", error);
+      this.locationElement.innerText = "Unable to determine current location.";
+    }
+  }
+
+  // Loads nearby facilities based on the current location
+  async loadNearbyFacilities() {
+    try {
+      const res = await fetch(`/facilities/nearby?lat=${this.currentLocation.latitude}&lng=${this.currentLocation.longitude}`, {
+        method: "GET",
+        credentials: "include"
+      });
+      console.log ("Response status:", res.status);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch nearby facilities: ${res.statusText}`);
+      }
+      const facilities = await res.json();
+      this.facilities = facilities;
+      this.filtered = this.facilities; // reset filtered to the new facilities
+      this.renderList();
+    } catch (error) {
+      console.error("Error loading nearby facilities:", error);
+    }
+  }
+
+  //  Fetches all facilities from the database
   async fetchFacilities() {
     try {
       const res = await fetch(`/facilities`, {
         method: "GET",
-        /*credentials: "include"*/
+        credentials: "include"
       });
       if (!res.ok) {
         throw new Error(`Failed to fetch facilities: ${res.statusText}`);
@@ -38,18 +107,21 @@ class FacilityManager {
     }
   }
 
+  //  Fetches facilities by type from the database
   async fetchFacilitiesByType(facilityType) {
     try {
       const encodedType = encodeURIComponent(facilityType);
       const res = await fetch(`/facilities/${encodedType}`, {
         method: "GET",
-        /*credentials: "include"*/
+        credentials: "include"
       });
       if (!res.ok) {
         throw new Error(`Failed to fetch facilities by type: ${res.statusText}`);
       }
       this.facilities = await res.json();
       this.filtered = this.facilities; // reset filtered to the new facilities
+      this.selectedFilter = facilityType;
+      this.updateActiveFilters(facilityType);
       this.renderList();
     } catch (error) {
       console.error("Error fetching facilities by type:", error);
@@ -58,6 +130,7 @@ class FacilityManager {
     }
   }
 
+  // Binds the search input to filter facilities based on user input
   bindSearch() {
     const searchInput = document.getElementById('search');
     searchInput.addEventListener('input', () => {
@@ -71,49 +144,53 @@ class FacilityManager {
     });
   }
 
+  // Binds filter buttons to fetch facilities by type
   bindFilters() {
-    document.getElementById('filterByPolyclinics').addEventListener('click', () => this.applyFilter('Polyclinic'));
-    document.getElementById('filterByCommunityCentres').addEventListener('click', () => this.applyFilter('Community Centre'));
-    document.getElementById('filterByParks').addEventListener('click', () => this.applyFilter('Park'));
-    document.getElementById('filterBySaved').addEventListener('click', () => this.applyFilter('Saved'));
+    document.getElementById('filterByAll').addEventListener('click', async () => {
+      this.selectedFilter = null;
+      this.activeFiltersContainer.innerHTML = '';
+      await this.fetchFacilities();
+      this.filtered = this.facilities;
+      this.renderList();
+    });
+    document.getElementById('filterByPolyclinics').addEventListener('click', () => {
+      this.fetchFacilitiesByType('Polyclinic');
+    });
+    document.getElementById('filterByCommunityCentres').addEventListener('click', () => {
+      this.fetchFacilitiesByType('Community Center');
+    });
+    document.getElementById('filterByParks').addEventListener('click', () => {
+      this.fetchFacilitiesByType('Park');
+    });
+    document.getElementById('filterBySaved').addEventListener('click', () => {
+      this.fetchFacilitiesByType('Saved');
+    });
+    document.getElementById('filterByHospitals').addEventListener('click', () => {
+      this.fetchFacilitiesByType('Hospital');
+    });
   }
 
-  applyFilter(facilityType) {
-      if (this.selectedFilter === facilityType) {
-        this.removeFilter();
-        return;
-      }
+  // Updates the active filters display
+  updateActiveFilters(facilityType) {
+    this.activeFiltersContainer.innerHTML = '<h3>Active Filters:</h3>';
+    const button = document.createElement('button');
+    button.className = 'active-filter';
+    button.innerHTML = `${facilityType} <span class="remove-filter">&times;</span>`;
+    button.addEventListener('click', () => this.removeFilter());
+    this.activeFiltersContainer.appendChild(button);
+  }
 
-      this.selectedFilter = facilityType;
-      this.updateActiveFilters(facilityType);
-
-      if (facilityType === 'Saved') {
-        // Implement logic to filter saved facilities
-      } else {
-        this.filtered = this.facilities.filter(f => f.facilityType === facilityType);
-      }
-      this.renderList();
-    }
-
-    updateActiveFilters(facilityType) {
-      this.activeFiltersContainer.innerHTML = '<h3>Active Filters:</h3>';
-      const button = document.createElement('button');
-      button.className = 'active-filter';
-      button.innerHTML = `${facilityType} <span class="remove-filter">&times;</span>`;
-      button.addEventListener('click', () => this.removeFilter());
-      this.activeFiltersContainer.appendChild(button);
-    }
-
-  removeFilter() {
+  // Removes the selected filter and resets the facility list
+  async removeFilter() {
     this.selectedFilter = null;
     this.activeFiltersContainer.innerHTML = '';
-    this.filtered = this.facilities;
+    await this.fetchFacilities(); // Reset to all facilities
     this.renderList();
   }
 
+  // Renders the list of facilities based on the current filter
   renderList() {
     this.list.innerHTML = '';
-
     if (this.filtered.length === 0) {
       this.list.innerHTML = '<p>No facilities found.</p>';
       return;
@@ -136,6 +213,7 @@ class FacilityManager {
     });
   }
 
+  // Displays the details of the selected facility
   showDetails(facility) {
     this.placeholder.style.display = 'none';
 
@@ -143,12 +221,10 @@ class FacilityManager {
     document.querySelector('.facility-header').classList.add('visible');
     document.querySelector('.facility-info').classList.add('visible');
     document.getElementById('startNavButton').classList.add('visible');
-
     document.getElementById('facilityImage').src = facility.image_url;
     document.getElementById('facilityName').innerText = facility.name;
-    document.getElementById('facilityLocation').innerText = facility.location;
     document.getElementById('facilityAddress').innerText = facility.address;
-    document.getElementById('facilityPhone').innerText = facility.phone || 'N/A';
+    document.getElementById('facilityPhone').innerText = facility.phoneNo || 'N/A';
     document.getElementById('facilityHours').innerText = facility.hours;
     }
 }

@@ -176,14 +176,17 @@ INSERT INTO HealthData (userId, recordDate, bloodPressureSystolic, bloodPressure
 CREATE TABLE Facilities (
     facilityId INT PRIMARY KEY IDENTITY(1,1),
     name VARCHAR(100) NOT NULL,
-    location VARCHAR(200) NOT NULL,
     address TEXT NOT NULL,
-    postalCode VARCHAR(10) NOT NULL,
     facilityType VARCHAR(50) NOT NULL CHECK (facilityType IN ('Polyclinic', 'Hospital', 'Park', 'Community Center')),
-    phoneNo VARCHAR(20) NOT NULL,
-    hours VARCHAR(100) NOT NULL,
-    image_url TEXT NULL
-)
+    phoneNo VARCHAR(20) NULL,
+    hours NVARCHAR(1000) NULL,
+    image_url NVARCHAR(1000) NULL,
+    static_map_url VARCHAR(500) NULL,
+    latitude FLOAT,
+    longitude FLOAT,
+    google_place_id VARCHAR(100) NULL,
+    lastVerified DATE DEFAULT GETDATE()
+);
 
 -- Sample data for Facilities table
 INSERT INTO Facilities (name, location, address, postalCode, facilityType, phoneNo, hours, image_url) 

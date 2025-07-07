@@ -1,5 +1,41 @@
 const facilitiesModel = require("../models/facilitiesModel.js");
 
+async function handleLocationAccess(req, res) {
+    const { lat, lng } = req.query;
+    try {
+        const loctionData = await facilitiesModel.handleLocationAccess(lat, lng);
+        if (!loctionData) {
+            return res.status(404).json({ error: "Location not found" });
+        }
+        res.status(200).json(loctionData);
+    } catch (error) {
+        console.error("Error in handleLocationAccess:", error);
+        res.status(500).json({ error: "Error fetching location data" });
+    }
+}
+
+async function getNearbyFacilities(req, res) {
+    try {
+        const  {lat, lng, rad } = req.query;
+        if (!lat || !lng) {
+            return res.status(400).json({ error: "Latitude and longitude are required" });
+        }
+        const latitude = parseFloat(lat);
+        const longitude = parseFloat(lng); // default longitude to Singapore's longitude
+        const radius = 50000;
+
+        if (isNaN(latitude) || isNaN(longitude) || isNaN(radius)) {
+            return res.status(400).json({ error: "Invalid latitude, longitude or radius" });
+        }
+
+        const facilities = await facilitiesModel.getNearbyFacilities(lat, lng, rad);
+        res.status(200).json(facilities);
+    } catch (error) {
+        console.error("Error in getNearbyFacilities:", error);
+        res.status(500).json({ error: "Error fetching nearby facilities" });
+    }
+}
+
 async function getFacilities(req, res) {
     try {
         const facilities = await facilitiesModel.getFacilities();
@@ -25,6 +61,8 @@ async function getFacilitiesByType(req, res) {
 }
 
 module.exports = {
+    handleLocationAccess,
+    getNearbyFacilities,
     getFacilities,
-    getFacilitiesByType
+    getFacilitiesByType,
 };

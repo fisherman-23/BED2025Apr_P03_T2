@@ -83,7 +83,7 @@ app.patch(
   friendController.acceptFriendRequest
 );
 
-app.post('/api/upload/:folder', /*authenticateJWT,*/ upload.single('file'), handleUpload);
+app.post('/api/upload/:folder', authenticateJWT, upload.single('file'), handleUpload);
 
 app.patch(
   "/friend-requests/:id/reject",
@@ -136,15 +136,27 @@ app.post(
 );
 
 app.get(
-  "/facilities",
+  "/api/geocode",
   authenticateJWT,
-  facilitiesController.getFacilities
+  facilitiesController.handleLocationAccess
+);
+
+app.get(
+  "/facilities/nearby",
+  authenticateJWT,
+  facilitiesController.getNearbyFacilities
 );
 
 app.get(
   "/facilities/:type",
   authenticateJWT,
   facilitiesController.getFacilitiesByType
+);
+
+app.get(
+  "/facilities",
+  authenticateJWT,
+  facilitiesController.getFacilities
 );
 
 app.listen(port, () => {
