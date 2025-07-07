@@ -64,6 +64,8 @@ app.delete(
   userController.deleteUser
 );
 
+app.get("/users/uuid/:uuid", authenticateJWT, userController.getUserByUUID);
+
 app.post(
   "/friend-invite/:uuid",
   authenticateJWT,
@@ -148,6 +150,10 @@ if (require.main === module) {
     console.log(`Server running on port ${port}`);
   });
 }
+
+app.get("/invite", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/invite.html"));
+});
 
 module.exports = app; // export for testing
 

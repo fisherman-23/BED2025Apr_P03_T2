@@ -53,6 +53,32 @@ async function getUserById(req, res) {
   }
 }
 
+function isValidUUID(uuid) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    uuid
+  );
+}
+
+async function getUserByUUID(req, res) {
+  try {
+    const uuid = req.params.uuid;
+
+    if (!isValidUUID(uuid)) {
+      return res.status(400).json({ error: "Invalid UUID format" });
+    }
+
+    const user = await userModel.getUserByUUID(uuid);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error("Controller error in getUserByUUID:", error);
+    res.status(500).json({ error: "Error retrieving user by UUID" });
+  }
+}
+
 async function createUser(req, res) {
   try {
     const newUser = await userModel.createUser(req.body);
@@ -103,4 +129,5 @@ module.exports = {
   updateUser,
   deleteUser,
   logoutUser,
+  getUserByUUID,
 };

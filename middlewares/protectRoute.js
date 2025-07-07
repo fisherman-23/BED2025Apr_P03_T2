@@ -17,34 +17,36 @@ function protectRoute(req, res, next) {
     req.user = decoded;
 
     next();
-  } catch (err) { 
-    if( err.name === "TokenExpiredError") {
+  } catch (err) {
+    if (err.name === "TokenExpiredError") {
       console.error("Token expired, checking for refresh token...");
       if (req.cookies && req.cookies.refreshToken) {
         refreshToken = req.cookies.refreshToken;
-        try{
-          decodedRefresh = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-        }
-        catch (error) {
+        try {
+          decodedRefresh = jwt.verify(
+            refreshToken,
+            process.env.JWT_REFRESH_SECRET
+          );
+        } catch (error) {
           console.error("Refresh token verification failed:", error);
           return res.status(403).redirect("/login.html");
         }
         newToken = jwt.sign(
-              { id: decodedRefresh.ID, email: decodedRefresh.Email },
-              process.env.JWT_SECRET,
-              { expiresIn: process.env.JWT_EXPIRES_IN }
-            );
+          { id: decodedRefresh.ID, email: decodedRefresh.Email },
+          process.env.JWT_SECRET,
+          { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
         res.cookie("token", newToken, {
-              httpOnly: true,
-              secure: process.env.NODE_ENV === "production",
-              sameSite: "lax",
-              maxAge: 1000 * 60 * 60, // expires in 1h
-            });
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 1000 * 60 * 60, // expires in 1h
+        });
         req.user = decodedRefresh;
         return next();
       }
-    }else{
-      console.error("Token verification failed:", err); 
+    } else {
+      console.error("Token verification failed:", err);
       return res.status(403).redirect("/login.html");
     }
   }
@@ -58,6 +60,7 @@ function protectSpecificRoutes(req, res, next) {
     "/something.html",
     "/chat.html",
     "/social.html",
+    "/invite",
   ];
 
   if (protectedFiles.includes(req.path)) {

@@ -85,6 +85,37 @@ async function getUserById(ID) {
   }
 }
 
+async function getUserByUUID(uuid) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const query = `
+    SELECT ID, PublicUUID, Email, Name, AboutMe, PhoneNumber, DateOfBirth,
+          ProfilePicture, CreatedAt, UpdatedAt, IsActive
+    FROM Users
+    WHERE PublicUUID = @UUID AND IsActive = 1
+  `;
+    const request = connection.request();
+    request.input("UUID", uuid);
+    const result = await request.query(query);
+    if (result.recordset.length === 0) {
+      return null;
+    }
+    return result.recordset[0];
+  } catch (error) {
+    console.error("Database error in getUserByUUID:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (e) {
+        console.error("Error closing connection in getUserByUUID:", e);
+      }
+    }
+  }
+}
+
 async function createUser(userData) {
   let connection;
   try {
@@ -249,4 +280,5 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
+  getUserByUUID,
 };

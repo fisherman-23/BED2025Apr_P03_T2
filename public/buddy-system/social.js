@@ -399,7 +399,9 @@ window.addEventListener("DOMContentLoaded", () => {
     .then((response) => response.json())
     .then((data) => {
       profileUUIDElement.innerText = data.PublicUUID || "No UUID found";
-      shareLinkElement.innerText = `${fullUrl}?uuid=${data.PublicUUID}`;
+      const shareLink = `${fullUrl}/invite?uuid=${data.PublicUUID}`;
+      shareLinkElement.innerText = shareLink;
+      console.log("Share link generated:", shareLinkElement.innerText);
 
       // Generate QR Code
       new QRCode(document.getElementById("qrcode"), {
