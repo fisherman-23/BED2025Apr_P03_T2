@@ -118,18 +118,16 @@ const renderFriendsAndRequests = () => {
 // --- Fetch both friends and requests ---
 const testAll = async () => {
   try {
-    const [friendsRes, requestsRes] = await Promise.all([
-      fetch("/friends", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      }),
-      fetch("/friend-requests", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      }),
-    ]);
+    const friendsRes = await fetch("/friends", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+    const requestsRes = await fetch("/friend-requests", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
 
     if (!friendsRes.ok || !requestsRes.ok) throw new Error("Fetch failed");
 
