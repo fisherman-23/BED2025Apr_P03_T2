@@ -531,112 +531,108 @@ window.addEventListener("DOMContentLoaded", async () => {
     const container = document.getElementById("potentialMatches");
     container.innerHTML = "";
 
-    if (res.ok) {
-      const data = await res.json();
+    if (!res.ok) {
+      container.textContent = "Failed to load potential matches.";
+      return;
+    }
 
-      if (data.length === 0) {
-        container.textContent =
-          "No potential matches found. Ensure that you have created a match profile.";
+    const data = await res.json();
+
+    if (data.length === 0) {
+      container.textContent =
+        "No potential matches found. Ensure that you have created a match profile.";
+      return;
+    }
+
+    console.log("Potential matches data:", data);
+
+    let currentIndex = 0;
+
+    function formatMatch(user) {
+      const dob = new Date(user.DateOfBirth);
+      const today = new Date();
+
+      let age = "N/A";
+      if (dob instanceof Date && !isNaN(dob)) {
+        age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        if (
+          monthDiff < 0 ||
+          (monthDiff === 0 && today.getDate() < dob.getDate())
+        ) {
+          age--;
+        }
+        if (age < 0) age = 0;
+      }
+
+      return `
+        <div class="flex flex-col items-center mt-8">
+          <img src="/assets/images/elderlyPFP.png" alt="Profile Picture"
+            class="w-32 h-32 rounded-full mb-4 object-cover">
+
+          <p class="text-lg font-semibold">${user.Name || "Anonymous"}</p>
+          <p class="text-sm text-gray-500">Age: ${age}</p>
+          <p class="text-sm text-gray-500">Bio: ${user.Bio || "No bio"}</p>
+          <p class="text-sm text-gray-500">Likes: ${formatHobbies(user)}</p>
+          <div class="mt-4">
+            <button id="skipBtn" class="bg-red-500 text-white px-4 py-2 rounded-xl mr-2" data-userid="${user.UserID}">Dislike</button>
+            <button id="likeBtn" class="bg-blue-500 text-white px-4 py-2 rounded-xl" data-userid="${user.UserID}">Like</button>
+          </div>
+        </div>
+      `;
+    }
+
+    async function handleAction(action, userId) {
+      try {
+        const res = await fetch(`/match/${action}/${userId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          if (action === "like") {
+            alert(data.matched ? "It's a match!" : "You liked the user.");
+          } else if (action === "skip") {
+            alert("User skipped.");
+          }
+          // Move to next user
+          currentIndex++;
+          showCurrentMatch();
+        } else {
+          alert(`Error ${action}ing user: ${data.error || res.statusText}`);
+        }
+      } catch (e) {
+        alert("Network error: " + e.message);
+      }
+    }
+
+    function showCurrentMatch() {
+      if (currentIndex >= data.length) {
+        container.textContent = "No more potential matches.";
         return;
       }
-      console.log("Potential matches data:", data);
-      data.forEach((user) => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "flex flex-col items-center mt-8";
-        const dob = new Date(user.DateOfBirth);
-        const today = new Date();
+      const user = data[currentIndex];
+      container.innerHTML = formatMatch(user);
 
-        if (dob instanceof Date && !isNaN(dob)) {
-          let age = today.getFullYear() - dob.getFullYear();
-          const monthDiff = today.getMonth() - dob.getMonth();
-
-          if (
-            monthDiff < 0 ||
-            (monthDiff === 0 && today.getDate() < dob.getDate())
-          ) {
-            age--;
-          }
-
-          user.Age = age >= 0 ? age : 0;
-        } else {
-          user.Age = "N/A";
-        }
-
-        wrapper.innerHTML = `
-            <img src="/assets/images/elderlyPFP.png" alt="Profile Picture"
-                class="w-32 h-32 rounded-full mb-4 object-cover">
-
-            <p class="text-lg font-semibold">${user.Name || "Anonymous"}</p>
-            <p class="text-sm text-gray-500">Age: ${user.Age}</p>
-            <p class="text-sm text-gray-500">Bio: ${user.Bio || "No bio"}</p>
-            <p class="text-sm text-gray-500">Likes: ${formatHobbies(user)}</p>
-            <div class="mt-4">
-                <button class="bg-red-500 text-white px-4 py-2 rounded-xl mr-2 skipBtn" data-userid="${user.UserID}">Dislike</button>
-                <button class="bg-blue-500 text-white px-4 py-2 rounded-xl likeBtn" data-userid="${user.UserID}">Like</button>
-            </div>
-          `;
-
-        container.appendChild(wrapper);
+      document.getElementById("likeBtn").addEventListener("click", () => {
+        handleAction("like", user.UserID);
       });
 
-      // Like button handler
-      document.querySelectorAll(".likeBtn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          const targetUserId = btn.dataset.userid;
-          try {
-            const res = await fetch(`/match/like/${targetUserId}`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              credentials: "include",
-            });
-
-            const data = await res.json();
-            if (res.ok) {
-              alert(data.matched ? "It's a match!" : "You liked the user.");
-              btn.closest("div.flex").remove(); // Remove the entire card
-            } else {
-              alert("Error liking user: " + (data.error || res.statusText));
-            }
-          } catch (e) {
-            alert("Network error: " + e.message);
-          }
-        });
+      document.getElementById("skipBtn").addEventListener("click", () => {
+        handleAction("skip", user.UserID);
       });
-
-      // Skip button handler
-      document.querySelectorAll(".skipBtn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          const targetUserId = btn.dataset.userid;
-          try {
-            const res = await fetch(`/match/skip/${targetUserId}`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              credentials: "include",
-            });
-
-            if (res.ok) {
-              alert("User skipped.");
-              btn.closest("div.flex").remove();
-            } else {
-              const err = await res.json();
-              alert("Error skipping user: " + (err.error || res.statusText));
-            }
-          } catch (e) {
-            alert("Network error: " + e.message);
-          }
-        });
-      });
-    } else {
-      container.textContent = "Failed to load potential matches.";
     }
+
+    showCurrentMatch();
   } catch (e) {
     alert("Network error: " + e.message);
   }
 });
+
 function formatHobbies(user) {
   const hobbies = [];
   if (user.LikesHiking) hobbies.push("Hiking");
