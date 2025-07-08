@@ -11,6 +11,7 @@ const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
 const facilitiesController = require("./controllers/facilitiesController.js");
+const bookmarkController = require("./controllers/bookmarkController.js");
 
 const {
   validateUserId,
@@ -157,6 +158,30 @@ app.get(
   "/facilities",
   authenticateJWT,
   facilitiesController.getFacilities
+);
+
+app.get(
+  "/bookmarks/:facilityId",
+  authenticateJWT,
+  bookmarkController.checkIfBookmarked
+);
+
+app.get(
+  "/bookmarks",
+  authenticateJWT,
+  bookmarkController.getBookmarkedFacilities
+);
+
+app.post(
+  "/bookmarks",
+  authenticateJWT,
+  bookmarkController.saveBookmark
+);
+
+app.delete(
+  "/bookmarks/:bookmarkId",
+  authenticateJWT,
+  bookmarkController.deleteBookmark
 );
 
 app.listen(port, () => {
