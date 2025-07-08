@@ -1,6 +1,6 @@
 let allFriends = [];
 let allRequests = [];
-let activeFilter = "all"; // 'all', 'friends', 'requests'
+let activeFilter = "all";
 
 // --- Render friends and requests based on active filter ---
 const renderFriendsAndRequests = () => {
@@ -50,7 +50,9 @@ const renderFriendsAndRequests = () => {
   }
 
   if (activeFilter === "all" || activeFilter === "requests") {
-    allRequests.forEach((request) => {
+    const allRequestsIncoming = allRequests.incoming;
+    const allRequestsOutgoing = allRequests.outgoing;
+    allRequestsIncoming.forEach((request) => {
       const card = document.createElement("div");
       card.className =
         "flex flex-row bg-gray-100 p-4 rounded-2xl items-center gap-4";
@@ -79,7 +81,7 @@ const renderFriendsAndRequests = () => {
           const data = await res.json();
           if (res.ok) {
             alert(`Accepted ${request.Name}`);
-            testAll(); // Refresh after action
+            testAll();
           } else {
             alert(`Error: ${data.message}`);
           }
@@ -91,7 +93,7 @@ const renderFriendsAndRequests = () => {
 
       card.querySelector(".reject-btn").addEventListener("click", async () => {
         try {
-          const res = await fetch(`/friendRequests/${request.ID}/reject`, {
+          const res = await fetch(`/friend-requests/${request.ID}/reject`, {
             method: "PATCH",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
@@ -107,6 +109,49 @@ const renderFriendsAndRequests = () => {
         } catch (err) {
           console.error(err);
           alert("Failed to reject request.");
+        }
+      });
+
+      container.appendChild(card);
+    });
+
+    allRequestsOutgoing.forEach((request) => {
+      const card = document.createElement("div");
+      card.className =
+        "flex flex-row bg-gray-100 p-4 rounded-2xl items-center gap-4";
+
+      card.innerHTML = `
+        <img src="/assets/images/elderlyPFP.png" alt="Profile Picture"
+          class="w-16 h-16 rounded-full mr-4 object-cover">
+        <div class="flex flex-col">
+          <p class="text-lg font-semibold">${request.Name}</p>
+          <p class="text-sm text-gray-500">Request sent</p>
+        </div>
+        <button class="ml-auto bg-red-500 text-white px-4 py-2 rounded-xl">Cancel Request</button>
+      `;
+
+      card.querySelector("button").addEventListener("click", async () => {
+        if (!confirm(`Cancel friend request to ${request.Name}?`)) return;
+
+        try {
+          const response = await fetch(
+            `/friend-requests/${request.ID}/withdraw`,
+            {
+              method: "DELETE",
+              credentials: "include",
+            }
+          );
+
+          const data = await response.json();
+          if (response.ok) {
+            alert(`Cancelled request to ${request.Name}`);
+            testAll(); // Refresh both lists
+          } else {
+            alert(`Error: ${data.message || "Something went wrong"}`);
+          }
+        } catch (err) {
+          console.error("Failed to cancel request:", err);
+          alert("Network error. Try again later.");
         }
       });
 
@@ -135,7 +180,7 @@ const testAll = async () => {
     const requestsData = await requestsRes.json();
 
     allFriends = friendsData.friends || [];
-    allRequests = requestsData.incoming || [];
+    allRequests = requestsData || [];
 
     renderFriendsAndRequests();
   } catch (err) {
@@ -144,7 +189,6 @@ const testAll = async () => {
   }
 };
 
-// --- Optional: Filter buttons ---
 document.querySelectorAll(".filter-chip").forEach((chip) => {
   chip.addEventListener("click", () => {
     console.log("Filter clicked:", chip.dataset.filter);

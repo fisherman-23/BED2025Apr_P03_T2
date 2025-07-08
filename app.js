@@ -102,6 +102,12 @@ app.delete(
   friendController.removeFriend
 );
 
+app.delete(
+  "/friend-requests/:id/withdraw",
+  authenticateJWT,
+  friendController.withdrawFriendRequest
+);
+
 app.get(
   "/match/profile/check",
   authenticateJWT,
