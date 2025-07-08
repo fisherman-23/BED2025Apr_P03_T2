@@ -80,6 +80,19 @@
             </button>
         </section>
     </main>
+    <div id="bookmark-popup" class="bookmark-popup">
+        <div class="bookmark-popup-content">
+            <button class="bookmark-close" id="closeBookmarkPopup">&times;</button>
+            <h2>Frequently visiting? Bookmark this facility!</h2>
+            <div class="bookmark-input">
+                <label for="locationName">Location Name:</label>
+                <input type="text" id="locationName" placeholder="Location Name" required>
+                <label for="locationNotes">Additional Notes:</label>
+                <textarea id="locationNotes" placeholder="Enter any additional notes here..."></textarea>
+            </div>
+            <button id="saveBookmark" class="save-bookmark-button">Save Bookmark</button>
+        </div>
+    </div>
     <script src="/transportNavigator/script.js"></script>
 </body>
 </html>

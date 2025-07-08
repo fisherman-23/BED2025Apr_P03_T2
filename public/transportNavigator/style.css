@@ -277,6 +277,79 @@
     cursor: pointer;
 }
 
+.bookmark-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
+    transition: opacity 0.3s ease-in-out;
+}
+
+.bookmark-popup-content {
+    position: relative;
+    width: 100vh;
+    height: 60vh;
+    background-color: #FFFFFF;
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+.bookmark-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    cursor: pointer;
+    font-size: 1.8rem;
+    color: #000000;
+    background: transparent;
+    border: none;
+}
+
+.bookmark-popup-content h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+}
+
+.bookmark-input {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.bookmark-input input, .bookmark-input textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #ccc;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+}
+
+.save-bookmark-button {
+    background-color: #D7E961;
+    color: #000000;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
 @media (max-width: 1200px) {
     .facilities-container {
         flex-direction: column;

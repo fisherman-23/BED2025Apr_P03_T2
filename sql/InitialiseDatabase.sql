@@ -188,40 +188,19 @@ CREATE TABLE Facilities (
     lastVerified DATE DEFAULT GETDATE()
 );
 
--- Sample data for Facilities table
-INSERT INTO Facilities (name, location, address, postalCode, facilityType, phoneNo, hours, image_url) 
-VALUES (
-    'Raffles Medical - Clementi',
-    'Blk 446 Clementi Ave 3',
-    'Clementi Ave 3, #01-189, Singapore 120446',
-    '120446',
-    'Polyclinic',
-    '+65 6872 9043',
-    'Mon-Fri: 8:00 AM - 9:00 PM, Sat: 8:00 AM - 1:00 PM, Sun: Closed',
-    '/transportNavigator/images/raffles-medical.png'
-),
-(
-    'West Coast Community Centre',
-    '2 Clementi West St 2',
-    '2 Clementi West St 2, Singapore 129605',
-    '129605',
-    'Community Centre',
-    '+65 6779 1098',
-    'Mon-Fri: 10:00 AM - 10:00 PM, Sat: 10:00 AM - 5:00 PM, Sun: Closed',
-    '/transportNavigator/images/west-coast-cc.jpg'
-),
-(
-    'Clementi Woods Park',
-    'West Coast Rd',
-    'West Coast Rd, Singapore 126800',
-    '126800',
-    'Park',
-    '',
-    'Open 24 hours',
-    '/transportNavigator/images/clementi-woods-park.jpg'
-)
-
-
+-- Bookmarks table
+CREATE TABLE Bookmarks (
+    bookmarkId INT PRIMARY KEY IDENTITY(1,1),
+    userId INT NOT NULL,
+    facilityId INT NOT NULL,
+    locationName NVARCHAR(100) NOT NULL,
+    note NVARCHAR(500) NULL,
+    createdAt DATETIME DEFAULT GETDATE(),
+    
+    FOREIGN KEY (userId) REFERENCES Users(ID),
+    FOREIGN KEY (facilityId) REFERENCES Facilities(facilityId),
+    CONSTRAINT UC_Bookmark UNIQUE (userId, facilityId)
+);
 
 -- Module 5: Buddy System
 -- Friend Functionality

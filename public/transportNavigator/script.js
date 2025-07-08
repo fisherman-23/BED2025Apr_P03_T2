@@ -4,6 +4,7 @@ class FacilityManager {
     this.facilities = [];
     this.filtered = [];
     this.selectedFilter = null;
+    this.currentFacility = null;
 
     this.locationElement = document.getElementById('currentLocation');
     this.activeFiltersContainer = document.getElementById('activeFilters');
@@ -12,18 +13,53 @@ class FacilityManager {
     this.details = document.getElementById('facilityDetails');
     this.facilityMap = document.getElementById('facilityMap');
     this.startNavigation = document.getElementById('startNavButton');
+    this.bookmarkPopup = document.getElementById('bookmarkPopup');
+    this.locationNameInput = document.getElementById('locationName');
 
     this.init();
   }
 
   async init() {
+    // Check if the user is authenticated
+    const userId = await this.getAuthenticatedUserId();
+    if (!userId) {
+      alert("You must be logged in to access facilities.");
+      return;
+    }
     await this.fetchFacilities();
     document.getElementById('userLocation').addEventListener('click', () => {
       this.handleLocationAccess();
     });
     this.bindSearch();
     this.bindFilters();
+
+    // Set up event listeners for the bookmark popup
+    document.getElementById('closeBookmarkPopup').addEventListener('click', () => {
+      this.hideBookmarkPopup();
+    });
+    document.getElementById('saveBookmarkButton').addEventListener('click', () => {
+      this.saveBookmark();
+    });
+
     this.renderList();
+  }
+
+  // Gets the authenticated user's ID from the session
+  async getAuthenticatedUserId() {
+    try {
+      const res = await fetch('/me', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch user ID: ${res.statusText}`);
+      }
+      const data = await res.json();
+      return data.id;
+    } catch (error) {
+      console.error("Error fetching authenticated user ID:", error);
+      return null;
+    }
   }
 
   // Handles the user's request to access their current location
@@ -141,6 +177,27 @@ class FacilityManager {
     }
   }
 
+  async fetchBookmarkedFacilities(userId) {
+    try {
+      const res = await fetch(`/facilities/bookmarks/${userId}`, {
+        method: "GET",
+        credentials: "include"
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch bookmarked facilities: ${res.statusText}`);
+      }
+      this.facilities = await res.json();
+      this.filtered = this.facilities;
+      this.selectedFilter = 'Saved';
+      this.updateActiveFilters('Saved');
+      this.renderList();
+    } catch (error) {
+      console.error("Error fetching bookmarked facilities:", error);
+      this.list.innerHTML = '<p>Error loading facilities. Please try again later.</p>';
+      this.placeholder.style.display = 'none';
+    }
+  }
+
   // Binds the search input to filter facilities based on user input
   bindSearch() {
     const searchInput = document.getElementById('search');
@@ -170,7 +227,7 @@ class FacilityManager {
       this.fetchFacilitiesByType('Park');
     });
     document.getElementById('filterBySaved').addEventListener('click', () => {
-      this.fetchFacilitiesByType('Saved');
+      this.fetchBookmarkedFacilities(userId);
     });
     document.getElementById('filterByHospitals').addEventListener('click', () => {
       this.fetchFacilitiesByType('Hospital');
@@ -222,6 +279,7 @@ class FacilityManager {
 
   // Displays the details of the selected facility
   showDetails(facility) {
+    this.currentFacility = facility;
     this.placeholder.style.display = 'none';
 
     document.getElementById('facilityImage').classList.add('visible');
@@ -235,7 +293,119 @@ class FacilityManager {
     document.getElementById('facilityPhone').innerText = facility.phoneNo || 'N/A';
     document.getElementById('facilityHours').innerText = facility.hours;
     document.getElementById('facilityMap').src = facility.static_map_url;
+
+    this.initBookmarkButton(facility);
+  }
+
+  // Initializes the bookmark button for the selected facility
+  async initBookmarkButton(facility) {
+    const bookmarkButton = document.getElementById('bookmarkButton');
+    const bookmarkIcon = document.getElementById('bookmarkIcon');
+
+    // Check if the facility is already bookmarked
+    const isBookmarked = await this.checkIfBookmarked(facility.facilityId);
+    bookmarkIcon.src = isBookmarked
+      ? '/assets/icons/bookmark-filled.svg'
+      : '/assets/icons/bookmark.svg';
+
+    // Set up click event for the bookmark button
+    bookmarkButton.onclick = () => {
+      if (isBookmarked) {
+        this.removeBookmark(facility.facilityId, userId);
+        bookmarkIcon.src = '/assets/icons/bookmark.svg';
+        alert("Bookmark removed successfully!");
+      } else {
+        this.showBookmarkPopup(facility);
+      }
+    };
+  }
+
+  async checkIfBookmarked(facilityId, userId) {
+    try {
+      const res = await fetch(`/facilities/bookmarks/${facilityId}/${userId}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to check bookmark status: ${res.statusText}`);
+      }
+      const data = await res.json();
+      return data.isBookmarked;
+    } catch (error) {
+      console.error("Error checking bookmark status:", error);
+      return false;
     }
+  }
+
+  // Show bookmark popup with facility name input
+  showBookmarkPopup(facility) {
+    this.currentFacility = facility;
+    this.bookmarkPopup.style.visibility = 'visible';
+    this.locationNameInput.value = facility.name || '';
+  }
+
+  // Hides the bookmark popup
+  hideBookmarkPopup() {
+    this.bookmarkPopup.style.visibility = 'hidden';
+    this.locationNameInput.value = '';
+    this.currentFacility = null;
+  }
+
+  // Saves the current facility as a bookmark
+  async saveBookmark() {
+    if (!this.currentFacility) {
+      console.error("No facility selected for bookmarking.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/facilities/bookmark`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          facilityId: this.currentFacility.facilityId,
+          userId: userId,
+          locationName: this.locationNameInput.value,
+          note: this.locationNotesInput.value || ''
+        }),
+        credentials: "include"
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to save bookmark: ${res.statusText}`);
+      }
+
+      // Update bookmark icon to filled state
+      const bookmarkIcon = document.getElementById('bookmarkButton');
+      bookmarkIcon.src = '/assets/icons/bookmark-filled.svg';
+
+      alert("Bookmark saved successfully!");
+      this.hideBookmarkPopup();
+      this.updateBookmarkIcon(true);
+
+    } catch (error) {
+      console.error("Error saving bookmark:", error);
+      alert("Failed to save bookmark. Please try again later.");
+    }
+  }
+
+  async removeBookmark(facilityId, userId) {
+    try {
+      const res = await fetch(`/facilities/bookmark/${facilityId}/${userId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to remove bookmark: ${res.statusText}`);
+      }
+      this.updateBookmarkIcon(false);
+    } catch (error) {
+      console.error("Error removing bookmark:", error);
+      alert("Failed to remove bookmark. Please try again later.");
+    }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
