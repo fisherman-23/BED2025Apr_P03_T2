@@ -74,6 +74,7 @@ function addFriend(uuid) {
     .then((data) => {
       console.log("Friend request sent!", data);
       alert("Friend request sent successfully!");
+      window.location.href = "/index.html";
     })
     .catch((error) => {
       console.error("Error:", error.message);

@@ -72,6 +72,56 @@ async function checkRequestOrFriendshipExists(senderId, receiverId) {
   }
 }
 
+async function getFriendshipStatus(userA, userB) {
+  const connection = await sql.connect(dbConfig);
+
+  // Check if already friends (either direction)
+  const friendRes = await connection
+    .request()
+    .input("userA", sql.Int, userA)
+    .input("userB", sql.Int, userB).query(`
+      SELECT * FROM Friends 
+      WHERE (UserID1 = @userA AND UserID2 = @userB) 
+         OR (UserID1 = @userB AND UserID2 = @userA)
+    `);
+
+  if (friendRes.recordset.length > 0) {
+    return "friends";
+  }
+
+  // Check if userA sent a request to userB
+  const outgoingRes = await connection
+    .request()
+    .input("sender", sql.Int, userA)
+    .input("receiver", sql.Int, userB).query(`
+      SELECT Status FROM FriendRequests 
+      WHERE SenderID = @sender AND ReceiverID = @receiver
+    `);
+
+  if (outgoingRes.recordset.length > 0) {
+    const status = outgoingRes.recordset[0].Status;
+    if (status === "pending") return "outgoing_pending";
+    if (status === "rejected") return "rejected";
+  }
+
+  // Check if userB sent a request to userA
+  const incomingRes = await connection
+    .request()
+    .input("sender", sql.Int, userB)
+    .input("receiver", sql.Int, userA).query(`
+      SELECT Status FROM FriendRequests 
+      WHERE SenderID = @sender AND ReceiverID = @receiver
+    `);
+
+  if (incomingRes.recordset.length > 0) {
+    const status = incomingRes.recordset[0].Status;
+    if (status === "pending") return "incoming_pending";
+    if (status === "rejected") return "rejected";
+  }
+
+  return null;
+}
+
 async function insertFriendRequest(senderId, receiverId) {
   let connection;
   try {
@@ -240,6 +290,7 @@ async function rejectFriendRequest(userId, requestId) {
   let connection;
   try {
     connection = await sql.connect(dbConfig);
+    console.log("Rejecting friend request:", requestId, "for user:", userId);
 
     const result = await connection
       .request()
@@ -268,6 +319,44 @@ async function rejectFriendRequest(userId, requestId) {
         await connection.close();
       } catch (e) {
         console.error("Error closing connection after rejectFriendRequest:", e);
+      }
+    }
+  }
+}
+
+async function removeFriendRequest(requestId, userId) {
+  console.log(
+    "Removing pending friend request ID:",
+    requestId,
+    "by user:",
+    userId
+  );
+
+  let connection;
+
+  try {
+    connection = await sql.connect(dbConfig);
+
+    const result = await connection
+      .request()
+      .input("requestId", sql.Int, requestId)
+      .input("userId", sql.Int, userId).query(`
+        DELETE FROM FriendRequests
+        WHERE ID = @requestId
+          AND SenderID = @userId
+          AND Status = 'pending';
+      `);
+
+    return result.rowsAffected[0] > 0;
+  } catch (error) {
+    console.error("Database error in removeFriendRequestById:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (e) {
+        console.error("Error closing connection:", e);
       }
     }
   }
@@ -316,4 +405,6 @@ module.exports = {
   acceptFriendRequest,
   rejectFriendRequest,
   removeFriend,
+  getFriendshipStatus,
+  removeFriendRequest,
 };
