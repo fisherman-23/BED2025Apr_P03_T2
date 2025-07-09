@@ -227,7 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (state.originalData.ProfilePicture) {
             profilePicture.src = state.originalData.ProfilePicture;
         } else {
-            profilePicture.src = "/assets/icons/add-a-photo.svg";
+            profilePicture.src = "/assets/icons/blank-profile-picture.svg";
         }
         
         // clear file input and temp file reference
