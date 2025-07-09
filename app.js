@@ -178,6 +178,12 @@ app.post(
   bookmarkController.saveBookmark
 );
 
+app.put(
+  "/bookmarks/:bookmarkId",
+  authenticateJWT,
+  bookmarkController.updateBookmark
+);
+
 app.delete(
   "/bookmarks/:bookmarkId",
   authenticateJWT,

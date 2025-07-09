@@ -1,8 +1,8 @@
 const facilitiesModel = require("../models/facilitiesModel.js");
 
 async function handleLocationAccess(req, res) {
-    const { lat, lng } = req.query;
     try {
+        const { lat, lng } = req.query;
         const loctionData = await facilitiesModel.handleLocationAccess(lat, lng);
         if (!loctionData) {
             return res.status(404).json({ error: "Location not found" });
@@ -47,8 +47,8 @@ async function getFacilities(req, res) {
 }
 
 async function getFacilitiesByType(req, res) {
-    const facilityType = req.params.type;
     try {
+        const facilityType = req.params.type;
         const facilities = await facilitiesModel.getFacilitiesByType(facilityType);
         if (facilities.length === 0) {
             return res.status(404).json({ error: "No facilities found for this type" });

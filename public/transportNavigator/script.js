@@ -5,6 +5,8 @@ class FacilityManager {
     this.filtered = [];
     this.selectedFilter = null;
     this.currentFacility = null;
+    this.currentNotes = null;
+    this.isEditing = false;
   }
 
   async initializeElements() {
@@ -37,7 +39,11 @@ class FacilityManager {
       
       document.getElementById('saveBookmark').addEventListener('click', (e) => {
         e.preventDefault();
-        this.saveBookmark();
+        if (this.isEditing && this.currentBookmarkId) {
+          this.updateBookmark(this.currentBookmarkId);
+        } else {
+          this.saveBookmark();
+        }
       });
 
       this.renderList();
@@ -172,8 +178,8 @@ class FacilityManager {
       }
       this.facilities = await res.json();
       this.filtered = this.facilities;
-      this.selectedFilter = 'Saved';
-      this.updateActiveFilters('Saved');
+      this.selectedFilter = 'Bookmarked';
+      this.updateActiveFilters('Bookmarked');
       this.renderList();
     } catch (error) {
       console.error("Error fetching bookmarked facilities:", error);
@@ -194,6 +200,13 @@ class FacilityManager {
       );
       this.renderList();
     });
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        searchInput.blur();
+      }
+    });
   }
 
   // Binds filter buttons to fetch facilities by type
@@ -210,7 +223,7 @@ class FacilityManager {
     document.getElementById('filterByParks').addEventListener('click', () => {
       this.fetchFacilitiesByType('Park');
     });
-    document.getElementById('filterBySaved').addEventListener('click', () => {
+    document.getElementById('filterByBookmarked').addEventListener('click', () => {
       this.fetchBookmarkedFacilities();
     });
     document.getElementById('filterByHospitals').addEventListener('click', () => {
@@ -278,7 +291,40 @@ class FacilityManager {
     document.getElementById('facilityHours').innerText = facility.hours;
     document.getElementById('facilityMap').src = facility.static_map_url;
 
-    this.initBookmarkButton(facility);
+    this.initBookmarkButton(facility).then(() => {
+      this.showBookmarkNotes(facility);
+    });
+  }
+
+  // Show bookmark notes for selected facility if available
+  async showBookmarkNotes(facility) {
+    const notesSection = document.getElementById('bookmarkNotesSection');
+    notesSection.innerHTML = '';
+    // Check if the facility is bookmarked and has notes
+    const { isBookmarked, bookmarkId, notes } = await this.checkIfBookmarked(facility.facilityId);
+    console.log("Bookmark status:", isBookmarked, "Notes:", notes);
+    if (isBookmarked) {
+      notesSection.innerHTML = `
+        <div class="bookmark-notes-container">
+          <div class="notes-header">
+            <h4>Bookmark Notes</h4>
+            <button id="editNotesButton" class="edit-notes-button">Edit
+              <img src="/assets/icons/edit.svg" alt="Edit Notes" />
+            </button>
+          </div>
+          <div class="notes-content">${notes || '<span class="empty-note">No notes added yet</span>'}</div>
+        </div>
+      `;
+      this.currentNotes = notes || '';
+      const editButton = notesSection.querySelector('#editNotesButton');
+      editButton.addEventListener('click', () => {
+        this.isEditing = true;
+        this.showBookmarkPopup(facility);
+      });
+    } else {
+      this.currentNotes = null;
+      this.isEditing = false;
+    }
   }
 
   // Initializes the bookmark button for the selected facility
@@ -288,17 +334,18 @@ class FacilityManager {
 
     // Check if the facility is already bookmarked
     const { isBookmarked, bookmarkId } = await this.checkIfBookmarked(facility.facilityId);
+    this.currentBookmarkId = bookmarkId;
     bookmarkIcon.src = isBookmarked
       ? '/assets/icons/bookmark-filled.svg'
       : '/assets/icons/bookmark.svg';
 
     // Set up click event for the bookmark button
-    bookmarkButton.onclick = () => {
+    bookmarkButton.onclick = async () => {
       if(!isBookmarked) {
-        this.showBookmarkPopup(facility);
+        await this.showBookmarkPopup(facility);
       } else {
         if(confirm("Remove this bookmark?")) {
-          this.removeBookmark(bookmarkId);
+          await this.removeBookmark(bookmarkId);
           bookmarkIcon.src = '/assets/icons/bookmark.svg';
           alert("Bookmark removed successfully!");
         }
@@ -319,26 +366,52 @@ class FacilityManager {
       console.log("Bookmark status data:", data);
       return {
         isBookmarked: data.isBookmarked,
-        bookmarkId: data.bookmarkId
+        bookmarkId: data.bookmarkId,
+        notes: data.notes || null
       };
 
     } catch (error) {
       console.error("Error checking bookmark status:", error);
-      return false;
+      return {
+        isBookmarked: false,
+        bookmarkId: null,
+        notes: null
+      }
     }
   }
 
   // Show bookmark popup with facility name input
-  showBookmarkPopup(facility) {
+  async showBookmarkPopup(facility) {
+    console.log('1. Starting showBookmarkPopup')
     this.currentFacility = facility;
     this.bookmarkPopup.style.visibility = 'visible';
     this.locationNameInput.value = facility.name || '';
+
+    // Check bookmark status
+    const { isBookmarked, notes } = await this.checkIfBookmarked(facility.facilityId);
+    console.log ('2.get bookmark status:', isBookmarked, 'Notes:', notes);
+    this.currentNotes = notes || '';
+
+    // Set input values
+    this.locationNotesInput.value = this.currentNotes || '';
+
+    // Set editing state based on whether the facility is bookmarked
+    this.isEditing = isBookmarked;
+
+    // Update popup title based on whether it's a new bookmark or editing an existing one
+    document.getElementById('bookmarkPopupTitle').textContent = 
+      this.isEditing ? "Edit your bookmark" : "Frequently visiting? Bookmark this facility!";
+
+    // Update save button text
+    document.getElementById('saveBookmark').textContent = 
+      this.isEditing ? "Update Bookmark" : "Save Bookmark";
   }
 
   // Hides the bookmark popup
   hideBookmarkPopup() {
     this.bookmarkPopup.style.visibility = 'hidden';
     this.locationNameInput.value = '';
+    this.isEditing = false;
   }
 
   // Saves the current facility as a bookmark
@@ -371,15 +444,56 @@ class FacilityManager {
         throw new Error(`Failed to save bookmark: ${res.statusText}`);
       }
 
+      // Update current notes reference
+      this.currentNotes = this.locationNotesInput.value;
+
       await this.initBookmarkButton(this.currentFacility);
+      await this.showBookmarkNotes(this.currentFacility);
 
       alert("Bookmark saved successfully!");
       this.hideBookmarkPopup();
+      this.isEditing = false;
       console.log("Bookmark saved successfully for facility:", this.currentFacility.facilityId);
 
     } catch (error) {
       console.error("Error saving bookmark:", error);
       alert("Failed to save bookmark. Please try again later.");
+    }
+  }
+
+  async updateBookmark(bookmarkId) {
+    try {
+      const bookmarkData = {
+        facilityId: this.currentFacility.facilityId,
+        locationName: this.locationNameInput.value || this.currentFacility.name,
+        note: this.locationNotesInput.value || ''
+      };
+      console.log("Updating bookmark with ID:", bookmarkId, "with data:", bookmarkData);
+
+      const res = await fetch(`/bookmarks/${bookmarkId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(bookmarkData),
+        credentials: "include"
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to update bookmark: ${res.statusText}`);
+      }
+      // Update current notes reference
+      this.currentNotes = this.locationNotesInput.value;
+
+      await this.initBookmarkButton(this.currentFacility);
+      await this.showBookmarkNotes(this.currentFacility);
+
+      alert("Bookmark updated successfully!");
+      this.hideBookmarkPopup();
+      this.isEditing = false;
+    } catch (error) { 
+      console.error("Error updating bookmark:", error);
+      alert("Failed to update bookmark. Please try again later.");
     }
   }
 
@@ -392,8 +506,13 @@ class FacilityManager {
       if (!res.ok) {
         throw new Error(`Failed to remove bookmark: ${res.statusText}`);
       }
+
+      // Clear current notes reference
+      this.currentNotes = null;
+
       if (this.currentFacility) {
         await this.initBookmarkButton(this.currentFacility);
+        await this.showBookmarkNotes(this.currentFacility);
       }
     } catch (error) {
       console.error("Error removing bookmark:", error);

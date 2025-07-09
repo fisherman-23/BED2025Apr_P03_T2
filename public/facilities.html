@@ -36,7 +36,7 @@
             </div>
             <section class="filter-options">
                 <button class="filter-all" id="filterByAll">All</button>
-                <button class="filter-saved" id="filterBySaved">Saved Facilities</button>
+                <button class="filter-bookmarked" id="filterByBookmarked">Bookmarked Facilities</button>
                 <button class="filter-polyclinics" id="filterByPolyclinics">Polyclinics</button>
                 <button class="filter-hospitals" id="filterByHospitals">Hospitals</button>
                 <button class="filter-community-centres" id="filterByCommunityCentres">Community Centres</button>
@@ -73,6 +73,7 @@
                     <img src="#" alt="Map Image" id="facilityMap">
                 </div>
             </div>
+            <div class="bookmark-notes-section" id="bookmarkNotesSection"></div>
             <button class="start-nav" id="startNavButton">
                 <img src="/assets/icons/compass.svg" alt="Compass Icon">
                 Start Navigation
@@ -83,10 +84,10 @@
     <div id="bookmarkPopup" class="bookmark-popup">
         <div class="bookmark-popup-content">
             <button class="bookmark-close" id="closeBookmarkPopup">&times;</button>
-            <h2>Frequently visiting? Bookmark this facility!</h2>
+            <h2 id="bookmarkPopupTitle">Frequently visiting? Bookmark this facility!</h2>
             <div class="bookmark-input">
                 <label for="locationName">Location Name:</label>
-                <input type="text" id="locationName" placeholder="Location Name" required>
+                <input type="text" id="locationName" placeholder="Location Name" disabled>
                 <label for="locationNotes">Additional Notes:</label>
                 <textarea id="locationNotes" placeholder="Enter any additional notes here..."></textarea>
             </div>

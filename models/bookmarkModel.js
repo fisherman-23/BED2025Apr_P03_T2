@@ -35,7 +35,7 @@ async function checkIfBookmarked(userId, facilityId) {
     try {
         connection = await sql.connect(dbConfig);
         const query = `
-            SELECT BookmarkId
+            SELECT bookmarkId, note
             FROM Bookmarks
             WHERE userId = @userId AND facilityId = @facilityId
         `;
@@ -44,8 +44,9 @@ async function checkIfBookmarked(userId, facilityId) {
             .input("facilityId", sql.Int, facilityId)
             .query(query);
         const isBookmarked = result.recordset.length > 0;
-        const bookmarkId = isBookmarked ? result.recordset[0].BookmarkId : null;
-        return { isBookmarked, bookmarkId };
+        const bookmarkId = isBookmarked ? result.recordset[0].bookmarkId : null;
+        const notes = isBookmarked ? result.recordset[0].note : null;
+        return { isBookmarked, bookmarkId, notes};
     } catch (error) {
         console.error("Error checking if facility is bookmarked:", error);
         throw error;
@@ -90,6 +91,39 @@ async function saveBookmark(bookmarkData) {
     }
 }
 
+async function updateBookmark(bookmarkId, bookmarkData) {
+    let connection;
+    try {
+        connection = await sql.connect(dbConfig);
+        const query = `
+            UPDATE Bookmarks
+            SET note = @note,
+                locationName = @locationName
+            WHERE bookmarkId = @bookmarkId
+        `;
+        const result = await connection.request()
+            .input("bookmarkId", sql.Int, bookmarkId)
+            .input("note", sql.NVarChar, bookmarkData.note)
+            .input("locationName", sql.NVarChar, bookmarkData.locationName)
+            .query(query);
+        if (result.rowsAffected[0] === 0) {
+              throw new Error("Bookmark not found");
+            };
+            return true;
+    } catch (error) {
+        console.error("Error updating bookmark:", error);
+        throw error;
+    } finally {
+        if (connection) {
+            try {
+                await connection.close();
+            } catch (err) {
+                console.error("Error closing database connection:", err);
+            }
+        }
+    }
+}
+
 async function deleteBookmark(bookmarkId) {
     let connection;
     try {
@@ -118,10 +152,10 @@ async function deleteBookmark(bookmarkId) {
     }
 }
 
-
 module.exports = {
     getBookmarkedFacilities,
     checkIfBookmarked,
     saveBookmark,
+    updateBookmark,
     deleteBookmark,
 };

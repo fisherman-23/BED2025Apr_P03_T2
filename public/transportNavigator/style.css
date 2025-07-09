@@ -109,7 +109,7 @@
     font-weight: 600;
 }
 
-.filter-saved, .filter-community-centres {
+.filter-bookmarked, .filter-community-centres {
     background-color: #C1E3F4;
 }
 
@@ -349,6 +349,55 @@
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
+}
+
+.bookmark-notes-container {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #FFFFFF;
+    border: 2px solid #ccc;
+    border-radius: 1rem;
+}
+
+.notes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.notes-header h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.edit-notes-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    color: #575DDF;
+}
+
+.edit-notes-button img {
+    width: 1.5rem;
+    height: 1.5rem;
+    cursor: pointer;
+}
+
+.notes-content {
+    font-size: 1rem;
+    font-weight: 400;
+    white-space: pre-wrap;
+}
+
+.empty-note {
+    color: #999999;
 }
 
 @media (max-width: 1200px) {
