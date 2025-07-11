@@ -50,126 +50,338 @@ CREATE TABLE Users (
 );
 
 CREATE UNIQUE INDEX idx_users_publicuuid ON Users(PublicUUID);
--- Module 1: Medication & Appointment Manager Tables
--- Medications table
+
+
+-- Module 1: Medication & Appointment Manager
+-- Create Medications Table
 CREATE TABLE Medications (
-    medicationId INT PRIMARY KEY IDENTITY(1,1),
+    medicationId INT IDENTITY(1,1) PRIMARY KEY,
     userId INT NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    dosage VARCHAR(50) NOT NULL,
-    frequency VARCHAR(100) NOT NULL,
-    timing VARCHAR(100) NOT NULL,
+    name NVARCHAR(255) NOT NULL,
+    dosage NVARCHAR(100) NOT NULL,
+    frequency NVARCHAR(50) NOT NULL, -- 'Once daily', 'Twice daily', 'Three times daily', etc.
+    timing TIME NOT NULL, -- Time to take medication
     startDate DATE NOT NULL,
-    endDate DATE NULL,
-    instructions TEXT,
-    prescribedBy VARCHAR(100),
-    active BIT DEFAULT 1,
-    qrCode VARCHAR(100),
-    category VARCHAR(50),
-    createdAt DATETIME DEFAULT GETDATE(),
-    updatedAt DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (userId) REFERENCES Users(id)
+    endDate DATE NULL, -- NULL means ongoing
+    instructions NVARCHAR(MAX) NULL,
+    prescribedBy NVARCHAR(255) NOT NULL,
+    active BIT DEFAULT 1, -- 1 = active, 0 = discontinued
+    qrCode NVARCHAR(255) NULL, -- QR code for pill bottle verification
+    category NVARCHAR(100) NULL, -- 'Heart Health', 'Diabetes', 'Blood Pressure', etc.
+    createdAt DATETIME2 DEFAULT GETDATE(),
+    updatedAt DATETIME2 DEFAULT GETDATE()
+    -- FOREIGN KEY (userId) REFERENCES Users(id) -- Add this after Users table exists
 );
+GO
 
--- Medication tracking table
-CREATE TABLE MedicationTracking (
-    trackingId INT PRIMARY KEY IDENTITY(1,1),
-    medicationId INT NOT NULL,
-    takenAt DATETIME NOT NULL,
-    missed BIT DEFAULT 0,
-    notes TEXT,
-    createdAt DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (medicationId) REFERENCES Medications(medicationId)
-);
-
--- Doctors table
+-- Create Doctors Table
 CREATE TABLE Doctors (
-    doctorId INT PRIMARY KEY IDENTITY(1,1),
-    name VARCHAR(100) NOT NULL,
-    specialty VARCHAR(100),
-    phone VARCHAR(20),
-    email VARCHAR(100),
-    location VARCHAR(200),
-    address TEXT,
-    rating DECIMAL(2,1),
-    languages VARCHAR(200),
-    createdAt DATETIME DEFAULT GETDATE()
+    doctorId INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    specialty NVARCHAR(255) NOT NULL,
+    phone NVARCHAR(20) NOT NULL,
+    email NVARCHAR(255) NOT NULL,
+    location NVARCHAR(255) NOT NULL, -- General area/district
+    address NVARCHAR(500) NOT NULL, -- Full address for directions
+    rating DECIMAL(3,2) DEFAULT 4.5, -- Rating out of 5
+    availability_notes NVARCHAR(MAX) NULL,
+    created_at DATETIME2 DEFAULT GETDATE()
 );
+GO
 
--- Appointments table
+-- Create Appointments Table
 CREATE TABLE Appointments (
-    appointmentId INT PRIMARY KEY IDENTITY(1,1),
+    appointmentId INT IDENTITY(1,1) PRIMARY KEY,
     userId INT NOT NULL,
     doctorId INT NOT NULL,
-    appointmentDate DATETIME NOT NULL,
-    duration VARCHAR(20),
-    reason TEXT,
-    status VARCHAR(20) DEFAULT 'scheduled',
-    notes TEXT,
+    appointmentDate DATETIME2 NOT NULL,
+    duration INT DEFAULT 30, -- Duration in minutes
+    reason NVARCHAR(500) NOT NULL,
+    status NVARCHAR(50) DEFAULT 'scheduled', -- 'scheduled', 'completed', 'cancelled', 'no-show'
+    notes NVARCHAR(MAX) NULL, -- Preparation notes or post-visit notes
     reminderSent BIT DEFAULT 0,
     followUpNeeded BIT DEFAULT 0,
-    createdAt DATETIME DEFAULT GETDATE(),
-    updatedAt DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (userId) REFERENCES Users(id),
-    FOREIGN KEY (doctorId) REFERENCES Doctors(doctorId)
+    createdAt DATETIME2 DEFAULT GETDATE(),
+    updatedAt DATETIME2 DEFAULT GETDATE()
+    -- FOREIGN KEY (userId) REFERENCES Users(id), -- Add after Users table exists
+    -- FOREIGN KEY (doctorId) REFERENCES Doctors(doctorId) -- Add after confirming structure
 );
+GO
 
--- Emergency contacts table
-CREATE TABLE EmergencyContacts (
-    contactId INT PRIMARY KEY IDENTITY(1,1),
-    userId INT NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    relationship VARCHAR(50),
-    phone VARCHAR(20) NOT NULL,
-    email VARCHAR(100),
-    isPrimary BIT DEFAULT 0,
-    alertOnMissedMeds BIT DEFAULT 1,
-    alertThresholdHours INT DEFAULT 2,
-    createdAt DATETIME DEFAULT GETDATE(),
-    updatedAt DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (userId) REFERENCES Users(id)
+-- Create MedicationLogs Table for tracking medication adherence
+CREATE TABLE MedicationLogs (
+    logId INT IDENTITY(1,1) PRIMARY KEY,
+    medication_id INT NOT NULL,
+    taken_at DATETIME2 NOT NULL,
+    missed BIT DEFAULT 0, -- 0 = taken, 1 = missed
+    notes NVARCHAR(255) NULL,
+    created_at DATETIME2 DEFAULT GETDATE()
+    -- FOREIGN KEY (medication_id) REFERENCES Medications(medicationId) -- Add after confirming structure
 );
+GO
 
--- Health data tracking table
-CREATE TABLE HealthData (
-    healthId INT PRIMARY KEY IDENTITY(1,1),
-    userId INT NOT NULL,
-    recordDate DATE NOT NULL,
-    bloodPressureSystolic INT,
-    bloodPressureDiastolic INT,
-    weight DECIMAL(5,2),
-    bloodSugar INT,
-    notes TEXT,
-    complianceScore INT,
-    createdAt DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (userId) REFERENCES Users(id)
+-- Create DrugInteractions Table for checking drug conflicts
+CREATE TABLE DrugInteractions (
+    interactionId INT IDENTITY(1,1) PRIMARY KEY,
+    drug1 NVARCHAR(255) NOT NULL,
+    drug2 NVARCHAR(255) NOT NULL,
+    severity NVARCHAR(50) NOT NULL, -- 'mild', 'moderate', 'severe'
+    description NVARCHAR(MAX) NOT NULL,
+    created_at DATETIME2 DEFAULT GETDATE()
 );
+GO
 
--- Insert sample data
-INSERT INTO Doctors (name, specialty, phone, email, location, address, rating, languages) VALUES
-('Dr. Sarah Wilson', 'Cardiologist', '6737-8888', 'swilson@heartcenter.sg', 'Mount Elizabeth Hospital', '3 Mount Elizabeth, Singapore 228510', 4.9, 'English,Mandarin'),
-('Dr. Michael Brown', 'Endocrinologist', '6225-5555', 'mbrown@sgh.com.sg', 'Singapore General Hospital', 'Outram Road, Singapore 169608', 4.8, 'English,Hokkien'),
-('Dr. Lisa Tan', 'Family Medicine', '6444-3333', 'ltan@familyclinic.sg', 'Raffles Medical', '585 North Bridge Road, Singapore 188770', 4.7, 'English,Mandarin,Malay');
+-- Create DrugConflicts Table for user-specific conflicts
+CREATE TABLE DrugConflicts (
+    conflictId INT IDENTITY(1,1) PRIMARY KEY,
+    medicationId INT NOT NULL,
+    conflicting_medication NVARCHAR(255) NOT NULL,
+    severity NVARCHAR(50) NOT NULL,
+    description NVARCHAR(MAX) NOT NULL,
+    resolved BIT DEFAULT 0,
+    created_at DATETIME2 DEFAULT GETDATE()
+    -- FOREIGN KEY (medicationId) REFERENCES Medications(medicationId) -- Add after confirming structure
+);
+GO
 
--- Sample medications (assuming user with id 1 exists)
-INSERT INTO Medications (userId, name, dosage, frequency, timing, startDate, instructions, prescribedBy, category, qrCode) VALUES
-(1, 'Lisinopril', '10mg', 'Once daily', '08:00', '2024-01-15', 'Take with breakfast, avoid grapefruit', 'Dr. Sarah Wilson', 'Heart Health', 'MED001-LISINOPRIL-10MG'),
-(1, 'Metformin', '500mg', 'Twice daily', '08:00,20:00', '2024-02-01', 'Take with meals to reduce stomach upset', 'Dr. Michael Brown', 'Diabetes', 'MED002-METFORMIN-500MG');
+-- Create DoctorAvailability Table for appointment booking
+CREATE TABLE DoctorAvailability (
+    availabilityId INT IDENTITY(1,1) PRIMARY KEY,
+    doctorId INT NOT NULL,
+    day_of_week NVARCHAR(20) NOT NULL, -- 'Monday', 'Tuesday', etc.
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    is_available BIT DEFAULT 1,
+    created_at DATETIME2 DEFAULT GETDATE()
+    -- FOREIGN KEY (doctorId) REFERENCES Doctors(doctorId) -- Add after confirming structure
+);
+GO
 
--- Sample appointments
-INSERT INTO Appointments (userId, doctorId, appointmentDate, duration, reason, status, notes) VALUES
-(1, 1, '2024-06-15 10:00:00', '45 min', 'Regular heart checkup', 'scheduled', 'Bring blood pressure readings from home'),
-(1, 2, '2024-06-08 14:30:00', '30 min', 'Diabetes management review', 'scheduled', 'Bring latest glucose monitor readings');
+-- Add foreign key for Medications (if Users table exists)
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Users')
+BEGIN
+    ALTER TABLE Medications 
+    ADD CONSTRAINT FK_Medications_Users 
+    FOREIGN KEY (userId) REFERENCES Users(id);
+END
+GO
 
--- Sample emergency contacts
-INSERT INTO EmergencyContacts (userId, name, relationship, phone, email, isPrimary, alertOnMissedMeds, alertThresholdHours) VALUES
-(1, 'Sarah Chen', 'Daughter', '+65 9111-2222', 'sarah.chen@email.com', 1, 1, 2),
-(1, 'David Chen', 'Son', '+65 9333-4444', 'david.chen@email.com', 0, 1, 4);
+-- Add foreign key for Appointments to Users (if Users table exists)
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Users')
+BEGIN
+    ALTER TABLE Appointments 
+    ADD CONSTRAINT FK_Appointments_Users 
+    FOREIGN KEY (userId) REFERENCES Users(id);
+END
+GO
 
--- Sample health data
-INSERT INTO HealthData (userId, recordDate, bloodPressureSystolic, bloodPressureDiastolic, weight, bloodSugar, notes, complianceScore) VALUES
-(1, '2024-06-05', 128, 78, 65.0, 110, 'Feeling good today, walked for 30 minutes', 95),
-(1, '2024-06-04', 135, 85, 65.2, 125, 'Forgot morning Metformin, took it at lunch', 75);
+-- Add foreign key for Appointments to Doctors
+ALTER TABLE Appointments 
+ADD CONSTRAINT FK_Appointments_Doctors 
+FOREIGN KEY (doctorId) REFERENCES Doctors(doctorId);
+GO
+
+-- Add foreign key for MedicationLogs
+ALTER TABLE MedicationLogs 
+ADD CONSTRAINT FK_MedicationLogs_Medications 
+FOREIGN KEY (medication_id) REFERENCES Medications(medicationId);
+GO
+
+-- Add foreign key for DrugConflicts
+ALTER TABLE DrugConflicts 
+ADD CONSTRAINT FK_DrugConflicts_Medications 
+FOREIGN KEY (medicationId) REFERENCES Medications(medicationId);
+GO
+
+-- Add foreign key for DoctorAvailability
+ALTER TABLE DoctorAvailability 
+ADD CONSTRAINT FK_DoctorAvailability_Doctors 
+FOREIGN KEY (doctorId) REFERENCES Doctors(doctorId);
+GO
+
+-- Insert Sample Doctors
+INSERT INTO Doctors (name, specialty, phone, email, location, address, rating) VALUES
+('Dr. Sarah Lim', 'General Practitioner', '+65 6123 4567', 'sarah.lim@clinic.com', 'Buona Vista', '123 North Buona Vista Road, Singapore 138888', 4.8),
+('Dr. Michael Chen', 'Cardiologist', '+65 6234 5678', 'michael.chen@heart.com', 'Jurong East', '456 Jurong Gateway Road, Singapore 608532', 4.9),
+('Dr. Priya Kumar', 'Endocrinologist', '+65 6345 6789', 'priya.kumar@diabetes.com', 'Tampines', '789 Tampines Avenue 4, Singapore 529681', 4.7),
+('Dr. James Wong', 'Orthopedic Surgeon', '+65 6456 7890', 'james.wong@ortho.com', 'Raffles Place', '321 Robinson Road, Singapore 068903', 4.6),
+('Dr. Lisa Tan', 'Dermatologist', '+65 6567 8901', 'lisa.tan@skin.com', 'Orchard', '654 Orchard Road, Singapore 238859', 4.5),
+('Dr. Ahmed Hassan', 'Neurologist', '+65 6678 9012', 'ahmed.hassan@neuro.com', 'Clementi', '987 Clementi Road, Singapore 129834', 4.7),
+('Dr. Maria Rodriguez', 'Psychiatrist', '+65 6789 0123', 'maria.rodriguez@mind.com', 'Toa Payoh', '654 Lorong 1 Toa Payoh, Singapore 319762', 4.6);
+GO
+
+-- Insert Doctor Availability (Monday to Friday, 9 AM to 5 PM)
+DECLARE @doctorId INT = 1;
+WHILE @doctorId <= 7
+BEGIN
+    INSERT INTO DoctorAvailability (doctorId, day_of_week, start_time, end_time) VALUES
+    (@doctorId, 'Monday', '09:00:00', '17:00:00'),
+    (@doctorId, 'Tuesday', '09:00:00', '17:00:00'),
+    (@doctorId, 'Wednesday', '09:00:00', '17:00:00'),
+    (@doctorId, 'Thursday', '09:00:00', '17:00:00'),
+    (@doctorId, 'Friday', '09:00:00', '17:00:00');
+    SET @doctorId = @doctorId + 1;
+END;
+GO
+
+-- Insert Sample Drug Interactions
+INSERT INTO DrugInteractions (drug1, drug2, severity, description) VALUES
+('Aspirin', 'Warfarin', 'severe', 'Increased risk of bleeding when taken together'),
+('Metformin', 'Alcohol', 'moderate', 'May increase risk of lactic acidosis'),
+('Lisinopril', 'Potassium supplements', 'moderate', 'May cause elevated potassium levels'),
+('Atorvastatin', 'Grapefruit juice', 'mild', 'Grapefruit may increase medication levels'),
+('Simvastatin', 'Amlodipine', 'moderate', 'Increased risk of muscle problems'),
+('Digoxin', 'Furosemide', 'moderate', 'May increase digoxin levels'),
+('Insulin', 'Beta-blockers', 'moderate', 'May mask signs of low blood sugar'),
+('Lithium', 'Diuretics', 'severe', 'May increase lithium toxicity');
+GO
+
+-- Index on userId for faster queries
+CREATE INDEX IX_Medications_UserId ON Medications(userId);
+CREATE INDEX IX_Appointments_UserId ON Appointments(userId);
+CREATE INDEX IX_MedicationLogs_MedicationId ON MedicationLogs(medication_id);
+GO
+
+-- Index on appointment dates for calendar functionality
+CREATE INDEX IX_Appointments_Date ON Appointments(appointmentDate);
+GO
+
+-- Index on active medications
+CREATE INDEX IX_Medications_Active ON Medications(active) WHERE active = 1;
+GO
+
+-- Index on doctor availability
+CREATE INDEX IX_DoctorAvailability_DoctorDay ON DoctorAvailability(doctorId, day_of_week);
+GO
+
+-- Index on drug interactions for conflict checking
+CREATE INDEX IX_DrugInteractions_Drugs ON DrugInteractions(drug1, drug2);
+GO
+
+-- Procedure to get medication compliance rate for a user
+CREATE PROCEDURE GetMedicationCompliance
+    @userId INT
+AS
+BEGIN
+    SELECT 
+        m.medicationId,
+        m.name,
+        COUNT(ml.logId) as total_doses,
+        COUNT(CASE WHEN ml.missed = 0 THEN 1 END) as taken_doses,
+        COUNT(CASE WHEN ml.missed = 1 THEN 1 END) as missed_doses,
+        CASE 
+            WHEN COUNT(ml.logId) > 0 THEN 
+                ROUND((CAST(COUNT(CASE WHEN ml.missed = 0 THEN 1 END) AS FLOAT) / COUNT(ml.logId)) * 100, 2)
+            ELSE 0 
+        END as compliance_rate
+    FROM Medications m
+    LEFT JOIN MedicationLogs ml ON m.medicationId = ml.medication_id
+        AND ml.taken_at >= DATEADD(MONTH, -1, GETDATE())
+    WHERE m.userId = @userId AND m.active = 1
+    GROUP BY m.medicationId, m.name
+    ORDER BY m.name;
+END;
+GO
+
+-- Procedure to check upcoming appointments
+CREATE PROCEDURE GetUpcomingAppointments
+    @userId INT,
+    @days INT = 7
+AS
+BEGIN
+    SELECT 
+        a.*,
+        d.name as doctorName,
+        d.specialty,
+        d.location,
+        d.address,
+        DATEDIFF(DAY, GETDATE(), a.appointmentDate) as days_until_appointment
+    FROM Appointments a
+    INNER JOIN Doctors d ON a.doctorId = d.doctorId
+    WHERE a.userId = @userId 
+        AND a.appointmentDate > GETDATE()
+        AND a.appointmentDate <= DATEADD(DAY, @days, GETDATE())
+        AND a.status = 'scheduled'
+    ORDER BY a.appointmentDate ASC;
+END;
+GO
+
+-- Procedure to check for drug interactions
+CREATE PROCEDURE CheckDrugInteractions
+    @userId INT
+AS
+BEGIN
+    SELECT DISTINCT
+        m1.name as medication1,
+        m2.name as medication2,
+        di.severity,
+        di.description
+    FROM Medications m1
+    INNER JOIN Medications m2 ON m1.userId = m2.userId AND m1.medicationId != m2.medicationId
+    INNER JOIN DrugInteractions di ON 
+        (LOWER(m1.name) = LOWER(di.drug1) AND LOWER(m2.name) = LOWER(di.drug2))
+        OR (LOWER(m1.name) = LOWER(di.drug2) AND LOWER(m2.name) = LOWER(di.drug1))
+    WHERE m1.userId = @userId 
+        AND m1.active = 1 
+        AND m2.active = 1
+    ORDER BY di.severity DESC, m1.name;
+END;
+GO
+
+-- View for medication summary with compliance
+CREATE VIEW MedicationSummary AS
+SELECT 
+    m.*,
+    COALESCE(
+        ROUND(
+            (CAST(COUNT(CASE WHEN ml.missed = 0 THEN 1 END) AS FLOAT) / 
+             NULLIF(COUNT(ml.logId), 0)) * 100, 0
+        ), 0
+    ) as compliance_rate,
+    COUNT(CASE WHEN ml.missed = 1 THEN 1 END) as missed_doses_last_month,
+    MAX(CASE WHEN ml.missed = 0 THEN ml.taken_at END) as last_taken
+FROM Medications m
+LEFT JOIN MedicationLogs ml ON m.medicationId = ml.medication_id
+    AND ml.taken_at >= DATEADD(MONTH, -1, GETDATE())
+WHERE m.active = 1
+GROUP BY 
+    m.medicationId, m.userId, m.name, m.dosage, m.frequency, 
+    m.timing, m.startDate, m.endDate, m.instructions, 
+    m.prescribedBy, m.active, m.qrCode, m.category,
+    m.createdAt, m.updatedAt;
+GO
+
+-- View for appointment details with doctor info
+CREATE VIEW AppointmentDetails AS
+SELECT 
+    a.*,
+    d.name as doctorName,
+    d.specialty,
+    d.phone as doctorPhone,
+    d.email as doctorEmail,
+    d.location,
+    d.address,
+    d.rating,
+    CASE 
+        WHEN a.appointmentDate < GETDATE() THEN 'past'
+        WHEN CAST(a.appointmentDate AS DATE) = CAST(GETDATE() AS DATE) THEN 'today'
+        ELSE 'upcoming'
+    END as appointment_status,
+    DATEDIFF(DAY, GETDATE(), a.appointmentDate) as days_until_appointment
+FROM Appointments a
+INNER JOIN Doctors d ON a.doctorId = d.doctorId;
+GO
+
+PRINT 'Database tables, indexes, procedures, and views created successfully!';
+PRINT 'Sample data inserted for Doctors and Drug Interactions.';
+PRINT 'Ready for Module 1: Medication & Appointment Manager testing.';
+
+-- Show created tables
+SELECT 'Tables Created:' as Status, TABLE_NAME as Name 
+FROM INFORMATION_SCHEMA.TABLES 
+WHERE TABLE_SCHEMA = 'dbo' 
+AND TABLE_NAME IN ('Medications', 'Doctors', 'Appointments', 'MedicationLogs', 'DrugInteractions', 'DrugConflicts', 'DoctorAvailability');
+GO
 
 
 -- Module 5: Buddy System
