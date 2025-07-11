@@ -436,4 +436,3 @@ CREATE TABLE MatchInteractions (
     FOREIGN KEY (UserID) REFERENCES Users(ID),
     FOREIGN KEY (TargetUserID) REFERENCES Users(ID)
 );
-
