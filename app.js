@@ -10,6 +10,7 @@ const { upload, handleUpload } = require("./utils/fileUpload.js");
 const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
+const chatController = require("./controllers/chatController.js");
 
 const {
   validateUserId,
@@ -161,7 +162,27 @@ app.get("/invite", (req, res) => {
   res.sendFile(path.join(__dirname, "public/invite.html"));
 });
 
-module.exports = app; // export for testing
+app.post("/conversations", authenticateJWT, chatController.startConversation);
+
+app.get("/conversations", authenticateJWT, chatController.getConversations);
+
+app.get(
+  "/conversations/:conversationId/messages",
+  authenticateJWT,
+  chatController.getMessages
+);
+
+app.post(
+  "/conversations/:conversationId/messages",
+  authenticateJWT,
+  chatController.sendMessage
+);
+
+app.delete(
+  "/messages/:messageId",
+  authenticateJWT,
+  chatController.deleteMessage
+);
 
 process.on("SIGINT", async () => {
   console.log("Server is gracefully shutting down");

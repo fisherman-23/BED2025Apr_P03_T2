@@ -225,3 +225,35 @@ CREATE TABLE MatchInteractions (
     FOREIGN KEY (TargetUserID) REFERENCES Users(ID)
 );
 
+CREATE TABLE Conversations (
+    ID INT PRIMARY KEY IDENTITY(1,1),
+
+    -- Store consistent user pairing: User1ID < User2ID
+    User1ID INT NOT NULL,
+    User2ID INT NOT NULL,
+
+    CreatedAt DATETIME DEFAULT GETDATE(),
+
+    CONSTRAINT FK_Conversation_User1 FOREIGN KEY (User1ID) REFERENCES Users(ID) ON DELETE CASCADE,
+    CONSTRAINT FK_Conversation_User2 FOREIGN KEY (User2ID) REFERENCES Users(ID) ON DELETE CASCADE,
+
+    -- Prevent duplicate conversations between same two users
+    CONSTRAINT UQ_UserPair UNIQUE (User1ID, User2ID)
+);
+
+CREATE TABLE Messages (
+    ID INT PRIMARY KEY IDENTITY(1,1),
+
+    ConversationID INT NOT NULL,
+    SenderID INT NOT NULL,
+    Content TEXT NOT NULL,
+
+    SentAt DATETIME DEFAULT GETDATE(),
+
+    -- Soft delete
+    IsDeleted BIT DEFAULT 0,
+    DeletedAt DATETIME NULL,
+
+    CONSTRAINT FK_Message_Conversation FOREIGN KEY (ConversationID) REFERENCES Conversations(ID) ON DELETE CASCADE,
+    CONSTRAINT FK_Message_Sender FOREIGN KEY (SenderID) REFERENCES Users(ID) ON DELETE CASCADE
+);
