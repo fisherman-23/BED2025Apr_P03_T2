@@ -18,6 +18,7 @@ function protectRoute(req, res, next) {
 
     next();
   } catch (err) {
+    // Refresh token logic
     if (err.name === "TokenExpiredError") {
       console.error("Token expired, checking for refresh token...");
       if (req.cookies && req.cookies.refreshToken) {
@@ -32,7 +33,7 @@ function protectRoute(req, res, next) {
           return res.status(403).redirect("/login.html");
         }
         newToken = jwt.sign(
-          { id: decodedRefresh.ID, email: decodedRefresh.Email },
+          { id: decodedRefresh.id, email: decodedRefresh.email },
           process.env.JWT_SECRET,
           { expiresIn: process.env.JWT_EXPIRES_IN }
         );
