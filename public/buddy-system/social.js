@@ -168,6 +168,8 @@ const testAll = async () => {
       headers: { "Content-Type": "application/json" },
       credentials: "include",
     });
+    // wait 500ms
+    await new Promise((resolve) => setTimeout(resolve, 500));
     const requestsRes = await fetch("/friend-requests", {
       method: "GET",
       headers: { "Content-Type": "application/json" },

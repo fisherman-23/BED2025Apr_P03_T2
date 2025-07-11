@@ -62,6 +62,7 @@ function protectSpecificRoutes(req, res, next) {
     "/chat.html",
     "/social.html",
     "/invite",
+    "/index.html",
   ];
 
   if (protectedFiles.includes(req.path)) {
