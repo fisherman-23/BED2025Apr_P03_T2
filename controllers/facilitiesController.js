@@ -46,6 +46,23 @@ async function getFacilities(req, res) {
     }
 }
 
+async function getFacilityById(req, res) {
+    try {
+        const facilityId = parseInt(req.params.id, 10);
+        if (isNaN(facilityId)) {
+            return res.status(400).json({ error: "Invalid facility ID" });
+        }
+        const facility = await facilitiesModel.getFacilityById(facilityId);
+        if (!facility) {
+            return res.status(404).json({ error: "Facility not found" });
+        }
+        res.status(200).json(facility);
+    } catch (error) {
+        console.error("Error in getFacilityById:", error);
+        res.status(500).json({ error: "Error fetching facility by ID" });
+    }
+}
+
 async function getFacilitiesByType(req, res) {
     try {
         const facilityType = req.params.type;
@@ -64,5 +81,6 @@ module.exports = {
     handleLocationAccess,
     getNearbyFacilities,
     getFacilities,
+    getFacilityById,
     getFacilitiesByType,
 };

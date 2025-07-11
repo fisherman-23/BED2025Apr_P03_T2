@@ -1,7 +1,6 @@
 class FacilityManager {
   constructor() {
     this.currentLocation = null;
-    this.facilities = [];
     this.filtered = [];
     this.selectedFilter = null;
     this.currentFacility = null;
@@ -111,11 +110,10 @@ class FacilityManager {
       if (facilities.length === 0) {
         this.list.innerHTML = '<p>No nearby facilities found. Getting all facilities...</p>';
         await new Promise(resolve => setTimeout(resolve, 2000));
-        await this.fetchFacilities();
+        this.filtered = await this.fetchFacilities();
       } else {
-        this.facilities = facilities; 
+        this.filtered = facilities;
       }
-      this.filtered = this.facilities;
       this.renderList();
     } catch (error) {
       console.error("Error loading nearby facilities:", error);
@@ -132,8 +130,8 @@ class FacilityManager {
       if (!res.ok) {
         throw new Error(`Failed to fetch facilities: ${res.statusText}`);
       }
-      this.facilities = await res.json();
-      this.filtered = this.facilities; // initialize filtered with all facilities
+      const facilities = await res.json();
+      this.filtered = facilities;
       this.selectedFilter = null;
       this.activeFiltersContainer.innerHTML = '';
       this.renderList();
@@ -155,8 +153,7 @@ class FacilityManager {
       if (!res.ok) {
         throw new Error(`Failed to fetch facilities by type: ${res.statusText}`);
       }
-      this.facilities = await res.json();
-      this.filtered = this.facilities; // reset filtered to the new facilities
+      this.filtered = await res.json();
       this.selectedFilter = facilityType;
       this.updateActiveFilters(facilityType);
       this.renderList();
@@ -164,6 +161,7 @@ class FacilityManager {
       console.error("Error fetching facilities by type:", error);
       this.list.innerHTML = '<p>Error loading facilities. Please try again later.</p>';
       this.placeholder.style.display = 'none';
+      this.filtered = [];
     }
   }
 
@@ -176,8 +174,7 @@ class FacilityManager {
       if (!res.ok) {
         throw new Error(`Failed to fetch bookmarked facilities: ${res.statusText}`);
       }
-      this.facilities = await res.json();
-      this.filtered = this.facilities;
+      this.filtered = await res.json();
       this.selectedFilter = 'Bookmarked';
       this.updateActiveFilters('Bookmarked');
       this.renderList();
@@ -193,7 +190,7 @@ class FacilityManager {
     const searchInput = document.getElementById('search');
     searchInput.addEventListener('input', () => {
       const keyword = searchInput.value.toLowerCase();
-      this.filtered = this.facilities.filter(f =>
+      this.filtered = this.filtered.filter(f =>
         f.name.toLowerCase().includes(keyword) ||
         f.address.toLowerCase().includes(keyword) ||
         f.facilityType.toLowerCase().includes(keyword)
@@ -249,6 +246,47 @@ class FacilityManager {
     this.renderList();
   }
 
+  async showDetails(facilityId) {
+    try {
+      const res = await fetch(`/facilities/${facilityId}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch facility details: ${res.statusText}`);
+      }
+      this.currentFacility = await res.json();
+      this.renderFacilityDetails();
+    } catch (error) {
+      console.error("Error in showDetails:", error);
+    }
+  }
+
+  renderFacilityDetails() {
+    const facility = this.currentFacility;
+    this.currentFacility = facility;
+    this.placeholder.style.display = 'none';
+
+    document.getElementById('facilityImage').classList.add('visible');
+    document.querySelector('.facility-header').classList.add('visible');
+    document.querySelector('.facility-info').classList.add('visible');
+    document.getElementById('startNavButton').classList.add('visible');
+    document.getElementById('facilityMap').classList.add('visible');
+    document.getElementById('viewReviewsButton').classList.add('visible');
+    document.getElementById('facilityImage').src = facility.image_url;
+    document.getElementById('facilityName').innerText = facility.name;
+    document.getElementById('facilityAddress').innerText = facility.address;
+    document.getElementById('facilityPhone').innerText = facility.phoneNo || 'N/A';
+    document.getElementById('facilityHours').innerText = facility.hours;
+    document.getElementById('facilityMap').src = facility.static_map_url;
+
+    document.getElementById('viewReviewsButton').href = `/reviews/${facility.facilityId}`;
+
+    this.initBookmarkButton(facility).then(() => {
+      this.showBookmarkNotes(facility);
+    });
+  }
+
   // Renders the list of facilities based on the current filter
   renderList() {
     this.list.innerHTML = '';
@@ -257,7 +295,7 @@ class FacilityManager {
       return;
     }
 
-    this.filtered.forEach((facility, index) => {
+    this.filtered.forEach((facility) => {
       const card = document.createElement('div');
       card.className = 'facility-cards';
       card.innerHTML = `
@@ -269,30 +307,8 @@ class FacilityManager {
             </div>
         </div>
       `;
-      card.addEventListener('click', () => this.showDetails(facility));
+      card.addEventListener('click', () => this.showDetails(facility.facilityId));
       this.list.appendChild(card);
-    });
-  }
-
-  // Displays the details of the selected facility
-  showDetails(facility) {
-    this.currentFacility = facility;
-    this.placeholder.style.display = 'none';
-
-    document.getElementById('facilityImage').classList.add('visible');
-    document.querySelector('.facility-header').classList.add('visible');
-    document.querySelector('.facility-info').classList.add('visible');
-    document.getElementById('startNavButton').classList.add('visible');
-    document.getElementById('facilityMap').classList.add('visible');
-    document.getElementById('facilityImage').src = facility.image_url;
-    document.getElementById('facilityName').innerText = facility.name;
-    document.getElementById('facilityAddress').innerText = facility.address;
-    document.getElementById('facilityPhone').innerText = facility.phoneNo || 'N/A';
-    document.getElementById('facilityHours').innerText = facility.hours;
-    document.getElementById('facilityMap').src = facility.static_map_url;
-
-    this.initBookmarkButton(facility).then(() => {
-      this.showBookmarkNotes(facility);
     });
   }
 

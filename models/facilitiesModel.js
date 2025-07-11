@@ -83,6 +83,32 @@ async function getFacilities() {
     }
 }
 
+async function getFacilityById(facilityId) {
+    let connection;
+    try {
+        connection = await sql.connect(dbConfig);
+        const query = `SELECT * FROM Facilities WHERE FacilityId = @facilityId`;
+        const request = connection.request();
+        request.input("facilityId", sql.Int, facilityId);
+        const result = await request.query(query);
+        if (result.recordset.length === 0) {
+            throw new Error("Facility not found");
+        }
+        return result.recordset[0];
+    } catch (error) {
+        console.error("Error fetching facility by ID:", error);
+        throw error;
+    } finally {
+        if (connection) {
+            try {
+                await connection.close();
+            } catch (err) {
+                console.error("Error closing database connection:", err);
+            }
+        }
+    }
+}
+
 async function getFacilitiesByType(facilityType) {
     let connection;
     try {
@@ -110,5 +136,6 @@ module.exports = {
     handleLocationAccess,
     getNearbyFacilities,
     getFacilities,
+    getFacilityById,
     getFacilitiesByType,
 };

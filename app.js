@@ -136,11 +136,6 @@ app.post(
   matchController.skipUser
 );
 
-app.get(
-  "/api/geocode",
-  authenticateJWT,
-  facilitiesController.handleLocationAccess
-);
 
 app.get(
   "/facilities/nearby",
@@ -154,10 +149,21 @@ app.get(
   facilitiesController.getFacilitiesByType
 );
 
+app.get("/facilities/:id",
+  authenticateJWT,
+  facilitiesController.getFacilityById
+);
+
 app.get(
   "/facilities",
   authenticateJWT,
   facilitiesController.getFacilities
+);
+
+app.get(
+  "/api/geocode",
+  authenticateJWT,
+  facilitiesController.handleLocationAccess
 );
 
 app.get(
