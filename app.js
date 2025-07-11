@@ -161,6 +161,8 @@ app.post(
   eventsController.createGroup
 )
 
+app.post("/groups/join", authenticateJWT, eventsController.joinGroup);
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });  

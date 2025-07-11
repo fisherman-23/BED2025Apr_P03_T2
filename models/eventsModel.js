@@ -94,8 +94,37 @@ async function createGroup(groupData) {
 
 }
 
+async function joinGroup(userId, groupId) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const query = `
+      INSERT INTO GroupMembers (UserID, GroupID, JoinedAt)
+      VALUES (@UserID, @GroupID, GETDATE());
+    `;
+    const request = connection.request();
+    request.input("UserID", sql.Int, userId);
+    request.input("GroupID", sql.Int, groupId);
+    const result = await request.query(query);
+    return result.rowsAffected[0] > 0;
+  } catch (error) {
+    console.error("Database error in joinGroup:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error("Error closing connection in joinGroup:", err);
+      }
+    }
+  }
+
+}
+
 module.exports = {
   getJoinedGroups,
   getAvailableGroups,
-  createGroup
+  createGroup,
+  joinGroup
 };
