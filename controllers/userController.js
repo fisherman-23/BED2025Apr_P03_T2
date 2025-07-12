@@ -1,3 +1,4 @@
+const { user } = require("../dbConfig");
 const userModel = require("../models/userModel");
 
 async function loginUser(req, res) {
@@ -8,12 +9,18 @@ async function loginUser(req, res) {
     if (result.error) {
       return res.status(401).json({ error: result.error });
     }
-    const { user, token } = result;
+    const { user, token, refreshToken } = result;
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 1000 * 60 * 60, // expires in 1h
+    });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24 * 7, // expires in 7 days
     });
     res.json({ user });
   } catch (error) {
@@ -43,6 +50,32 @@ async function getUserById(req, res) {
   } catch (error) {
     console.error("Controller error in getUserById:", error);
     res.status(500).json({ error: "Error retrieving user" });
+  }
+}
+
+function isValidUUID(uuid) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    uuid
+  );
+}
+
+async function getUserByUUID(req, res) {
+  try {
+    const uuid = req.params.uuid;
+
+    if (!isValidUUID(uuid)) {
+      return res.status(400).json({ error: "Invalid UUID format" });
+    }
+
+    const user = await userModel.getUserByUUID(uuid);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error("Controller error in getUserByUUID:", error);
+    res.status(500).json({ error: "Error retrieving user by UUID" });
   }
 }
 
@@ -96,4 +129,5 @@ module.exports = {
   updateUser,
   deleteUser,
   logoutUser,
+  getUserByUUID,
 };

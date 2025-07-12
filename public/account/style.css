@@ -184,35 +184,6 @@ nav {
     margin-right: auto;
 }
 
-.navigation-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-top: 5rem;
-}
-
-.view-bookmarks-button, .view-reports-button {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 1.5rem;
-    border-radius: 1rem;
-    font-size: 1rem;
-    cursor: pointer;
-}
-
-.view-bookmarks-button {
-    background-color: rgba(189, 192, 249, 0.31);
-    border: 2px solid #575DDF;
-    color: #575DDF;
-}
-
-.view-reports-button {
-    background-color: rgba(249, 189, 189, 0.31);
-    border: 2px solid #F24E1E;
-    color: #F24E1E;
-}
-
 @media (max-width: 768px) {
     #account-container {
         width: 90%;

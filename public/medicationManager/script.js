@@ -1,1252 +1,716 @@
-// global variables
-let currentUser = null;
-let currentTab = 'dashboard';
-let medications = [];
-let appointments = [];
-let emergencyContacts = [];
-let healthData = [];
-let doctors = [];
+class MedicationAppointmentManager {
+    constructor() {
+        this.currentTab = 'overview';
+        this.medications = [];
+        this.appointments = [];
+        this.doctors = [];
+        this.init();
+    }
 
-// API base URL
-const API_BASE = 'http://localhost:3000/api';
+    async init() {
+        this.setupEventListeners();
+        await this.checkAuthentication();
+        await this.loadDoctors();
+        await this.loadData();
+        this.updateDashboard();
+    }
 
-// initialize the application
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
-    setupEventListeners();
-    checkAuthStatus();
-});
-
-/* initialize the application */
-function initializeApp() {
-    // set today's date as default for date inputs
-    const today = new Date().toISOString().split('T')[0];
-    const dateInputs = document.querySelectorAll('input[type="date"]');
-    dateInputs.forEach(input => {
-        if (input.id === 'medStartDate' || input.id === 'healthDate') {
-            input.value = today;
-        }
-        if (input.id === 'appointmentDate') {
-            input.min = today;
-        }
-    });
-
-    // load initial data
-    loadDashboardData();
-}
-
-/* setup event listeners */
-function setupEventListeners() {
-    // tab navigation
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            switchTab(this.dataset.tab);
+    setupEventListeners() {
+        // tab switching
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                this.switchTab(e.target.dataset.tab);
+            });
         });
-    });
 
-    // form submissions
-    document.getElementById('addMedicationForm').addEventListener('submit', handleAddMedication);
-    document.getElementById('addAppointmentForm').addEventListener('submit', handleAddAppointment);
-    document.getElementById('addContactForm').addEventListener('submit', handleAddContact);
-    document.getElementById('addHealthDataForm').addEventListener('submit', handleAddHealthData);
+        // modal controls
+        document.getElementById('addMedicationBtn').addEventListener('click', () => {
+            this.showMedicationModal();
+        });
 
-    // modal close events
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal(this.id);
+        document.getElementById('addAppointmentBtn').addEventListener('click', () => {
+            this.showAppointmentModal();
+        });
+
+        document.getElementById('cancelMedicationBtn').addEventListener('click', () => {
+            this.hideMedicationModal();
+        });
+
+        document.getElementById('cancelAppointmentBtn').addEventListener('click', () => {
+            this.hideAppointmentModal();
+        });
+
+        document.getElementById('saveMedicationBtn').addEventListener('click', () => {
+            this.saveMedication();
+        });
+
+        document.getElementById('saveAppointmentBtn').addEventListener('click', () => {
+            this.saveAppointment();
+        });
+
+        // logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            this.logout();
+        });
+
+        // close modals when clicking outside
+        document.getElementById('medicationModal').addEventListener('click', (e) => {
+            if (e.target.id === 'medicationModal') {
+                this.hideMedicationModal();
             }
         });
-    });
 
-    // keyboard navigation
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeAllModals();
-        }
-    });
-}
-
-/* check authentication status */
-async function checkAuthStatus() {
-    try {
-        const response = await fetch(`${API_BASE}/auth/me`, {
-            method: 'GET',
-            credentials: 'include'
+        document.getElementById('appointmentModal').addEventListener('click', (e) => {
+            if (e.target.id === 'appointmentModal') {
+                this.hideAppointmentModal();
+            }
         });
+    }
 
-        if (response.ok) {
-            const data = await response.json();
-            currentUser = data.user;
-            document.getElementById('userName').textContent = `Welcome, ${currentUser.name}`;
-        } else {
-            // redirect to login if not authenticated
+    async checkAuthentication() {
+        try {
+            const response = await fetch('/me', {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            const userData = await response.json();
+            console.log('User authenticated:', userData);
+        } catch (error) {
+            console.error('Authentication check failed:', error);
             window.location.href = '/login.html';
         }
-    } catch (error) {
-        console.error('Auth check failed:', error);
-        showToast('Authentication error. Please login again.', 'error');
-        setTimeout(() => {
-            window.location.href = '/login.html';
-        }, 2000);
     }
-}
 
-/* switch between tabs */
-function switchTab(tabName) {
-    // update active tab button
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    async loadDoctors() {
+        try {
+            const response = await fetch('/api/doctors', {
+                method: 'GET',
+                credentials: 'include'
+            });
 
-    // update active tab content
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    document.getElementById(tabName).classList.add('active');
-
-    currentTab = tabName;
-
-    // load tab-specific data
-    switch (tabName) {
-        case 'dashboard':
-            loadDashboardData();
-            break;
-        case 'medications':
-            loadMedications();
-            break;
-        case 'appointments':
-            loadAppointments();
-            loadDoctors();
-            break;
-        case 'emergency':
-            loadEmergencyContacts();
-            break;
-        case 'health':
-            loadHealthData();
-            loadHealthStatistics();
-            break;
+            if (response.ok) {
+                this.doctors = await response.json();
+                this.populateDoctorSelect();
+            }
+        } catch (error) {
+            console.error('Error loading doctors:', error);
+        }
     }
-}
 
-/* load dashboard data */
-async function loadDashboardData() {
-    try {
-        showLoading();
+    populateDoctorSelect() {
+        const select = document.getElementById('doctorSelect');
+        select.innerHTML = '<option value="">Select doctor</option>';
+        
+        if (this.doctors.data) {
+            this.doctors.data.doctors.forEach(doctor => {
+                const option = document.createElement('option');
+                option.value = doctor.doctorId;
+                option.textContent = `${doctor.name} - ${doctor.specialty}`;
+                select.appendChild(option);
+            });
+        }
+    }
 
-        // load all data for dashboard
+    async loadData() {
         await Promise.all([
-            loadMedications(true),
-            loadAppointments(true),
-            loadEmergencyContacts(true),
-            loadHealthStatistics(true)
+            this.loadMedications(),
+            this.loadAppointments()
         ]);
-
-        updateDashboardStats();
-        updateTodayMedications();
-        updateUpcomingAppointments();
-
-        hideLoading();
-    } catch (error) {
-        console.error('Error loading dashboard:', error);
-        showToast('Error loading dashboard data', 'error');
-        hideLoading();
-    }
-}
-
-/* update dashboard statistics */
-function updateDashboardStats() {
-    const activeMeds = medications.filter(med => med.active).length;
-    const upcomingAppts = appointments.filter(appt => 
-        new Date(appt.appointmentDate) > new Date() && appt.status === 'scheduled'
-    ).length;
-    const totalContacts = emergencyContacts.length;
-    
-    // calculate average compliance rate
-    const avgCompliance = medications.length > 0 
-        ? Math.round(medications.reduce((sum, med) => sum + (med.complianceRate || 0), 0) / medications.length)
-        : 0;
-
-    document.getElementById('activeMedications').textContent = activeMeds;
-    document.getElementById('upcomingAppointments').textContent = upcomingAppts;
-    document.getElementById('emergencyContacts').textContent = totalContacts;
-    document.getElementById('complianceRate').textContent = `${avgCompliance}%`;
-}
-
-/* update today's medications section */
-function updateTodayMedications() {
-    const container = document.getElementById('todayMedications');
-    const activeMeds = medications.filter(med => med.active).slice(0, 3);
-
-    if (activeMeds.length === 0) {
-        container.innerHTML = '<p class="empty-state">No active medications</p>';
-        return;
     }
 
-    container.innerHTML = activeMeds.map(med => `
-        <div class="medication-summary">
-            <div class="med-summary-info">
-                <h4>${med.name}</h4>
-                <p>${med.dosage} - ${med.frequency}</p>
-                <p class="next-time">Next: ${med.timing}</p>
-            </div>
-            <button class="btn-success" onclick="markMedicationTaken(${med.medicationId})">
-                <i class="fas fa-check"></i>
-            </button>
-        </div>
-    `).join('');
-}
+    async loadMedications() {
+        try {
+            const response = await fetch('/api/medications', {
+                method: 'GET',
+                credentials: 'include'
+            });
 
-/* update upcoming appointments section */
-function updateUpcomingAppointments() {
-    const container = document.getElementById('upcomingAppointmentsList');
-    const upcoming = appointments
-        .filter(appt => new Date(appt.appointmentDate) > new Date() && appt.status === 'scheduled')
-        .slice(0, 2);
-
-    if (upcoming.length === 0) {
-        container.innerHTML = '<p class="empty-state">No upcoming appointments</p>';
-        return;
-    }
-
-    container.innerHTML = upcoming.map(appt => `
-        <div class="appointment-summary">
-            <div class="appt-summary-info">
-                <h4>${appt.doctorName}</h4>
-                <p>${appt.specialty}</p>
-                <p class="appt-date">${formatDateTime(appt.appointmentDate)}</p>
-            </div>
-            <div class="appt-summary-actions">
-                <button class="action-btn" onclick="showOnMap('${appt.address}')" title="Show on map">
-                    <i class="fas fa-map-marker-alt"></i>
-                </button>
-            </div>
-        </div>
-    `).join('');
-}
-
-/* load medications */
-async function loadMedications(silent = false) {
-    try {
-        if (!silent) showLoading();
-
-        const response = await fetchWithAuth(`${API_BASE}/medications`);
-        const data = await response.json();
-
-        if (response.ok) {
-            medications = data.medications;
-            if (currentTab === 'medications') {
-                renderMedications();
+            if (response.ok) {
+                const data = await response.json();
+                this.medications = data.data?.medications || [];
+                this.renderMedications();
+            } else {
+                console.error('Failed to load medications');
             }
-        } else {
-            throw new Error(data.error || 'Failed to load medications');
-        }
-
-        if (!silent) hideLoading();
-    } catch (error) {
-        console.error('Error loading medications:', error);
-        if (!silent) {
-            showToast('Error loading medications', 'error');
-            hideLoading();
+        } catch (error) {
+            console.error('Error loading medications:', error);
         }
     }
-}
 
-/* render medications list */
-function renderMedications() {
-    const container = document.getElementById('medicationsList');
-    
-    if (medications.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-pills"></i>
-                <h3>No medications added yet</h3>
-                <p>Add your first medication to get started with tracking</p>
-                <button class="btn-primary" onclick="showAddMedicationModal()">
-                    <i class="fas fa-plus"></i>
-                    Add Medication
-                </button>
-            </div>
-        `;
-        return;
+    async loadAppointments() {
+        try {
+            const response = await fetch('/api/appointments', {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                this.appointments = data.data?.appointments || [];
+                this.renderAppointments();
+            } else {
+                console.error('Failed to load appointments');
+            }
+        } catch (error) {
+            console.error('Error loading appointments:', error);
+        }
     }
 
-    container.innerHTML = medications.map(med => `
-        <div class="medication-card">
-            <div class="medication-header">
-                <div class="medication-info">
-                    <h4>${med.name}</h4>
-                    <div class="dosage">${med.dosage}</div>
-                    <div class="prescriber">Prescribed by: ${med.prescribedBy || 'Not specified'}</div>
+    switchTab(tabName) {
+        // update tab buttons
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('active', 'text-blue-600', 'border-blue-500');
+            button.classList.add('text-gray-500', 'border-transparent');
+        });
+
+        const activeButton = document.querySelector(`[data-tab="${tabName}"]`);
+        activeButton.classList.add('active', 'text-blue-600', 'border-blue-500');
+        activeButton.classList.remove('text-gray-500', 'border-transparent');
+
+        // show/hide content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+
+        document.getElementById(`${tabName}-content`).classList.remove('hidden');
+        this.currentTab = tabName;
+    }
+
+    renderMedications() {
+        const container = document.getElementById('medicationsGrid');
+        const todayContainer = document.getElementById('todayMedications');
+        
+        if (!container || !todayContainer) return;
+
+        // clear containers
+        container.innerHTML = '';
+        todayContainer.innerHTML = '';
+
+        if (this.medications.length === 0) {
+            container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">No medications added yet. Click "Add Medication" to get started.</div>';
+            todayContainer.innerHTML = '<div class="text-center py-4 text-gray-500">No medications for today</div>';
+            return;
+        }
+
+        this.medications.forEach(medication => {
+            const medicationCard = this.createMedicationCard(medication);
+            container.appendChild(medicationCard);
+
+            // add to today's medications if active
+            if (medication.active) {
+                const todayCard = this.createMedicationCard(medication, true);
+                todayContainer.appendChild(todayCard);
+            }
+        });
+    }
+
+    createMedicationCard(medication, isCompact = false) {
+        const card = document.createElement('div');
+        card.className = `bg-white rounded-2xl shadow-lg border-l-4 border-blue-500 p-6 card-hover medication-card ${isCompact ? 'mb-3' : ''}`;
+
+        const complianceRate = medication.compliance_rate || 0;
+        const complianceClass = complianceRate >= 90 ? 'compliance-high' : 
+                               complianceRate >= 70 ? 'compliance-medium' : 'compliance-low';
+
+        card.innerHTML = `
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v8a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800">${medication.name}</h3>
+                        <p class="text-gray-600">${medication.patient_name || 'Patient'}</p>
+                        <p class="text-sm text-gray-500">Prescribed by ${medication.prescribedBy}</p>
+                    </div>
                 </div>
-                <div class="medication-actions">
-                    <button class="action-btn qr" onclick="showQRCode(${med.medicationId})" title="Show QR Code">
-                        <i class="fas fa-qrcode"></i>
+                ${!isCompact ? `
+                <div class="flex space-x-2">
+                    <button onclick="medicationManager.editMedication(${medication.medicationId})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                        </svg>
                     </button>
-                    <button class="action-btn edit" onclick="editMedication(${med.medicationId})" title="Edit">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="action-btn delete" onclick="deleteMedication(${med.medicationId})" title="Delete">
-                        <i class="fas fa-trash"></i>
+                    <button onclick="medicationManager.deleteMedication(${medication.medicationId})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
                     </button>
                 </div>
+                ` : ''}
             </div>
 
-            <div class="medication-details">
-                <div class="detail-row">
-                    <span class="detail-label">Frequency:</span>
-                    <span class="detail-value">${med.frequency}</span>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="bg-gray-50 rounded-lg p-3">
+                    <p class="text-sm text-gray-600">Dosage & Schedule</p>
+                    <p class="font-semibold text-gray-800">${medication.dosage}</p>
+                    <p class="text-sm text-blue-600">${medication.frequency} at ${medication.timing}</p>
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">Timing:</span>
-                    <span class="detail-value">${med.timing}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Category:</span>
-                    <span class="detail-value">${med.category || 'General'}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Compliance Rate:</span>
-                    <span class="detail-value">
-                        <div class="compliance-bar">
-                            <div class="compliance-fill ${getComplianceClass(med.complianceRate)}" 
-                                 style="width: ${med.complianceRate || 0}%"></div>
+                <div class="bg-gray-50 rounded-lg p-3">
+                    <p class="text-sm text-gray-600">Taking Consistently</p>
+                    <div class="flex items-center space-x-2">
+                        <div class="flex-1 bg-gray-200 rounded-full h-2">
+                            <div class="${complianceClass} h-2 rounded-full" style="width: ${complianceRate}%"></div>
                         </div>
-                        ${med.complianceRate || 0}%
+                        <span class="text-sm font-bold">${complianceRate}%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-amber-50 rounded-lg p-3 mb-3">
+                <p class="text-sm text-amber-800 font-medium">Instructions:</p>
+                <p class="text-sm text-amber-700">${medication.instructions || 'No special instructions'}</p>
+            </div>
+
+            ${medication.next_dose ? `
+            <div class="flex items-center justify-between bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 mb-3">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-sm font-medium text-blue-800">Next dose</span>
+                </div>
+                <span class="text-sm font-bold text-purple-800">
+                    ${new Date(medication.next_dose).toLocaleDateString()} at ${new Date(medication.next_dose).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </span>
+            </div>
+            ` : ''}
+
+            ${medication.missed_doses > 0 ? `
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-sm font-medium text-red-800">
+                        ${medication.missed_doses} missed dose(s) - Family members notified
                     </span>
                 </div>
             </div>
-
-            ${med.instructions ? `
-                <div class="medication-instructions">
-                    <strong>Instructions:</strong> ${med.instructions}
-                </div>
             ` : ''}
 
-            ${med.nextDose ? `
-                <div class="next-dose">
-                    <i class="fas fa-clock"></i>
-                    <span>Next dose: ${formatDateTime(med.nextDose)}</span>
+            ${!medication.drug_conflicts ? `
+            <div class="bg-green-50 border border-green-200 rounded-lg p-2 mb-3">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-xs text-green-800">No drug interactions detected</span>
                 </div>
+            </div>
             ` : ''}
 
-            <button class="take-medication-btn" onclick="markMedicationTaken(${med.medicationId})">
-                <i class="fas fa-check"></i>
+            <button onclick="medicationManager.markAsTaken(${medication.medicationId})" class="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
                 Mark as Taken
             </button>
-        </div>
-    `).join('');
-}
-
-/* get compliance rate CSS class */
-function getComplianceClass(rate) {
-    if (rate >= 90) return 'high';
-    if (rate >= 70) return 'medium';
-    return 'low';
-}
-
-/* load appointments */
-async function loadAppointments(silent = false) {
-    try {
-        if (!silent) showLoading();
-
-        const response = await fetchWithAuth(`${API_BASE}/appointments`);
-        const data = await response.json();
-
-        if (response.ok) {
-            appointments = data.appointments;
-            if (currentTab === 'appointments') {
-                renderAppointments();
-            }
-        } else {
-            throw new Error(data.error || 'Failed to load appointments');
-        }
-
-        if (!silent) hideLoading();
-    } catch (error) {
-        console.error('Error loading appointments:', error);
-        if (!silent) {
-            showToast('Error loading appointments', 'error');
-            hideLoading();
-        }
-    }
-}
-
-/* render appointments list */
-function renderAppointments() {
-    const container = document.getElementById('appointmentsList');
-    
-    if (appointments.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-calendar-alt"></i>
-                <h3>No appointments scheduled</h3>
-                <p>Book your first appointment with a healthcare provider</p>
-                <button class="btn-primary" onclick="showAddAppointmentModal()">
-                    <i class="fas fa-plus"></i>
-                    Book Appointment
-                </button>
-            </div>
         `;
-        return;
+
+        return card;
     }
 
-    container.innerHTML = appointments.map(appt => `
-        <div class="appointment-card">
-            <div class="appointment-header">
-                <div class="doctor-info">
-                    <h4>${appt.doctorName}</h4>
-                    <div class="specialty">${appt.specialty}</div>
-                </div>
-                <div class="appointment-actions">
-                    <button class="action-btn" onclick="showOnMap('${appt.address}')" title="Show on map">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </button>
-                    <button class="action-btn edit" onclick="editAppointment(${appt.appointmentId})" title="Edit">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="action-btn delete" onclick="deleteAppointment(${appt.appointmentId})" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
+    renderAppointments() {
+        const container = document.getElementById('appointmentsGrid');
+        const weekContainer = document.getElementById('weekAppointments');
+        
+        if (!container || !weekContainer) return;
 
-            <div class="appointment-datetime">
-                <div class="appointment-date">${formatDate(appt.appointmentDate)}</div>
-                <div class="appointment-time">${formatTime(appt.appointmentDate)}</div>
-            </div>
+        // clear containers
+        container.innerHTML = '';
+        weekContainer.innerHTML = '';
 
-            <div class="appointment-reason">
-                <div class="reason-label">Reason for visit:</div>
-                <div>${appt.reason}</div>
-            </div>
+        if (this.appointments.length === 0) {
+            container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">No appointments scheduled yet. Click "Book Appointment" to get started.</div>';
+            weekContainer.innerHTML = '<div class="text-center py-4 text-gray-500">No appointments this week</div>';
+            return;
+        }
 
-            <div class="appointment-location">
-                <i class="fas fa-map-marker-alt"></i>
+        // filter upcoming appointments for this week
+        const now = new Date();
+        const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const thisWeekAppointments = this.appointments.filter(apt => {
+            const aptDate = new Date(apt.appointmentDate);
+            return aptDate >= now && aptDate <= nextWeek;
+        });
+
+        this.appointments.forEach(appointment => {
+            const appointmentCard = this.createAppointmentCard(appointment);
+            container.appendChild(appointmentCard);
+        });
+
+        thisWeekAppointments.forEach(appointment => {
+            const weekCard = this.createAppointmentCard(appointment, true);
+            weekContainer.appendChild(weekCard);
+        });
+    }
+
+    createAppointmentCard(appointment, isCompact = false) {
+        const card = document.createElement('div');
+        card.className = `bg-white rounded-2xl shadow-lg border-l-4 border-green-500 p-6 card-hover appointment-card ${isCompact ? 'mb-3' : ''}`;
+
+        const appointmentDate = new Date(appointment.appointmentDate);
+        const statusClass = appointment.status === 'completed' ? 'bg-green-100 text-green-800' :
+                           appointment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                           'bg-blue-100 text-blue-800';
+
+        card.innerHTML = `
+            <div class="flex justify-between items-start mb-4">
                 <div>
-                    <div>${appt.location}</div>
-                    <div style="font-size: 0.8rem; opacity: 0.8;">${appt.address}</div>
-                </div>
-            </div>
-
-            ${appt.notes ? `
-                <div class="appointment-notes">
-                    <strong>Notes:</strong> ${appt.notes}
-                </div>
-            ` : ''}
-
-            <div class="appointment-footer">
-                <span class="status-badge status-${appt.status}">${appt.status}</span>
-                <div class="appointment-contact">
-                    <i class="fas fa-phone"></i>
-                    ${appt.doctorPhone}
-                </div>
-            </div>
-
-            ${appt.followUpNeeded ? `
-                <div class="follow-up-notice">
-                    <i class="fas fa-info-circle"></i>
-                    Follow-up appointment may be needed
-                </div>
-            ` : ''}
-        </div>
-    `).join('');
-}
-
-/* load doctors list */
-async function loadDoctors() {
-    try {
-        const response = await fetchWithAuth(`${API_BASE}/appointments/doctors/all`);
-        const data = await response.json();
-
-        if (response.ok) {
-            doctors = data.doctors;
-            populateDoctorSelect();
-        } else {
-            throw new Error(data.error || 'Failed to load doctors');
-        }
-    } catch (error) {
-        console.error('Error loading doctors:', error);
-        showToast('Error loading doctors list', 'error');
-    }
-}
-
-/* populate doctor select dropdown */
-function populateDoctorSelect() {
-    const select = document.getElementById('appointmentDoctor');
-    
-    select.innerHTML = '<option value="">Select a doctor</option>' + 
-        doctors.map(doctor => `
-            <option value="${doctor.doctorId}">
-                ${doctor.name} - ${doctor.specialty} (Rating: ${doctor.rating})
-            </option>
-        `).join('');
-}
-
-/* load emergency contacts */
-async function loadEmergencyContacts(silent = false) {
-    try {
-        if (!silent) showLoading();
-
-        const response = await fetchWithAuth(`${API_BASE}/emergency-contacts`);
-        const data = await response.json();
-
-        if (response.ok) {
-            emergencyContacts = data.contacts;
-            if (currentTab === 'emergency') {
-                renderEmergencyContacts();
-            }
-        } else {
-            throw new Error(data.error || 'Failed to load emergency contacts');
-        }
-
-        if (!silent) hideLoading();
-    } catch (error) {
-        console.error('Error loading emergency contacts:', error);
-        if (!silent) {
-            showToast('Error loading emergency contacts', 'error');
-            hideLoading();
-        }
-    }
-}
-
-/* render emergency contacts list */
-function renderEmergencyContacts() {
-    const container = document.getElementById('emergencyContactsList');
-    
-    if (emergencyContacts.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-users"></i>
-                <h3>No emergency contacts added</h3>
-                <p>Add family members or caregivers who should be notified in case of emergencies</p>
-                <button class="btn-primary" onclick="showAddContactModal()">
-                    <i class="fas fa-plus"></i>
-                    Add Contact
-                </button>
-            </div>
-        `;
-        return;
-    }
-
-    container.innerHTML = emergencyContacts.map(contact => `
-        <div class="contact-card ${contact.isPrimary ? 'primary' : ''}">
-            <div class="contact-header">
-                <div class="contact-info">
-                    <h4>${contact.name}</h4>
-                    <div class="relationship">${contact.relationship}</div>
-                    ${contact.isPrimary ? '<span class="primary-badge">Primary Contact</span>' : ''}
-                </div>
-                <div class="contact-actions">
-                    <button class="action-btn edit" onclick="editContact(${contact.contactId})" title="Edit">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="action-btn delete" onclick="deleteContact(${contact.contactId})" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="contact-details">
-                <div class="contact-detail">
-                    <i class="fas fa-phone"></i>
-                    <span>${contact.phone}</span>
-                </div>
-                ${contact.email ? `
-                    <div class="contact-detail">
-                        <i class="fas fa-envelope"></i>
-                        <span>${contact.email}</span>
-                    </div>
-                ` : ''}
-            </div>
-
-            <div class="alert-settings">
-                <div class="alert-setting">
-                    <span>Medication alerts:</span>
-                    <span class="alert-status ${contact.alertOnMissedMeds ? 'alert-active' : 'alert-disabled'}">
-                        ${contact.alertOnMissedMeds ? 'Active' : 'Disabled'}
+                    <h3 class="text-xl font-bold text-gray-800">${appointment.doctorName}</h3>
+                    <p class="text-green-600 font-semibold">${appointment.specialty}</p>
+                    <span class="inline-block mt-1 px-2 py-1 text-xs font-medium rounded-full ${statusClass}">
+                        ${appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                     </span>
                 </div>
-                ${contact.alertOnMissedMeds ? `
-                    <div class="alert-setting">
-                        <span>Alert threshold:</span>
-                        <span>${contact.alertThresholdHours} hours</span>
-                    </div>
+                ${!isCompact ? `
+                <div class="flex space-x-2">
+                    <button onclick="medicationManager.editAppointment(${appointment.appointmentId})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                        </svg>
+                    </button>
+                    <button onclick="medicationManager.cancelAppointment(${appointment.appointmentId})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </div>
                 ` : ''}
             </div>
-        </div>
-    `).join('');
-}
 
-/* load health data */
-async function loadHealthData(silent = false) {
-    try {
-        if (!silent) showLoading();
+            <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-600">Date & Time</p>
+                        <p class="font-semibold text-gray-800">${appointmentDate.toLocaleDateString()}</p>
+                        <p class="text-sm text-blue-600">${appointmentDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Duration</p>
+                        <p class="font-semibold text-gray-800">${appointment.duration} minutes</p>
+                    </div>
+                </div>
+            </div>
 
-        const response = await fetchWithAuth(`${API_BASE}/health-data?limit=20`);
-        const data = await response.json();
+            <div class="mb-4">
+                <p class="text-sm text-gray-600 font-medium">Reason for Visit:</p>
+                <p class="text-gray-800">${appointment.reason}</p>
+            </div>
 
-        if (response.ok) {
-            healthData = data.healthData;
-            if (currentTab === 'health') {
-                renderHealthData();
-            }
-        } else {
-            throw new Error(data.error || 'Failed to load health data');
-        }
+            <div class="mb-4">
+                <p class="text-sm text-gray-600 font-medium">Location:</p>
+                <p class="text-gray-800">${appointment.location}</p>
+                <p class="text-sm text-gray-500">${appointment.address}</p>
+            </div>
 
-        if (!silent) hideLoading();
-    } catch (error) {
-        console.error('Error loading health data:', error);
-        if (!silent) {
-            showToast('Error loading health data', 'error');
-            hideLoading();
-        }
-    }
-}
+            ${appointment.notes ? `
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                <p class="text-sm text-yellow-800 font-medium">Notes:</p>
+                <p class="text-sm text-yellow-700">${appointment.notes}</p>
+            </div>
+            ` : ''}
 
-/* load health statistics */
-async function loadHealthStatistics(silent = false) {
-    try {
-        const response = await fetchWithAuth(`${API_BASE}/health-data/statistics`);
-        const data = await response.json();
-
-        if (response.ok) {
-            if (currentTab === 'health') {
-                renderHealthStatistics(data.statistics);
-            }
-        } else {
-            throw new Error(data.error || 'Failed to load health statistics');
-        }
-    } catch (error) {
-        console.error('Error loading health statistics:', error);
-        if (!silent) {
-            showToast('Error loading health statistics', 'error');
-        }
-    }
-}
-
-/* render health statistics */
-function renderHealthStatistics(stats) {
-    const container = document.getElementById('healthStatistics');
-    
-    if (!stats || stats.recordCount === 0) {
-        container.innerHTML = '<p class="empty-state">No health data available for statistics</p>';
-        return;
-    }
-
-    container.innerHTML = `
-        <div class="health-stat">
-            <div class="health-stat-value">${Math.round(stats.avgSystolic || 0)}</div>
-            <div class="health-stat-label">Avg Systolic BP</div>
-        </div>
-        <div class="health-stat">
-            <div class="health-stat-value">${Math.round(stats.avgDiastolic || 0)}</div>
-            <div class="health-stat-label">Avg Diastolic BP</div>
-        </div>
-        <div class="health-stat">
-            <div class="health-stat-value">${stats.avgWeight ? stats.avgWeight.toFixed(1) : 'N/A'}</div>
-            <div class="health-stat-label">Avg Weight (kg)</div>
-        </div>
-        <div class="health-stat">
-            <div class="health-stat-value">${Math.round(stats.avgCompliance || 0)}%</div>
-            <div class="health-stat-label">Avg Compliance</div>
-        </div>
-        <div class="health-stat">
-            <div class="health-stat-value">${stats.recordCount}</div>
-            <div class="health-stat-label">Total Records</div>
-        </div>
-    `;
-}
-
-/* render health data list */
-function renderHealthData() {
-    const container = document.getElementById('healthDataList');
-    
-    if (healthData.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-chart-line"></i>
-                <h3>No health data recorded</h3>
-                <p>Start tracking your health metrics for better medication management</p>
-                <button class="btn-primary" onclick="showAddHealthDataModal()">
-                    <i class="fas fa-plus"></i>
-                    Log Health Data
+            <div class="flex space-x-2">
+                <button onclick="medicationManager.sendReminder(${appointment.appointmentId})" class="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-600 transition-colors">
+                    Send Reminder
+                </button>
+                <button onclick="medicationManager.getDirections(${appointment.appointmentId})" class="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors">
+                    Get Directions
                 </button>
             </div>
         `;
-        return;
+
+        return card;
     }
 
-    container.innerHTML = healthData.map(data => `
-        <div class="health-card">
-            <div class="health-header">
-                <div class="health-date">${formatDate(data.recordDate)}</div>
-                <div class="health-actions">
-                    <button class="action-btn edit" onclick="editHealthData(${data.healthId})" title="Edit">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="action-btn delete" onclick="deleteHealthData(${data.healthId})" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="health-metrics">
-                ${data.bloodPressureSystolic ? `
-                    <div class="metric-group">
-                        <div class="metric-label">Blood Pressure</div>
-                        <div class="metric-value">
-                            ${data.bloodPressureSystolic}/${data.bloodPressureDiastolic}
-                            <span class="metric-unit">mmHg</span>
-                        </div>
-                    </div>
-                ` : ''}
-                ${data.weight ? `
-                    <div class="metric-group">
-                        <div class="metric-label">Weight</div>
-                        <div class="metric-value">
-                            ${data.weight}
-                            <span class="metric-unit">kg</span>
-                        </div>
-                    </div>
-                ` : ''}
-                ${data.bloodSugar ? `
-                    <div class="metric-group">
-                        <div class="metric-label">Blood Sugar</div>
-                        <div class="metric-value">
-                            ${data.bloodSugar}
-                            <span class="metric-unit">mg/dL</span>
-                        </div>
-                    </div>
-                ` : ''}
-            </div>
-
-            ${data.complianceScore ? `
-                <div class="compliance-score">
-                    <div class="compliance-label">Medication Compliance</div>
-                    <div class="compliance-value">${data.complianceScore}%</div>
-                </div>
-            ` : ''}
-
-            ${data.notes ? `
-                <div class="health-notes">
-                    <strong>Notes:</strong> ${data.notes}
-                </div>
-            ` : ''}
-        </div>
-    `).join('');
-}
-
-// modal functions
-
-/* show add medication modal */
-function showAddMedicationModal() {
-    document.getElementById('addMedicationModal').style.display = 'block';
-    document.getElementById('medName').focus();
-}
-
-/* show add appointment modal */
-function showAddAppointmentModal() {
-    if (doctors.length === 0) {
-        loadDoctors();
-    }
-    document.getElementById('addAppointmentModal').style.display = 'block';
-    document.getElementById('appointmentDoctor').focus();
-}
-
-/* show add contact modal */
-function showAddContactModal() {
-    document.getElementById('addContactModal').style.display = 'block';
-    document.getElementById('contactName').focus();
-}
-
-/* show add health data modal */
-function showAddHealthDataModal() {
-    document.getElementById('addHealthDataModal').style.display = 'block';
-    document.getElementById('healthDate').focus();
-}
-
-/* show QR code modal */
-function showQRCode(medicationId) {
-    const medication = medications.find(med => med.medicationId === medicationId);
-    if (medication) {
-        document.getElementById('qrCodeValue').textContent = medication.qrCode || `MED${medicationId}-${medication.name.toUpperCase()}`;
-        document.getElementById('qrCodeModal').style.display = 'block';
-    }
-}
-
-/* close modal */
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-    
-    // reset forms when closing modals
-    const forms = ['addMedicationForm', 'addAppointmentForm', 'addContactForm', 'addHealthDataForm'];
-    forms.forEach(formId => {
-        const form = document.getElementById(formId);
-        if (form) form.reset();
-    });
-}
-
-/* close all modals */
-function closeAllModals() {
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.style.display = 'none';
-    });
-}
-
-// form handlers
-
-/* handle add medication form submission */
-async function handleAddMedication(e) {
-    e.preventDefault();
-    
-    try {
-        showLoading();
-
-        const formData = {
-            name: document.getElementById('medName').value.trim(),
-            dosage: document.getElementById('medDosage').value.trim(),
-            frequency: document.getElementById('medFrequency').value,
-            timing: document.getElementById('medTiming').value.trim(),
-            startDate: document.getElementById('medStartDate').value,
-            endDate: document.getElementById('medEndDate').value || null,
-            prescribedBy: document.getElementById('medPrescriber').value.trim() || null,
-            instructions: document.getElementById('medInstructions').value.trim() || null,
-            category: document.getElementById('medCategory').value
-        };
-
-        // validate required fields
-        if (!formData.name || !formData.dosage || !formData.frequency || !formData.timing || !formData.startDate) {
-            throw new Error('Please fill in all required fields');
-        }
-
-        const response = await fetchWithAuth(`${API_BASE}/medications`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            showToast('Medication added successfully!', 'success');
-            closeModal('addMedicationModal');
-            await loadMedications();
-            if (currentTab === 'dashboard') {
-                updateDashboardStats();
-                updateTodayMedications();
-            }
-        } else {
-            throw new Error(data.error || 'Failed to add medication');
-        }
-
-        hideLoading();
-    } catch (error) {
-        console.error('Error adding medication:', error);
-        showToast(error.message, 'error');
-        hideLoading();
-    }
-}
-
-/* handle add appointment form submission */
-async function handleAddAppointment(e) {
-    e.preventDefault();
-    
-    try {
-        showLoading();
-
-        const appointmentDate = document.getElementById('appointmentDate').value;
-        const appointmentTime = document.getElementById('appointmentTime').value;
+    updateDashboard() {
+        // update medication count
+        document.getElementById('medicationCount').textContent = this.medications.filter(m => m.active).length;
         
-        const formData = {
-            doctorId: parseInt(document.getElementById('appointmentDoctor').value),
-            appointmentDate: `${appointmentDate}T${appointmentTime}:00.000Z`,
-            duration: document.getElementById('appointmentDuration').value,
-            reason: document.getElementById('appointmentReason').value.trim(),
-            notes: document.getElementById('appointmentNotes').value.trim() || null,
-            followUpNeeded: document.getElementById('followUpNeeded').checked
-        };
-
-        // validate required fields
-        if (!formData.doctorId || !appointmentDate || !appointmentTime || !formData.reason) {
-            throw new Error('Please fill in all required fields');
-        }
-
-        const response = await fetchWithAuth(`${API_BASE}/appointments`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
+        // update appointment count
+        const upcomingAppointments = this.appointments.filter(apt => {
+            return new Date(apt.appointmentDate) > new Date() && apt.status === 'scheduled';
         });
+        document.getElementById('appointmentCount').textContent = upcomingAppointments.length;
+        
+        // update compliance rate
+        const totalCompliance = this.medications.reduce((sum, med) => sum + (med.compliance_rate || 0), 0);
+        const avgCompliance = this.medications.length > 0 ? Math.round(totalCompliance / this.medications.length) : 0;
+        document.getElementById('complianceRate').textContent = `${avgCompliance}%`;
+    }
 
-        const data = await response.json();
+    showMedicationModal() {
+        document.getElementById('medicationModal').classList.remove('hidden');
+    }
 
-        if (response.ok) {
-            showToast('Appointment booked successfully!', 'success');
-            closeModal('addAppointmentModal');
-            await loadAppointments();
-            if (currentTab === 'dashboard') {
-                updateDashboardStats();
-                updateUpcomingAppointments();
+    hideMedicationModal() {
+        document.getElementById('medicationModal').classList.add('hidden');
+        document.getElementById('medicationForm').reset();
+    }
+
+    showAppointmentModal() {
+        document.getElementById('appointmentModal').classList.remove('hidden');
+    }
+
+    hideAppointmentModal() {
+        document.getElementById('appointmentModal').classList.add('hidden');
+        document.getElementById('appointmentForm').reset();
+    }
+
+    async saveMedication() {
+        const form = document.getElementById('medicationForm');
+        const formData = new FormData(form);
+        const medicationData = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch('/api/medications', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(medicationData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                this.showSuccess('Medication added successfully!');
+                this.hideMedicationModal();
+                await this.loadMedications();
+                this.updateDashboard();
+            } else {
+                this.showError(result.message || 'Failed to add medication');
             }
-        } else {
-            throw new Error(data.error || 'Failed to book appointment');
+        } catch (error) {
+            console.error('Error saving medication:', error);
+            this.showError('Failed to add medication');
         }
-
-        hideLoading();
-    } catch (error) {
-        console.error('Error booking appointment:', error);
-        showToast(error.message, 'error');
-        hideLoading();
     }
-}
 
-/* handle add contact form submission */
-async function handleAddContact(e) {
-    e.preventDefault();
-    
-    try {
-        showLoading();
+    async saveAppointment() {
+        const form = document.getElementById('appointmentForm');
+        const formData = new FormData(form);
+        const appointmentData = Object.fromEntries(formData.entries());
 
-        const formData = {
-            name: document.getElementById('contactName').value.trim(),
-            relationship: document.getElementById('contactRelationship').value,
-            phone: document.getElementById('contactPhone').value.trim(),
-            email: document.getElementById('contactEmail').value.trim() || null,
-            isPrimary: document.getElementById('isPrimaryContact').checked,
-            alertOnMissedMeds: document.getElementById('alertOnMissedMeds').checked,
-            alertThresholdHours: parseInt(document.getElementById('alertThreshold').value)
-        };
+        try {
+            const response = await fetch('/api/appointments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(appointmentData)
+            });
 
-        // validate required fields
-        if (!formData.name || !formData.relationship || !formData.phone) {
-            throw new Error('Please fill in all required fields');
-        }
+            const result = await response.json();
 
-        const response = await fetchWithAuth(`${API_BASE}/emergency-contacts`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            showToast('Emergency contact added successfully!', 'success');
-            closeModal('addContactModal');
-            await loadEmergencyContacts();
-            if (currentTab === 'dashboard') {
-                updateDashboardStats();
+            if (response.ok) {
+                this.showSuccess('Appointment booked successfully!');
+                this.hideAppointmentModal();
+                await this.loadAppointments();
+                this.updateDashboard();
+            } else {
+                this.showError(result.message || 'Failed to book appointment');
             }
-        } else {
-            throw new Error(data.error || 'Failed to add emergency contact');
+        } catch (error) {
+            console.error('Error saving appointment:', error);
+            this.showError('Failed to book appointment');
         }
-
-        hideLoading();
-    } catch (error) {
-        console.error('Error adding emergency contact:', error);
-        showToast(error.message, 'error');
-        hideLoading();
     }
-}
 
-/* handle add health data form submission */
-async function handleAddHealthData(e) {
-    e.preventDefault();
-    
-    try {
-        showLoading();
+    async markAsTaken(medicationId) {
+        try {
+            const response = await fetch(`/api/medications/${medicationId}/taken`, {
+                method: 'POST',
+                credentials: 'include'
+            });
 
-        const formData = {
-            recordDate: document.getElementById('healthDate').value,
-            bloodPressureSystolic: document.getElementById('systolicBP').value ? parseInt(document.getElementById('systolicBP').value) : null,
-            bloodPressureDiastolic: document.getElementById('diastolicBP').value ? parseInt(document.getElementById('diastolicBP').value) : null,
-            weight: document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null,
-            bloodSugar: document.getElementById('bloodSugar').value ? parseInt(document.getElementById('bloodSugar').value) : null,
-            complianceScore: document.getElementById('complianceScore').value ? parseInt(document.getElementById('complianceScore').value) : null,
-            notes: document.getElementById('healthNotes').value.trim() || null
-        };
+            const result = await response.json();
 
-        // validate required fields
-        if (!formData.recordDate) {
-            throw new Error('Please select a date');
-        }
-
-        const response = await fetchWithAuth(`${API_BASE}/health-data`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            showToast('Health data logged successfully!', 'success');
-            closeModal('addHealthDataModal');
-            await loadHealthData();
-            await loadHealthStatistics();
-        } else {
-            throw new Error(data.error || 'Failed to log health data');
-        }
-
-        hideLoading();
-    } catch (error) {
-        console.error('Error logging health data:', error);
-        showToast(error.message, 'error');
-        hideLoading();
-    }
-}
-
-// action functions
-
-/* mark medication as taken */
-async function markMedicationTaken(medicationId) {
-    try {
-        const response = await fetchWithAuth(`${API_BASE}/medications/${medicationId}/take`, {
-            method: 'POST'
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            showToast('Medication marked as taken!', 'success');
-            await loadMedications();
-            if (currentTab === 'dashboard') {
-                updateTodayMedications();
-                updateDashboardStats();
+            if (response.ok) {
+                this.showSuccess('Medication marked as taken!');
+                await this.loadMedications();
+                this.updateDashboard();
+            } else {
+                this.showError(result.message || 'Failed to mark medication as taken');
             }
-        } else {
-            throw new Error(data.error || 'Failed to mark medication as taken');
+        } catch (error) {
+            console.error('Error marking medication as taken:', error);
+            this.showError('Failed to mark medication as taken');
         }
-    } catch (error) {
-        console.error('Error marking medication as taken:', error);
-        showToast(error.message, 'error');
-    }
-}
-
-/* delete medication */
-async function deleteMedication(medicationId) {
-    if (!confirm('Are you sure you want to delete this medication?')) {
-        return;
     }
 
-    try {
-        const response = await fetchWithAuth(`${API_BASE}/medications/${medicationId}`, {
-            method: 'DELETE'
-        });
+    async deleteMedication(medicationId) {
+        if (!confirm('Are you sure you want to delete this medication?')) {
+            return;
+        }
 
-        const data = await response.json();
+        try {
+            const response = await fetch(`/api/medications/${medicationId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
 
-        if (response.ok) {
-            showToast('Medication deleted successfully!', 'success');
-            await loadMedications();
-            if (currentTab === 'dashboard') {
-                updateDashboardStats();
-                updateTodayMedications();
+            const result = await response.json();
+
+            if (response.ok) {
+                this.showSuccess('Medication deleted successfully!');
+                await this.loadMedications();
+                this.updateDashboard();
+            } else {
+                this.showError(result.message || 'Failed to delete medication');
             }
-        } else {
-            throw new Error(data.error || 'Failed to delete medication');
+        } catch (error) {
+            console.error('Error deleting medication:', error);
+            this.showError('Failed to delete medication');
         }
-    } catch (error) {
-        console.error('Error deleting medication:', error);
-        showToast(error.message, 'error');
-    }
-}
-
-/* delete appointment */
-async function deleteAppointment(appointmentId) {
-    if (!confirm('Are you sure you want to cancel this appointment?')) {
-        return;
     }
 
-    try {
-        const response = await fetchWithAuth(`${API_BASE}/appointments/${appointmentId}`, {
-            method: 'DELETE'
-        });
+    async cancelAppointment(appointmentId) {
+        if (!confirm('Are you sure you want to cancel this appointment?')) {
+            return;
+        }
 
-        const data = await response.json();
+        try {
+            const response = await fetch(`/api/appointments/${appointmentId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
 
-        if (response.ok) {
-            showToast('Appointment cancelled successfully!', 'success');
-            await loadAppointments();
-            if (currentTab === 'dashboard') {
-                updateDashboardStats();
-                updateUpcomingAppointments();
+            const result = await response.json();
+
+            if (response.ok) {
+                this.showSuccess('Appointment cancelled successfully!');
+                await this.loadAppointments();
+                this.updateDashboard();
+            } else {
+                this.showError(result.message || 'Failed to cancel appointment');
             }
-        } else {
-            throw new Error(data.error || 'Failed to cancel appointment');
+        } catch (error) {
+            console.error('Error cancelling appointment:', error);
+            this.showError('Failed to cancel appointment');
         }
-    } catch (error) {
-        console.error('Error cancelling appointment:', error);
-        showToast(error.message, 'error');
-    }
-}
-
-/* delete emergency contact */
-async function deleteContact(contactId) {
-    if (!confirm('Are you sure you want to delete this emergency contact?')) {
-        return;
     }
 
-    try {
-        const response = await fetchWithAuth(`${API_BASE}/emergency-contacts/${contactId}`, {
-            method: 'DELETE'
-        });
+    async sendReminder(appointmentId) {
+        try {
+            const response = await fetch(`/api/appointments/${appointmentId}/reminder`, {
+                method: 'POST',
+                credentials: 'include'
+            });
 
-        const data = await response.json();
+            const result = await response.json();
 
-        if (response.ok) {
-            showToast('Emergency contact deleted successfully!', 'success');
-            await loadEmergencyContacts();
-            if (currentTab === 'dashboard') {
-                updateDashboardStats();
+            if (response.ok) {
+                this.showSuccess('Reminder sent successfully!');
+            } else {
+                this.showError(result.message || 'Failed to send reminder');
             }
-        } else {
-            throw new Error(data.error || 'Failed to delete emergency contact');
+        } catch (error) {
+            console.error('Error sending reminder:', error);
+            this.showError('Failed to send reminder');
         }
-    } catch (error) {
-        console.error('Error deleting emergency contact:', error);
-        showToast(error.message, 'error');
-    }
-}
-
-/* delete health data */
-async function deleteHealthData(healthId) {
-    if (!confirm('Are you sure you want to delete this health record?')) {
-        return;
     }
 
-    try {
-        const response = await fetchWithAuth(`${API_BASE}/health-data/${healthId}`, {
-            method: 'DELETE'
-        });
+    async getDirections(appointmentId) {
+        try {
+            // get user's current location
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const currentLocation = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                };
 
-        const data = await response.json();
+                const response = await fetch(`/api/appointments/${appointmentId}/directions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ currentLocation })
+                });
 
-        if (response.ok) {
-            showToast('Health record deleted successfully!', 'success');
-            await loadHealthData();
-            await loadHealthStatistics();
-        } else {
-            throw new Error(data.error || 'Failed to delete health record');
+                const result = await response.json();
+
+                if (response.ok) {
+                    this.showDirections(result.data.directions);
+                } else {
+                    this.showError(result.message || 'Failed to get directions');
+                }
+            }, (error) => {
+                this.showError('Location access denied. Please allow location access for directions.');
+            });
+        } catch (error) {
+            console.error('Error getting directions:', error);
+            this.showError('Failed to get directions');
         }
-    } catch (error) {
-        console.error('Error deleting health record:', error);
-        showToast(error.message, 'error');
     }
-}
 
-// utility functions
+    showDirections(directions) {
+        alert(`Directions:\nDistance: ${directions.distance}\nDuration: ${directions.duration}\n\nSteps:\n${directions.steps.join('\n')}`);
+    }
 
-/* show OneMap location */
-function showOnMap(address) {
-    const encodedAddress = encodeURIComponent(address);
-    window.open(`https://www.onemap.gov.sg/main/v2/?search=${encodedAddress}`, '_blank');
-}
+    showSuccess(message) {
+        // simple success notification
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        notification.textContent = message;
+        document.body.appendChild(notification);
 
-/* fetch with authentication */
-async function fetchWithAuth(url, options = {}) {
-    const config = {
-        ...options,
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    };
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
 
-    return fetch(url, config);
-}
+    showError(message) {
+        // simple error notification
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        notification.textContent = message;
+        document.body.appendChild(notification);
 
-/* show loading overlay */
-function showLoading() {
-    document.getElementById('loadingOverlay').style.display = 'flex';
-}
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
 
-/* hide loading overlay */
-function hideLoading() {
-    document.getElementById('loadingOverlay').style.display = 'none';
-}
+    async logout() {
+        try {
+            const response = await fetch('/users/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
 
-/* show toast notification */
-function showToast(message, type = 'info') {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.className = `toast ${type}`;
-    toast.classList.add('show');
-
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
-}
-
-/* format date string */
-function formatDate(dateString) {
-    return new Date(dateString).toLocaleDateString('en-SG', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
-}
-
-/* format time string */
-function formatTime(dateString) {
-    return new Date(dateString).toLocaleTimeString('en-SG', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
-/* format date and time string */
-function formatDateTime(dateString) {
-    const date = new Date(dateString);
-    return `${formatDate(dateString)} at ${formatTime(dateString)}`;
-}
-
-/* logout function */
-async function logout() {
-    try {
-        const response = await fetchWithAuth(`${API_BASE}/auth/logout`, {
-            method: 'POST'
-        });
-
-        if (response.ok) {
-            showToast('Logged out successfully', 'success');
-            setTimeout(() => {
+            if (response.ok) {
                 window.location.href = '/login.html';
-            }, 1000);
-        } else {
-            throw new Error('Failed to logout');
+            } else {
+                this.showError('Failed to logout');
+            }
+        } catch (error) {
+            console.error('Error logging out:', error);
+            this.showError('Failed to logout');
         }
-    } catch (error) {
-        console.error('Logout error:', error);
-        // force logout even if server request fails
-        window.location.href = '/login.html';
+    }
+
+    // placeholder methods for future implementation
+    editMedication(medicationId) {
+        this.showError('Edit medication feature coming soon!');
+    }
+
+    editAppointment(appointmentId) {
+        this.showError('Edit appointment feature coming soon!');
     }
 }
 
-// edit functions
-function editMedication(medicationId) {
-    showToast('Edit medication feature coming soon!', 'info');
-}
-
-function editAppointment(appointmentId) {
-    showToast('Edit appointment feature coming soon!', 'info');
-}
-
-function editContact(contactId) {
-    showToast('Edit contact feature coming soon!', 'info');
-}
-
-function editHealthData(healthId) {
-    showToast('Edit health data feature coming soon!', 'info');
-}
+// initialize the application when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.medicationManager = new MedicationAppointmentManager();
+});
