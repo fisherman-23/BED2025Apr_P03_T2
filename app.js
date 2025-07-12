@@ -93,7 +93,7 @@ app.patch(
   friendController.acceptFriendRequest
 );
 
-app.post('/api/upload/:folder', authenticateJWT, upload.single('file'), handleUpload);
+app.post('/api/upload/:folder', upload.single('file'), handleUpload);
 
 app.patch(
   "/friend-requests/:id/reject",

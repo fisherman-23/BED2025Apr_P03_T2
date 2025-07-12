@@ -147,7 +147,7 @@ async function createUser(userData) {
     request.input("AboutMe", null);
     request.input("PhoneNumber", userData.PhoneNumber);
     request.input("DateOfBirth", userData.DateOfBirth); //format: YYYY-MM-DD
-    request.input("ProfilePicture", userData.ProfilePicture || null);
+    request.input("ProfilePicture", userData.ProfilePicture || '/assets/images/defaultPFP.png');
     request.input("IsActive", 1);
 
     const result = await request.query(query);

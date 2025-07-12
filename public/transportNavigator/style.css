@@ -439,9 +439,11 @@
 
 .facility-details-review {
     width: 50%;
+    height: calc(100vh - 6rem);
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    margin-top: 1rem;
 }
 
 .reviews-container {

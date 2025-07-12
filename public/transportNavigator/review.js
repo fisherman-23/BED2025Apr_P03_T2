@@ -82,7 +82,7 @@ class ReviewManager {
             <div class="modal-content">
                 <h3>Edit Review</h3>
                 <div class="rating-input">
-                    <label for="editRating">Rating:</label>
+                    <h4>Rating:</h4>
                     <div class="number-rating" id="editRating">
                         ${[1, 2, 3, 4, 5].map(num => `
                             <button class="rating-number" data-value="${num}">${num}</button>
@@ -164,6 +164,7 @@ class ReviewManager {
             console.log("Review updated:", updatedReview);
             alert("Review updated successfully.");
             await this.loadReviews();
+            this.sortAndRenderReviews();
             this.closeEditModal();
         } catch (error) {
             console.error("Error updating review:", error);
