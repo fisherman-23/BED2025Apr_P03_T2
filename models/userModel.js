@@ -32,7 +32,12 @@ async function loginUser(searchTerm, Password) {
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
-    return { user, token };
+    const refreshToken = jwt.sign(
+      { id: user.ID, email: user.Email },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN }
+    );
+    return { user, token, refreshToken };
   } catch (error) {
     console.error("Database error in loginUser:", error);
     throw error;
@@ -75,6 +80,37 @@ async function getUserById(ID) {
         await connection.close();
       } catch (e) {
         console.error("Error closing connection:", e);
+      }
+    }
+  }
+}
+
+async function getUserByUUID(uuid) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const query = `
+    SELECT ID, PublicUUID, Email, Name, AboutMe, PhoneNumber, DateOfBirth,
+          ProfilePicture, CreatedAt, UpdatedAt, IsActive
+    FROM Users
+    WHERE PublicUUID = @UUID AND IsActive = 1
+  `;
+    const request = connection.request();
+    request.input("UUID", uuid);
+    const result = await request.query(query);
+    if (result.recordset.length === 0) {
+      return null;
+    }
+    return result.recordset[0];
+  } catch (error) {
+    console.error("Database error in getUserByUUID:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (e) {
+        console.error("Error closing connection in getUserByUUID:", e);
       }
     }
   }
@@ -244,4 +280,5 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
+  getUserByUUID,
 };

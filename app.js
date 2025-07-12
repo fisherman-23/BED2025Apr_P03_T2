@@ -10,7 +10,11 @@ const { upload, handleUpload } = require("./utils/fileUpload.js");
 const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
+
 const exerciseController = require("./controllers/exerciseController.js");
+const medicationController = require("./controllers/medicationController.js");
+const appointmentController = require("./controllers/appointmentController.js");
+
 
 const {
   validateUserId,
@@ -35,7 +39,7 @@ app.use(protectSpecificRoutes);
 app.use(redirectIfAuthenticated);
 
 app.get("/me", authenticateJWT, (req, res) => {
-  res.json({ username: req.user.email, id: req.user.id });
+  res.json({ username: req.user.email, id: req.user.id, uuid: req.user.uuid });
 });
 
 app.use(express.static(path.join(__dirname, "public")));
@@ -66,6 +70,8 @@ app.delete(
   userController.deleteUser
 );
 
+app.get("/users/uuid/:uuid", authenticateJWT, userController.getUserByUUID);
+
 app.post(
   "/friend-invite/:uuid",
   authenticateJWT,
@@ -84,7 +90,11 @@ app.patch(
   friendController.acceptFriendRequest
 );
 
-app.post('/api/upload/:folder', /*authenticateJWT,*/ upload.single('file'), handleUpload);
+app.post(
+  "/api/upload/:folder",
+  /*authenticateJWT,*/ upload.single("file"),
+  handleUpload
+);
 
 app.patch(
   "/friend-requests/:id/reject",
@@ -98,12 +108,19 @@ app.delete(
   friendController.removeFriend
 );
 
+app.delete(
+  "/friend-requests/:id/withdraw",
+  authenticateJWT,
+  friendController.withdrawFriendRequest
+);
 
 app.get(
   "/match/profile/check",
   authenticateJWT,
   matchController.hasMatchProfile
 );
+
+app.get("/match/profile", authenticateJWT, matchController.getMatchProfile);
 
 app.put(
   "/match/profile",
@@ -136,7 +153,7 @@ app.post(
   matchController.skipUser
 );
 
-
+// Module 4: Senior fitness coach
 app.get(
   "/exercises/:userId",
   authenticateJWT,
@@ -173,6 +190,35 @@ app.delete(
   exerciseController.deleteExercisePreference
 );
 
+// Module 1: Medication & Appointment Manager
+// Medication routes
+app.post("/api/medications", authenticateJWT, medicationController.createMedication);
+app.get("/api/medications", authenticateJWT, medicationController.getUserMedications);
+app.get("/api/medications/:id", authenticateJWT, medicationController.getMedicationById);
+app.put("/api/medications/:id", authenticateJWT, medicationController.updateMedication);
+app.delete("/api/medications/:id", authenticateJWT, medicationController.deleteMedication);
+app.post("/api/medications/:id/taken", authenticateJWT, medicationController.markMedicationTaken);
+app.get("/api/medications/reminders/upcoming", authenticateJWT, medicationController.getUpcomingReminders);
+
+// Appointment routes
+app.post("/api/appointments", authenticateJWT, appointmentController.createAppointment);
+app.get("/api/appointments", authenticateJWT, appointmentController.getUserAppointments);
+app.get("/api/appointments/:id", authenticateJWT, appointmentController.getAppointmentById);
+app.put("/api/appointments/:id", authenticateJWT, appointmentController.updateAppointment);
+app.delete("/api/appointments/:id", authenticateJWT, appointmentController.deleteAppointment);
+
+// Doctor routes
+app.get("/api/doctors", authenticateJWT, appointmentController.getAllDoctors);
+app.get("/api/doctors/search", authenticateJWT, appointmentController.searchDoctors);
+app.get("/api/doctors/:doctorId/availability", authenticateJWT, appointmentController.getDoctorAvailability);
+
+// Appointment helper routes
+app.post("/api/appointments/:id/reminder", authenticateJWT, appointmentController.sendAppointmentReminder);
+app.post("/api/appointments/:id/directions", authenticateJWT, appointmentController.getDirections);
+
+app.get("/medicationManager", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/medicationManager.html"));
+});
 
 
 app.listen(port, () => {
@@ -185,8 +231,11 @@ if (require.main === module) {
   });
 }
 
-module.exports = app; // export for testing
+app.get("/invite", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/invite.html"));
+});
 
+module.exports = app; // export for testing
 
 process.on("SIGINT", async () => {
   console.log("Server is gracefully shutting down");

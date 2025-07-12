@@ -15,27 +15,44 @@ async function sendFriendRequest(req, res) {
     }
 
     if (senderId === receiverId) {
+      console.log("Sender and receiver are the same user");
       return res
         .status(400)
         .json({ message: "Can't send request to yourself" });
     }
 
-    const exists = await friendModel.checkRequestOrFriendshipExists(
-      senderId,
-      receiverId
-    );
+    const status = await friendModel.getFriendshipStatus(senderId, receiverId);
 
-    if (exists) {
-      return res
-        .status(400)
-        .json({ message: "Request or friendship already exists" });
+    if (status === "friends") {
+      return res.status(400).json({ message: "You are already friends" });
+    }
+
+    if (status === "outgoing_pending") {
+      return res.status(400).json({
+        message:
+          "You have already sent a request. Please wait for the other user to accept.",
+      });
+    }
+
+    if (status === "incoming_pending") {
+      return res.status(400).json({
+        message:
+          "The other user has sent you a request. Please accept it from your friend requests tab.",
+      });
+    }
+
+    if (status === "rejected") {
+      return res.status(400).json({
+        message:
+          "A friend request was previously rejected. You cannot send another request.",
+      });
     }
 
     await friendModel.insertFriendRequest(senderId, receiverId);
 
     res.status(200).json({ message: "Friend request sent" });
   } catch (err) {
-    console.error(err);
+    console.error("Error in sendFriendRequest:", err);
     res.status(500).json({ message: "Server error" });
   }
 }
@@ -85,7 +102,7 @@ async function acceptFriendRequest(req, res) {
 }
 
 async function rejectFriendRequest(req, res) {
-  const userId = req.user.ID;
+  const userId = req.user.id;
   const requestId = parseInt(req.params.id);
 
   try {
@@ -123,6 +140,22 @@ async function removeFriend(req, res) {
     return res.status(500).json({ message: "Internal server error" });
   }
 }
+async function withdrawFriendRequest(req, res) {
+  const userId = req.user.id;
+  const requestId = parseInt(req.params.id);
+
+  try {
+    const result = await friendModel.removeFriendRequest(requestId, userId);
+    if (result) {
+      res.status(200).json({ message: "Friend request withdrawn" });
+    } else {
+      res.status(404).json({ message: "Friend request not found" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+}
 
 module.exports = {
   sendFriendRequest,
@@ -131,4 +164,5 @@ module.exports = {
   acceptFriendRequest,
   rejectFriendRequest,
   removeFriend,
+  withdrawFriendRequest,
 };

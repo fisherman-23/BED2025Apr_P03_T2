@@ -9,12 +9,14 @@ describe("friendModel", () => {
   beforeEach(() => {
     mockRequest = {
       input: jest.fn().mockReturnThis(),
-      query: jest.fn(), // fresh mock every test
+      query: jest.fn(),
     };
 
-    // Reset any previous sql.connect implementation
     sql.connect.mockReset();
-    sql.connect.mockResolvedValue({ request: () => mockRequest });
+    sql.connect.mockResolvedValue({
+      request: () => mockRequest,
+      close: jest.fn(),
+    });
   });
 
   afterEach(() => {
@@ -74,6 +76,7 @@ describe("friendModel", () => {
             recordset: [{ ID: 1, Name: "A", Direction: "incoming" }],
           }),
         }),
+        close: jest.fn(),
       });
       sql.connect.mockResolvedValueOnce({
         request: () => ({
@@ -82,6 +85,7 @@ describe("friendModel", () => {
             recordset: [{ ID: 2, Name: "B", Direction: "outgoing" }],
           }),
         }),
+        close: jest.fn(),
       });
 
       const result = await friendModel.getAllPendingRequests(1);
@@ -114,14 +118,17 @@ describe("friendModel", () => {
             { ID: 10, SenderID: 1, ReceiverID: 2, Status: "pending" },
           ],
         })
-        .mockResolvedValueOnce({}) // insert into Friends
-        .mockResolvedValueOnce({}); // update FriendRequests
+        .mockResolvedValueOnce({})
+        .mockResolvedValueOnce({});
 
       mockRequest = {
         input: jest.fn().mockReturnThis(),
         query: mockQuery,
       };
-      sql.connect.mockResolvedValue({ request: () => mockRequest });
+      sql.connect.mockResolvedValue({
+        request: () => mockRequest,
+        close: jest.fn(),
+      });
 
       await expect(
         friendModel.acceptFriendRequest(2, 10)
@@ -151,7 +158,10 @@ describe("friendModel", () => {
         input: jest.fn().mockReturnThis(),
         query: mockQuery,
       };
-      sql.connect.mockResolvedValue({ request: () => mockRequest });
+      sql.connect.mockResolvedValue({
+        request: () => mockRequest,
+        close: jest.fn(),
+      });
 
       await expect(
         friendModel.rejectFriendRequest(2, 5)
@@ -168,6 +178,44 @@ describe("friendModel", () => {
     });
   });
 
+  describe("removeFriendRequest", () => {
+    let mockQuery;
+
+    beforeEach(() => {
+      mockQuery = jest.fn().mockResolvedValue({ rowsAffected: [1] });
+      mockRequest = {
+        input: jest.fn().mockReturnThis(),
+        query: mockQuery,
+      };
+
+      sql.connect.mockResolvedValue({
+        request: () => mockRequest,
+        close: jest.fn(),
+      });
+    });
+
+    it("removes a friend request and returns true if rows affected", async () => {
+      const result = await friendModel.removeFriendRequest(1, 2);
+      expect(sql.connect).toHaveBeenCalled();
+      expect(mockRequest.input).toHaveBeenCalledWith("requestId", sql.Int, 1);
+      expect(mockRequest.input).toHaveBeenCalledWith("userId", sql.Int, 2);
+      expect(result).toBe(true);
+    });
+
+    it("returns false if no rows affected", async () => {
+      mockQuery.mockResolvedValue({ rowsAffected: [0] });
+      const result = await friendModel.removeFriendRequest(1, 2);
+      expect(result).toBe(false);
+    });
+
+    it("throws error if query fails", async () => {
+      mockQuery.mockRejectedValue(new Error("DB error"));
+      await expect(friendModel.removeFriendRequest(1, 2)).rejects.toThrow(
+        "DB error"
+      );
+    });
+  });
+
   describe("removeFriend (model)", () => {
     let mockRequest, mockQuery;
 
@@ -178,7 +226,10 @@ describe("friendModel", () => {
         query: mockQuery,
       };
 
-      sql.connect.mockResolvedValue({ request: () => mockRequest });
+      sql.connect.mockResolvedValue({
+        request: () => mockRequest,
+        close: jest.fn(),
+      });
     });
 
     it("deletes a friend and returns true if rows affected", async () => {

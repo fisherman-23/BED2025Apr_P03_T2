@@ -20,48 +20,29 @@
             </button>
         </div>
         <div class="profile-section">
-            <div class="profile-picture-container">
-                <img src="/assets/images/elderlyPFP.png" alt="Profile Picture" id="profile-picture">
+           <div class="profile-picture-container">
+                <label for="photo-input" class="upload-label">
+                    <img src="/assets/icons/blank-profile-picture.svg" alt="Profile Picture" id="profile-picture">
+                </label>
+                <input type="file" id="photo-input" accept="image/*" style="display: none;" />
             </div>
             <form class="profile-form" id="profile-form" disabled>
                 <input type="email" id="Email" placeholder="Email" disabled />
                 <div class="reset-password-container">
-                    <a href="#" class="reset-password-link">Reset Password</a>
-                    <input type="password" id="Password" placeholder="Password" disabled />
+                    <a href="#" class="reset-password-link">Change Password</a>
+                    <div class="password-change-section">
+                        <input type="password" id="current-password" placeholder="Current Password" disabled />
+                        <input type="password" id="new-password" placeholder="New Password" disabled />
+                    </div>
                 </div>
                 <input type="text" id="Name" placeholder="Full Name" disabled />
                 <input type="tel" id="PhoneNumber" placeholder="8-digit Phone Number" disabled />
-                <label class="dob-label">Date of Birth</label>
-                <div class="dob-container">
-                    <select id="dob-day" disabled>
-                        <option value="" disabled selected>Day</option>
-                        <!-- Days 1 to 31 -->
-                    </select>
-                    <select id="dob-month" disabled>
-                        <option value="" disabled selected>Month</option>
-                        <!-- Months Jan-Dec -->
-                    </select>
-                    <select id="dob-year" disabled>
-                        <option value="" disabled selected>Year</option>
-                        <!-- Years 1900 to current year -->
-                    </select>
-                </div>
             </form>
         </div>
         <div class="action-buttons">
             <button class="delete-account-button">Delete Account</button>
             <button class="save-button" disabled>Save Changes</button>
             <button class="cancel-button" disabled>Cancel</button>
-        </div>
-        <div class="navigation-buttons">
-            <div class="view-bookmarks-button" onclick="window.location.href='/bookmarks.html'">
-                View Bookmarks
-                <img src="/assets/icons/arrow-right-blue.svg" alt="Arrow Icon" class="arrow-icon">
-            </div>
-            <div class="view-reports-button" onclick="window.location.href='/reports.html'">
-                View Submitted Reports
-                <img src="/assets/icons/arrow-right-red.svg" alt="Arrow Icon" class="arrow-icon">
-            </div>
         </div>
     </main>
     <script src="/account/script.js"></script>
