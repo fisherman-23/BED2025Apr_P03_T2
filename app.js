@@ -26,6 +26,24 @@ const {
   redirectIfAuthenticated,
 } = require("./middlewares/protectRoute");
 const validateMatchProfile = require("./middlewares/validateMatchProfile.js");
+const {
+  validateLocationAccess,
+  validateNearbyFacilities,
+  validateFacilityId,
+  validateFacilityType,
+} = require("./middlewares/facilitiesValidation.js");
+const {
+  validateBookmarkId,
+  validateFacilityIdParam,
+  validateBookmarkData,
+} = require("./middlewares/bookmarkValidation.js");
+const {
+  validateReviewIdParam,
+  validateReviewData,
+  validateUpdateReviewData,
+  validateReportData,
+} = require("./middlewares/reviewValidation.js");
+const { compareSync } = require("bcrypt");
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(express.json());
@@ -137,21 +155,24 @@ app.post(
   matchController.skipUser
 );
 
-
+// Module 3: Transport Navigator
 app.get(
   "/facilities/nearby",
   authenticateJWT,
+  validateNearbyFacilities,
   facilitiesController.getNearbyFacilities
 );
 
-app.get("/facilities/:id",
+app.get("/facilities/id/:id",
   authenticateJWT,
+  validateFacilityId,
   facilitiesController.getFacilityById
 );
 
 app.get(
-  "/facilities/:type",
+  "/facilities/type/:type",
   authenticateJWT,
+  validateFacilityType,
   facilitiesController.getFacilitiesByType
 );
 
@@ -164,6 +185,7 @@ app.get(
 app.get(
   "/api/geocode",
   authenticateJWT,
+  validateLocationAccess,
   facilitiesController.handleLocationAccess
 );
 
@@ -182,18 +204,21 @@ app.get(
 app.post(
   "/bookmarks",
   authenticateJWT,
+  validateBookmarkData,
   bookmarkController.saveBookmark
 );
 
 app.put(
   "/bookmarks/:bookmarkId",
   authenticateJWT,
+  validateBookmarkId,
   bookmarkController.updateBookmark
 );
 
 app.delete(
   "/bookmarks/:bookmarkId",
   authenticateJWT,
+  validateBookmarkId,
   bookmarkController.deleteBookmark
 );
 
@@ -206,20 +231,91 @@ app.get(
 app.put(
   "/reviews/:id",
   authenticateJWT,
+  validateReviewIdParam,
+  validateUpdateReviewData,
   reviewController.updateReview
-)
+);
 
 app.delete(
   "/reviews/:id",
   authenticateJWT,
+  validateReviewIdParam,
   reviewController.deleteReview
-)
+);
 
 app.post(
   "/reports",
   authenticateJWT,
+  validateReportData,
   reviewController.createReport
-)
+);
+
+// Module 4: Senior fitness coach
+app.get(
+  "/exercises/:userId",
+  authenticateJWT,
+  exerciseController.getExercises
+);
+
+app.get(
+  "/exercises/steps/:exerciseId",
+  authenticateJWT,
+  exerciseController.getSteps
+);
+
+app.get(
+  "/exercises/preferences/:userId",
+  authenticateJWT,
+  exerciseController.getExercisePreferences
+);
+
+app.put(
+  "/exercises/preferences",
+  authenticateJWT,
+  exerciseController.updateExercisePreferences
+);
+
+app.post(
+  "/exercises/personalisation",
+  authenticateJWT,
+  exerciseController.personalisation
+);
+
+app.delete(
+  "/exercises/preferences/:userId",
+  authenticateJWT,
+  exerciseController.deleteExercisePreference
+);
+
+// Module 1: Medication & Appointment Manager
+// Medication routes
+app.post("/api/medications", authenticateJWT, medicationController.createMedication);
+app.get("/api/medications", authenticateJWT, medicationController.getUserMedications);
+app.get("/api/medications/:id", authenticateJWT, medicationController.getMedicationById);
+app.put("/api/medications/:id", authenticateJWT, medicationController.updateMedication);
+app.delete("/api/medications/:id", authenticateJWT, medicationController.deleteMedication);
+app.post("/api/medications/:id/taken", authenticateJWT, medicationController.markMedicationTaken);
+app.get("/api/medications/reminders/upcoming", authenticateJWT, medicationController.getUpcomingReminders);
+
+// Appointment routes
+app.post("/api/appointments", authenticateJWT, appointmentController.createAppointment);
+app.get("/api/appointments", authenticateJWT, appointmentController.getUserAppointments);
+app.get("/api/appointments/:id", authenticateJWT, appointmentController.getAppointmentById);
+app.put("/api/appointments/:id", authenticateJWT, appointmentController.updateAppointment);
+app.delete("/api/appointments/:id", authenticateJWT, appointmentController.deleteAppointment);
+
+// Doctor routes
+app.get("/api/doctors", authenticateJWT, appointmentController.getAllDoctors);
+app.get("/api/doctors/search", authenticateJWT, appointmentController.searchDoctors);
+app.get("/api/doctors/:doctorId/availability", authenticateJWT, appointmentController.getDoctorAvailability);
+
+// Appointment helper routes
+app.post("/api/appointments/:id/reminder", authenticateJWT, appointmentController.sendAppointmentReminder);
+app.post("/api/appointments/:id/directions", authenticateJWT, appointmentController.getDirections);
+
+app.get("/medicationManager", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/medicationManager.html"));
+});
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

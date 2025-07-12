@@ -48,7 +48,7 @@ class ReviewManager {
 
     async loadFacilityDetails() {
         try {
-            const res = await fetch(`/facilities/${this.facilityId}`, {
+            const res = await fetch(`/facilities/id/${this.facilityId}`, {
                 method: 'GET',
                 headers: {
                     'content-Type': 'application/json',

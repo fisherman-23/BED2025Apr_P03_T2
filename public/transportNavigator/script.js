@@ -145,8 +145,9 @@ class FacilityManager {
   //  Fetches facilities by type from the database
   async fetchFacilitiesByType(facilityType) {
     try {
+      console.log("Fetching facilities by type:", facilityType);
       const encodedType = encodeURIComponent(facilityType);
-      const res = await fetch(`/facilities/${encodedType}`, {
+      const res = await fetch(`/facilities/type/${encodedType}`, {
         method: "GET",
         credentials: "include"
       });
@@ -248,7 +249,8 @@ class FacilityManager {
 
   async showDetails(facilityId) {
     try {
-      const res = await fetch(`/facilities/${facilityId}`, {
+      console.log("Fetching details for facility ID:", facilityId);
+      const res = await fetch(`/facilities/id/${facilityId}`, {
         method: 'GET',
         credentials: 'include'
       });

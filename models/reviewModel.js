@@ -127,9 +127,9 @@ async function createReport(reportData) {
             VALUES (@ReviewId, @UserId, GETDATE(), @Reason)
         `;
         const request = connection.request();
-        request.input("ReviewId", sql.Int, reportData.ReviewId);
-        request.input("UserId", sql.Int, reportData.UserId);
-        request.input("Reason", sql.NVarChar, reportData.Reason);
+        request.input("ReviewId", sql.Int, reportData.reviewId);
+        request.input("UserId", sql.Int, reportData.userId);
+        request.input("Reason", sql.NVarChar, reportData.reason);
         const result = await request.query(query);
         return result.rowsAffected[0] > 0;
     } catch (error) {
