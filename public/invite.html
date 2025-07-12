@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Friend</title>
+    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="/buddy-system/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/buddy-system/invite.js"></script>
+</head>
+
+<body>
+    <div class="flex w-screen h-screen justify-center items-center">
+        <div class="flex w-1/2 h-1/2 flex-col justify-around items-center border-slate border-2 rounded-2xl p-8">
+            <div class="flex flex-col items-center">
+                <h2 class="text-xl font-semibold" id="name"></h2>
+                <p class="text-gray-500" id="uuid"></p>
+            </div>
+            <img src="/assets/images/elderlyPFP.png" alt="Profile Picture"
+                class="w-24 h-24 rounded-full mt-4 mb-4 object-cover" id="pfp">
+            <button
+                class="px-4 py-2 bg-gradient-to-bl from-lime-500 to-lime-400 rounded-xl font-semibold text-white shadow-lg hover:shadow-none"
+                id="addFriendBtn">Send
+                Request</button>
+        </div>
+    </div>
+
+
+</body>
+
+</html>

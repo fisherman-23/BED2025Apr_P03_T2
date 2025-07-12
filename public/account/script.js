@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    const userId = "12345"; // replace with actual user ID
     const state = {
         originalData: {},
         newPhotoFile: null,
@@ -10,7 +9,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // initialize the form
     async function init() {
         try {
-            await loadUserData();
+            const userId = await getAuthenticatedUserId();
+            if (!userId) {
+                alert("You must be logged in to access this page.");
+                window.location.href = "/login.html";
+                return;
+            }
+            await loadUserData(userId);
             setupEventListeners();
         } catch (error) {
             console.error("Initialization failed:", error);
@@ -18,20 +23,33 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // fetch and load user data
-    async function loadUserData() {
+    // get authenticated user ID
+    async function getAuthenticatedUserId() {
         try {
-            // replace with actual user data fetching
-            /*const userDetails = await fetchCurrentUser();*/
-            const res = await fetch(`/users/${userId}`);
-            const user = await res.json();
+            const res = await fetch('/me', {
+                credentials: "include"
+            });
+            if (!res.ok) {
+                throw new Error("Failed to fetch user data. Please log in again.");
+            }
+            const data = await res.json();
+            return data.id;
+        } catch (error) {
+            console.error("Error fetching authenticated user ID:", error);
+            throw error;
+        }
+    }
+
+    // fetch and load user data
+    async function loadUserData(userId) {
+        try {
+            const user = await fetchUserDetails(userId);
 
             // populate form fields
             document.getElementById("Email").value = user.Email || "";
             document.getElementById("Name").value = user.Name || "";
             document.getElementById("PhoneNumber").value = user.PhoneNumber || "";
             document.getElementById("username").textContent = user.Name || "User";
-
             if (user.ProfilePicture) {
                 document.getElementById("profile-picture").src = user.ProfilePicture;
             }
@@ -44,6 +62,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (error) {
             console.error("Error loading user data:", error);
+            throw error;
+        }
+    }
+
+    async function fetchUserDetails(userId) {
+        try {
+            const res = await fetch (`/users/${userId}`, {
+                credentials: "include"
+            });
+            if (!res.ok) {
+                throw new Error("Failed to fetch user data. Please try again.");
+            }
+            const user = await res.json();
+            console.log('Fetched user data:', user);
+            if (!user || !user.ID) {
+                throw new Error("User not found. Please log in again.");
+            }
+            return user;
+        } catch (error) {
+            console.error("Error fetching current user:", error);
             throw error;
         }
     }
@@ -118,7 +156,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const updatedUser = {
             Email: document.getElementById("Email").value.trim(),
             Name: document.getElementById("Name").value.trim(),
-            PhoneNumber: document.getElementById("PhoneNumber").value.trim()
+            PhoneNumber: document.getElementById("PhoneNumber").value.trim(),
+            ProfilePicture: state.newPhotoFile ? undefined : state.originalData.ProfilePicture
         };
 
         const currentPassword = document.getElementById("current-password").value.trim();
@@ -137,6 +176,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // handle save button click
     async function handleSave() {
         try {
+            const userId = await getAuthenticatedUserId();
+            if (!userId) { throw new Error("User not authenticated. Please log in again."); }
             const updatedUser = prepareUserData();
             
             // handle profile picture upload if changed
@@ -148,36 +189,31 @@ document.addEventListener("DOMContentLoaded", () => {
                     throw new Error("Failed to upload profile picture: " + error.message);
                 }
             }
-            // update user data
-            try {
-                await updateUserProfile(updatedUser);
-            
-                document.getElementById("username").textContent = updatedUser.Name;
-                state.originalData = { ...state.originalData, ...updatedUser };
-                state.newPhotoFile = null;
 
-                alert("Profile updated successfully.");
-                toggleFormEditability(false);
+            // update user profile
+            await updateUserProfile(userId, updatedUser);
 
-                // reset password section if active
-                const passwordSection = document.querySelector(".password-change-section");
-                if (passwordSection.classList.contains("active")) {
-                    passwordSection.classList.remove("active");
-                    document.getElementById("current-password").value = "";
-                    document.getElementById("new-password").value = "";
-                    document.getElementById("current-password").disabled = true;
-                    document.getElementById("new-password").disabled = true;
-                }
-            } catch (error) {
-                console.error("Save error:", error);
-                alert(error.message || "Failed to save profile. Please try again.");
-                return;
-            } 
+            document.getElementById("username").textContent = updatedUser.Name;
+            state.originalData = { ...state.originalData, ...updatedUser, ProfilePicture: updatedUser.ProfilePicture };
+            state.newPhotoFile = null;
+
+            alert("Profile updated successfully.");
+            toggleFormEditability(false);
+
+            // reset password section if active
+            const passwordSection = document.querySelector(".password-change-section");
+            if (passwordSection.classList.contains("active")) {
+                passwordSection.classList.remove("active");
+                document.getElementById("current-password").value = "";
+                document.getElementById("new-password").value = "";
+                document.getElementById("current-password").disabled = true;
+                document.getElementById("new-password").disabled = true;
+            }
         } catch (error) {
             console.error("Save error:", error);
-            alert("Failed to save profile. Please try again.");
-        }
-    }
+            alert(error.message || "Failed to save profile. Please try again.");
+        } 
+    } 
 
     // handle cancel button click
     function handleCancel() {
@@ -191,7 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (state.originalData.ProfilePicture) {
             profilePicture.src = state.originalData.ProfilePicture;
         } else {
-            profilePicture.src = "/assets/icons/add-a-photo.svg";
+            profilePicture.src = "/assets/icons/blank-profile-picture.svg";
         }
         
         // clear file input and temp file reference
@@ -219,11 +255,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!confirmDelete) return;
 
         try { 
-            await deleteUserAccount();
+            const userId = await getAuthenticatedUserId();
+            if (!userId) { throw new Error("User not authenticated. Please log in again."); }
+            await deleteUserAccount(userId);
             alert("Account deleted successfully.");
-
-            // clear local data and redirect
-            localStorage.clear();
             window.location.href = "/signup.html";
             
         } catch (error) {
@@ -238,56 +273,71 @@ document.addEventListener("DOMContentLoaded", () => {
         state.objectURLs = [];
     }
 
-    // API functions
-    // To be implemented: fetch current user data
-
+    // upload profile picture to server
     async function uploadProfilePicture(file) {
-        const formData = new FormData();
-        formData.append("file", file);
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
 
-        const res = await fetch("/api/upload/profile_pictures", {
-            method: "POST",
-            body: formData
-        });
+            const res = await fetch("/api/upload/profile_pictures", {
+                method: "POST",
+                body: formData,
+                credentials: "include"
+            });
 
-        if (!res.ok) {
-            const error = await res.json();
-            throw new Error(error.message || "Failed to upload profile picture. Please try again.");
-        }
-
-        return await res.json();
-    }
-
-    async function updateUserProfile(userData) {
-        const res = await fetch(`/users/${userId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(userData)
-        });
-
-        if (!res.ok) {
-            const errorData = await res.json();
-            if (res.status === 400) {
-                throw new Error("Invalid input data. Please check your entries.");
-            } else if (res.status === 404) {
-                throw new Error(errorData.error || "User not found. Please refresh the page.");
-            } else {
-                throw new Error(errorData.error || "Failed to update profile. Please try again.");
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.message || "Failed to upload profile picture. Please try again.");
             }
+
+            return await res.json();
+        } catch (error) {
+            console.error("Error uploading profile picture:", error);
+            throw error;
         }
-        return await res.json();
     }
 
-    async function deleteUserAccount() {
-        const res = await fetch(`/users/${userId}`, {
-            method: "DELETE",
-            credentials: "include"
-        });
+    async function updateUserProfile(userId, userData) {
+        try {
+            const response = await fetch(`/users/${userId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(userData),
+                credentials: "include"
+            });
 
-        if (!res.ok) {
-            const error = await res.json();
-            throw new Error(error.message || "Delete failed");
+            if (!response.ok) {
+                const error = await response.json();
+                if (response.status === 404) {
+                    throw new Error(error.message || "User not found or password incorrect.");
+                } else if (response.status === 400) {
+                    throw new Error("Invalid data. Please check your input.");
+                } else {
+                    throw new Error(error.message || "Failed to update profile. Please try again.");
+                }
+            }
+            return await response.json();
+    } catch (error) {
+            console.error("Error updating user profile:", error);
+            throw error;
+        }
+    }
+
+    async function deleteUserAccount(userId) {
+        try {
+            const response = await fetch(`/users/${userId}`, {
+                method: "DELETE",
+                credentials: "include"
+            });
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || "Failed to delete account. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error deleting user account:", error);
+            throw error;
         }
     }
 

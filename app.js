@@ -10,9 +10,14 @@ const { upload, handleUpload } = require("./utils/fileUpload.js");
 const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
+
 const facilitiesController = require("./controllers/facilitiesController.js");
 const bookmarkController = require("./controllers/bookmarkController.js");
 const reviewController = require("./controllers/reviewController.js");
+
+const exerciseController = require("./controllers/exerciseController.js");
+const medicationController = require("./controllers/medicationController.js");
+const appointmentController = require("./controllers/appointmentController.js");
 
 const {
   validateUserId,
@@ -54,7 +59,7 @@ app.use(protectSpecificRoutes);
 app.use(redirectIfAuthenticated);
 
 app.get("/me", authenticateJWT, (req, res) => {
-  res.json({ username: req.user.email, id: req.user.id });
+  res.json({ username: req.user.email, id: req.user.id, uuid: req.user.uuid });
 });
 
 app.use(express.static(path.join(__dirname, "public")));
@@ -84,6 +89,8 @@ app.delete(
   validateUserId,
   userController.deleteUser
 );
+
+app.get("/users/uuid/:uuid", authenticateJWT, userController.getUserByUUID);
 
 app.post(
   "/friend-invite/:uuid",
@@ -117,12 +124,19 @@ app.delete(
   friendController.removeFriend
 );
 
+app.delete(
+  "/friend-requests/:id/withdraw",
+  authenticateJWT,
+  friendController.withdrawFriendRequest
+);
 
 app.get(
   "/match/profile/check",
   authenticateJWT,
   matchController.hasMatchProfile
 );
+
+app.get("/match/profile", authenticateJWT, matchController.getMatchProfile);
 
 app.put(
   "/match/profile",
@@ -327,8 +341,11 @@ if (require.main === module) {
   });
 }
 
-module.exports = app; // export for testing
+app.get("/invite", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/invite.html"));
+});
 
+module.exports = app; // export for testing
 
 process.on("SIGINT", async () => {
   console.log("Server is gracefully shutting down");
