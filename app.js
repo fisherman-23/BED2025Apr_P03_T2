@@ -11,8 +11,10 @@ const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
 
+const exerciseController = require("./controllers/exerciseController.js");
 const medicationController = require("./controllers/medicationController.js");
 const appointmentController = require("./controllers/appointmentController.js");
+
 
 const {
   validateUserId,
@@ -26,6 +28,7 @@ const {
   redirectIfAuthenticated,
 } = require("./middlewares/protectRoute");
 const validateMatchProfile = require("./middlewares/validateMatchProfile.js");
+const { compareSync } = require("bcrypt");
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(express.json());
@@ -150,6 +153,43 @@ app.post(
   matchController.skipUser
 );
 
+// Module 4: Senior fitness coach
+app.get(
+  "/exercises/:userId",
+  authenticateJWT,
+  exerciseController.getExercises
+);
+
+app.get(
+  "/exercises/steps/:exerciseId",
+  authenticateJWT,
+  exerciseController.getSteps
+);
+
+app.get(
+  "/exercises/preferences/:userId",
+  authenticateJWT,
+  exerciseController.getExercisePreferences
+);
+
+app.put(
+  "/exercises/preferences",
+  authenticateJWT,
+  exerciseController.updateExercisePreferences
+);
+
+app.post(
+  "/exercises/personalisation",
+  authenticateJWT,
+  exerciseController.personalisation
+);
+
+app.delete(
+  "/exercises/preferences/:userId",
+  authenticateJWT,
+  exerciseController.deleteExercisePreference
+);
+
 // Module 1: Medication & Appointment Manager
 // Medication routes
 app.post("/api/medications", authenticateJWT, medicationController.createMedication);
@@ -179,6 +219,7 @@ app.post("/api/appointments/:id/directions", authenticateJWT, appointmentControl
 app.get("/medicationManager", (req, res) => {
   res.sendFile(path.join(__dirname, "public/medicationManager.html"));
 });
+
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
