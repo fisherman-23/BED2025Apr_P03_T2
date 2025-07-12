@@ -12,6 +12,7 @@ const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
 const facilitiesController = require("./controllers/facilitiesController.js");
 const bookmarkController = require("./controllers/bookmarkController.js");
+const reviewController = require("./controllers/reviewController.js");
 
 const {
   validateUserId,
@@ -143,15 +144,15 @@ app.get(
   facilitiesController.getNearbyFacilities
 );
 
+app.get("/facilities/:id",
+  authenticateJWT,
+  facilitiesController.getFacilityById
+);
+
 app.get(
   "/facilities/:type",
   authenticateJWT,
   facilitiesController.getFacilitiesByType
-);
-
-app.get("/facilities/:id",
-  authenticateJWT,
-  facilitiesController.getFacilityById
 );
 
 app.get(
@@ -195,6 +196,30 @@ app.delete(
   authenticateJWT,
   bookmarkController.deleteBookmark
 );
+
+app.get(
+  "/reviews/:facilityId",
+  authenticateJWT,
+  reviewController.getReviewsByFacilityId
+);
+
+app.put(
+  "/reviews/:id",
+  authenticateJWT,
+  reviewController.updateReview
+)
+
+app.delete(
+  "/reviews/:id",
+  authenticateJWT,
+  reviewController.deleteReview
+)
+
+app.post(
+  "/reports",
+  authenticateJWT,
+  reviewController.createReport
+)
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

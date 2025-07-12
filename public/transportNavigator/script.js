@@ -107,14 +107,14 @@ class FacilityManager {
       }
       const facilities = await res.json();
 
-      if (facilities.length === 0) {
+      if (!facilities || facilities.length === 0) {
         this.list.innerHTML = '<p>No nearby facilities found. Getting all facilities...</p>';
         await new Promise(resolve => setTimeout(resolve, 2000));
-        this.filtered = await this.fetchFacilities();
+        await this.fetchFacilities();
       } else {
         this.filtered = facilities;
+        this.renderList();
       }
-      this.renderList();
     } catch (error) {
       console.error("Error loading nearby facilities:", error);
     }
@@ -280,7 +280,7 @@ class FacilityManager {
     document.getElementById('facilityHours').innerText = facility.hours;
     document.getElementById('facilityMap').src = facility.static_map_url;
 
-    document.getElementById('viewReviewsButton').href = `/reviews/${facility.facilityId}`;
+    document.getElementById('viewReviewsButton').href = `/review.html?facilityId=${facility.facilityId}`;
 
     this.initBookmarkButton(facility).then(() => {
       this.showBookmarkNotes(facility);

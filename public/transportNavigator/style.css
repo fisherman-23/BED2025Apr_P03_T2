@@ -141,6 +141,7 @@
     padding: 1.25rem;
     box-shadow: 0 4px 8px rgba(0,0,0,0.5);
     z-index: 1;
+    cursor: pointer;
 }
 
 .facility-card h3 {
@@ -195,14 +196,14 @@
     display: none;
 }
 
-.facility-header.visible {
+.facility-header {
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 1rem;
 }
 
-.facility-header.visible h2 {
+.facility-header h2 {
     font-size: 1.5rem;
     font-weight: 600;
 }
@@ -213,12 +214,12 @@
     cursor: pointer;
 }
 
-.facility-header.visible img {
+.facility-header img {
     width: 1.8rem;
     height: 1.8rem;
 }
 
-#facilityImage.visible {
+#facilityImage {
     display: block;
     width: 100%;
     height: 20rem;
@@ -233,7 +234,7 @@
     gap: 1rem;
 }
 
-.facility-info.visible {
+.facility-info {
     width: 80%;
     display: flex;
     flex-direction: column;
@@ -243,7 +244,7 @@
     padding: 1rem;
 }
 
-.facility-info.visible p {
+.facility-info p {
     font-weight: 400;
 }
 
@@ -258,12 +259,11 @@
     object-fit: cover;
 }
 
-#facilityMap.visible {
+#facilityMap {
     display: block;
 }
 
-#viewReviewsButton.visible{
-    display: flex;
+#viewReviewsButton {
     color: #000000;
     padding: 0.75rem 1.5rem;
     border-radius: 0.5rem;
@@ -277,7 +277,28 @@
     gap: 0.5rem;
 }
 
-#startNavButton.visible {
+.facility-page #facilityImage,
+.facility-page .facility-header,
+.facility-page .facility-info,
+.facility-page #facilityMap,
+.facility-page #startNavButton,
+.facility-page #viewReviewsButton {
+    display: none;
+}
+
+.facility-page #facilityImage.visible,
+.facility-page .facility-header.visible,
+.facility-page .facility-info.visible,
+.facility-page #startNavButton.visible,
+.facility-page #viewReviewsButton.visible {
+    display: flex;
+}
+
+.facility-page #facilityMap.visible {
+    display: block;
+}
+
+#startNavButton {
     display: flex;
     flex-direction: row;
     background-color: #D7E961;
@@ -416,6 +437,288 @@
     color: #999999;
 }
 
+.facility-details-review {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.reviews-container {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+}
+
+.reviews-container-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.filter-dropdown {
+    display: none;
+    position: absolute;
+    background: #FFFFFF;
+    border: 1px solid #ddd;
+    border-radius: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 100;
+    right: 4rem;
+    margin-top: 5px;
+}
+
+.filter-dropdown.show {
+    display: block;
+}
+
+.filter-option {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.filter-option:hover {
+    background-color: #f5f5f5;
+}
+
+.filter-button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.review-card {
+    border-bottom: 1px solid #eaeaea;
+    padding: 1.5rem 0;
+    position: relative;
+}
+
+.review-card:last-child {
+    border-bottom: none;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.review-user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-grow: 1;
+}
+
+.user-profile-pic {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #f0f0f0;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.review-date {
+    color: #777;
+    font-size: 0.85rem;
+    margin-left: 0.5rem;
+}
+
+.review-rating {
+    margin-left: 0.5rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.review-content {
+    color: #333;
+    line-height: 1.5;
+    margin-top: 0.5rem;
+}
+
+.review-actions {
+    position: relative;
+}
+
+.review-menu-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+}
+
+.review-menu-button:hover {
+    background-color: #f5f5f5;
+}
+
+.review-menu-dropdown {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    display: none;
+    min-width: 120px;
+}
+
+.review-menu-dropdown.show {
+    display: block;
+}
+
+.review-menu-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #333;
+}
+
+.review-menu-dropdown button:hover {
+    background-color: #f5f5f5;
+}
+
+.review-menu-button img {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+.edit-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.edit-modal .modal-content {
+    background: #FFFFFF;
+    padding: 2rem;
+    border-radius: 1rem;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.edit-modal h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.rating-input {
+    margin-bottom: 1.5rem;
+}
+
+.rating-input label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.number-rating {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.rating-number {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    background: #FFFFFF;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.rating-number:hover {
+    background: #f5f5f5;
+}
+
+.rating-number.selected {
+    background: #575DDF;
+    color: #FFFFFF;
+    border-color: #575DDF;
+}
+
+.edit-modal textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.cancel-edit-button {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.cancel-edit-button:hover {
+    background-color: #e0e0e0;
+}
+
+.save-edit-button {
+    background-color: #575DDF;
+    color: #FFFFFF;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.save-edit-button:hover {
+    background-color: #474BBF;
+}
+
+#reviewsList p {
+    color: #777;
+    text-align: center;
+    padding: 2rem 0;
+}
+
 @media (max-width: 1200px) {
     .facilities-container {
         flex-direction: column;
@@ -434,5 +737,13 @@
 
     .facility-header.visible h2 {
         font-size: 1.5rem;
+    }
+    
+    .reviews-page .facility-details-review {
+        width: 100%;
+    }
+
+    .reviews-container {
+        width: 100%;
     }
 }

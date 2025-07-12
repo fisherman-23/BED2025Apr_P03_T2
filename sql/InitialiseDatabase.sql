@@ -202,6 +202,33 @@ CREATE TABLE Bookmarks (
     CONSTRAINT UC_Bookmark UNIQUE (userId, facilityId)
 );
 
+-- Reviews table
+CREATE TABLE Reviews (
+    reviewId INT PRIMARY KEY IDENTITY(1,1),
+    userId INT NOT NULL,
+    facilityId INT NOT NULL,
+    rating INT CHECK (rating BETWEEN 1 AND 5),
+    comment NVARCHAR(1000) NULL,
+    createdAt DATETIME DEFAULT GETDATE(),
+    lastModified DATETIME DEFAULT GETDATE(),
+    isActive BIT DEFAULT 1,
+    FOREIGN KEY (userId) REFERENCES Users(ID),
+    FOREIGN KEY (facilityId) REFERENCES Facilities(facilityId),
+    CONSTRAINT UC_Review UNIQUE (userId, facilityId)
+);
+
+-- Reported Reviews table
+CREATE TABLE Reports (
+    reportId INT PRIMARY KEY IDENTITY(1,1),
+    reviewId INT NOT NULL,
+    userId INT NOT NULL,
+    reason NVARCHAR(500) NOT NULL,
+    createdAt DATETIME DEFAULT GETDATE(),
+    
+    FOREIGN KEY (reviewId) REFERENCES Reviews(reviewId),
+    FOREIGN KEY (userId) REFERENCES Users(ID)
+);
+
 -- Module 5: Buddy System
 -- Friend Functionality
 CREATE TABLE FriendRequests (
