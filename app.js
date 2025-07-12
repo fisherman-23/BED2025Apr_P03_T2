@@ -11,10 +11,13 @@ const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
 
+const facilitiesController = require("./controllers/facilitiesController.js");
+const bookmarkController = require("./controllers/bookmarkController.js");
+const reviewController = require("./controllers/reviewController.js");
+
 const exerciseController = require("./controllers/exerciseController.js");
 const medicationController = require("./controllers/medicationController.js");
 const appointmentController = require("./controllers/appointmentController.js");
-
 
 const {
   validateUserId,
@@ -90,11 +93,7 @@ app.patch(
   friendController.acceptFriendRequest
 );
 
-app.post(
-  "/api/upload/:folder",
-  /*authenticateJWT,*/ upload.single("file"),
-  handleUpload
-);
+app.post('/api/upload/:folder', authenticateJWT, upload.single('file'), handleUpload);
 
 app.patch(
   "/friend-requests/:id/reject",
@@ -152,6 +151,91 @@ app.post(
   authenticateJWT,
   matchController.skipUser
 );
+
+
+// Module 3: Transport Navigator
+app.get(
+  "/facilities/nearby",
+  authenticateJWT,
+  facilitiesController.getNearbyFacilities
+);
+
+app.get("/facilities/:id",
+  authenticateJWT,
+  facilitiesController.getFacilityById
+);
+
+app.get(
+  "/facilities/:type",
+  authenticateJWT,
+  facilitiesController.getFacilitiesByType
+);
+
+app.get(
+  "/facilities",
+  authenticateJWT,
+  facilitiesController.getFacilities
+);
+
+app.get(
+  "/api/geocode",
+  authenticateJWT,
+  facilitiesController.handleLocationAccess
+);
+
+app.get(
+  "/bookmarks/:facilityId",
+  authenticateJWT,
+  bookmarkController.checkIfBookmarked
+);
+
+app.get(
+  "/bookmarks",
+  authenticateJWT,
+  bookmarkController.getBookmarkedFacilities
+);
+
+app.post(
+  "/bookmarks",
+  authenticateJWT,
+  bookmarkController.saveBookmark
+);
+
+app.put(
+  "/bookmarks/:bookmarkId",
+  authenticateJWT,
+  bookmarkController.updateBookmark
+);
+
+app.delete(
+  "/bookmarks/:bookmarkId",
+  authenticateJWT,
+  bookmarkController.deleteBookmark
+);
+
+app.get(
+  "/reviews/:facilityId",
+  authenticateJWT,
+  reviewController.getReviewsByFacilityId
+);
+
+app.put(
+  "/reviews/:id",
+  authenticateJWT,
+  reviewController.updateReview
+)
+
+app.delete(
+  "/reviews/:id",
+  authenticateJWT,
+  reviewController.deleteReview
+)
+
+app.post(
+  "/reports",
+  authenticateJWT,
+  reviewController.createReport
+)
 
 // Module 4: Senior fitness coach
 app.get(
@@ -219,7 +303,6 @@ app.post("/api/appointments/:id/directions", authenticateJWT, appointmentControl
 app.get("/medicationManager", (req, res) => {
   res.sendFile(path.join(__dirname, "public/medicationManager.html"));
 });
-
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

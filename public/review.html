@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews - CircleAge</title>
+    <link rel="stylesheet" href="/global.css">
+    <link rel="stylesheet" href="/transportNavigator/style.css">
+</head>
+<body class="reviews-page">
+    <nav class="navbar">
+        <img src="/assets/Logo.svg" alt="Logo">
+        <div class="nav-icons">
+            <a><img src="/assets/icons/NAV-House.svg" alt="home"></a>
+            <a><img src="/assets/icons/NAV-Hospital.svg" alt="medical"></a>
+            <a><img src="/assets/icons/NAV-Tram.svg" alt="transport"></a>
+            <a><img src="/assets/icons/NAV-exercise.svg" alt="exercise"></a>
+            <a><img src="/assets/icons/NAV-calendar.svg" alt="events"></a>
+            <a><img src="/assets/icons/NAV-users.svg" alt="user"></a>
+        </div>
+        <div class="profile-icon" onclick="window.location.href='/account.html';">
+            <img src="/assets/images/elderlyPFP.png" alt="Profile Picture">
+        </div>
+    </nav>
+    <main class="facilities-container">
+        <section class="facility-details-review" id="facilityDetails">
+            <img id="facilityImage" src="" referrerpolicy="no-referrer" alt="Facility Image">
+            <div class="facility-header">
+                <h2 id="facilityName">Facility Name</h2>
+            </div>
+            <div class="facility-description" id="facilityDescription">
+                <div class="facility-info">
+                    <p><strong>Address:</strong> <span id="facilityAddress"></span></p>
+                    <p><strong>Phone:</strong> <span id="facilityPhone"></span></p>
+                    <p><strong>Hours:</strong> <span id="facilityHours"></span></p>
+                </div>
+                <div class="facility-map">
+                    <img src="#" alt="Map Image" id="facilityMap">
+                </div>
+            </div>
+        </section>
+         <section class="reviews-container">
+            <div class="reviews-container-header">
+                <h2 class="reviews-title">Reviews</h2>
+                <div class="review-filter">
+                    <button class="filter-button" id="filterButton">
+                        <span id="currentFilter">Sort by</span>
+                        <img src="/assets/icons/arrow-down.svg" alt="Dropdown" width="12">
+                    </button>
+                    <div class="filter-dropdown" id="filterDropdown">
+                        <div class="filter-option" data-sort="newest">Newest First</div>
+                        <div class="filter-option" data-sort="oldest">Oldest First</div>
+                        <div class="filter-option" data-sort="highest">Highest Rating</div>
+                        <div class="filter-option" data-sort="lowest">Lowest Rating</div>
+                    </div>
+                </div>
+            </div>
+            <div id="reviewsList">
+                <!-- Reviews will be dynamically inserted here -->
+            </div>
+        </section>
+    </main>
+    <script src="/transportNavigator/review.js"></script>
+</body>
+</html>
