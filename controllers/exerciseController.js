@@ -12,7 +12,7 @@ async function getExercises(req, res) {
 }
 
 async function getSteps(req, res) {
-    const exerciseId = req.params.exerciseId;
+    const exerciseId = parseInt(req.params.exerciseId);
     try {
         const steps = await exerciseModel.getSteps(exerciseId);
         res.status(200).json(steps);

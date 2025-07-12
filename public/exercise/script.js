@@ -13,6 +13,7 @@ async function fetchExerciseSteps() {
     throw new Error(`Server error: ${res.status} ${res.statusText}`);
     }
     const exercises = await res.json();
+    localStorage.setItem("exerciseList", JSON.stringify(exercises));
     console.log(exercises);
 
     let currentIndex = 0;
@@ -34,10 +35,14 @@ async function fetchExerciseSteps() {
             <h1>${exercise.title}</h1>
             <hr>
             <p>${exercise.description}</p>
-            <button class="viewExercise">View Exercise</button>
+            <button id="viewExercise" class="viewExercise" data-id="${exercise.exerciseId}">View Exercise</button>
           </div>
         `;
         container.appendChild(card);
+        const button = card.querySelector('.viewExercise');
+          button.addEventListener('click', () => {
+            window.location.href = `exercise-steps.html?id=${exercise.exerciseId}`;
+          });
       });
 
       currentIndex += batchSize;
@@ -199,3 +204,4 @@ document.getElementById('personalise-add').addEventListener("click", async () =>
     alert("Failed to save preferences. Please try again later.");
   }
 });
+
