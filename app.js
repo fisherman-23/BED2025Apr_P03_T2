@@ -19,6 +19,9 @@ const exerciseController = require("./controllers/exerciseController.js");
 const medicationController = require("./controllers/medicationController.js");
 const appointmentController = require("./controllers/appointmentController.js");
 
+const medicationController = require("./controllers/medicationController.js");
+const appointmentController = require("./controllers/appointmentController.js");
+
 const {
   validateUserId,
   validateLoginUser,
