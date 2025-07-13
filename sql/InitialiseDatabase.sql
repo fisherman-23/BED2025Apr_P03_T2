@@ -527,6 +527,16 @@ CREATE TABLE exercise_steps (
   instruction TEXT NOT NULL,
   FOREIGN KEY (exerciseId) REFERENCES exercises(exerciseId) 
 );
+
+CREATE TABLE goals (
+    goalId INT PRIMARY KEY IDENTITY(1,1),
+    userId INT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    last_completed_at DATETIME,
+    FOREIGN KEY (userId) REFERENCES Users(ID)
+);
+ 
 -- Sample data
 
 INSERT INTO categories (name) VALUES

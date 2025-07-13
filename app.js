@@ -18,6 +18,7 @@ const reviewController = require("./controllers/reviewController.js");
 const exerciseController = require("./controllers/exerciseController.js");
 const medicationController = require("./controllers/medicationController.js");
 const appointmentController = require("./controllers/appointmentController.js");
+const goalController = require("./controllers/goalController.js");
 
 const {
   validateUserId,
@@ -31,6 +32,7 @@ const {
   redirectIfAuthenticated,
 } = require("./middlewares/protectRoute");
 const validateMatchProfile = require("./middlewares/validateMatchProfile.js");
+const validateGoal = require("./middlewares/goalValidation.js");
 const {
   validateLocationAccess,
   validateNearbyFacilities,
@@ -265,6 +267,19 @@ app.post(
 );
 
 // Module 4: Senior fitness coach
+
+app.get(
+  "/exercises/goals",
+  authenticateJWT,
+  goalController.getGoals
+);
+
+app.get(
+  "/exercises/incompleted-goals",
+  authenticateJWT,
+  goalController.getIncompletedGoals
+);
+
 app.get(
   "/exercises/:userId",
   authenticateJWT,
@@ -289,10 +304,35 @@ app.put(
   exerciseController.updateExercisePreferences
 );
 
+app.put(
+  "/exercises/reset",
+  authenticateJWT,
+  goalController.resetGoal
+);
+
 app.post(
   "/exercises/personalisation",
   authenticateJWT,
   exerciseController.personalisation
+);
+
+app.put(
+  "/exercises/goals",
+  authenticateJWT,
+  goalController.updateGoal
+)
+
+app.post(
+  "/exercises/goals",
+  authenticateJWT, 
+  validateGoal,
+  goalController.createGoal
+);
+
+app.delete(
+  "/exercises/goals/:goalId",
+  authenticateJWT,
+  goalController.deleteGoal
 );
 
 app.delete(

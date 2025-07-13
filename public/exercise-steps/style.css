@@ -136,3 +136,128 @@ main {
     width: 2rem;
     height: 2em;
 }
+
+.goal-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px); /* Blurs the background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+ 
+.goal-popup-content {
+    width: 40vw;
+    height: 80vh;
+    background-color: rgba(255, 255, 255);
+    border-radius: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+ 
+#goal-text {
+    font-size: 1.6rem;
+    margin-bottom: 1.9rem;
+}
+ 
+.goal-close {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.5rem;
+    font-size: 1.4rem;
+    background: transparent;
+    border: none;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+}
+ 
+.goal-update{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #D7E961;
+    color: #000;
+    border: none;
+    padding: 0.7rem 2rem;
+    cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 0.8rem;
+    margin-top: 1.5rem;
+}
+ 
+ 
+.goals {
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.goalcard {
+    width: 65%;
+    margin-top: 1rem;
+    display: flex;
+    background-color: #F6F5F8;
+    border-radius: 1rem;
+    padding: 0.8rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    margin-bottom: 1rem;
+    gap: 2rem;
+    align-items: center;
+    position: relative; 
+}
+
+.goalcard h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.goalcard img {
+  width: 4rem;
+  height: 4rem;
+}
+
+.goalCheckbox {
+    width: 1.5rem;
+    height: 1.5rem;
+    cursor: pointer;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+.goal-finish{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #D7E961;
+    color: #000;
+    border: none;
+    padding: 0.7rem 2rem;
+    cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 0.8rem;
+    margin-top: 1.5rem;
+}
+
+.goal-buttons {
+    display: flex;
+    gap: 1rem;
+}
