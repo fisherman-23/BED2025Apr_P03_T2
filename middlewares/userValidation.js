@@ -118,7 +118,6 @@ const jwt = require("jsonwebtoken");
 
 function authenticateJWT(req, res, next) {
   let token;
-  let refreshToken;
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith("Bearer ")) {
     token = authHeader.split(" ")[1];
@@ -126,8 +125,10 @@ function authenticateJWT(req, res, next) {
     token = req.cookies.token;
   }
 
-  if (!token) {
-    return res.status(401).json({ error: "Authentication required" });
+  if (!token && !req.cookies.refreshToken) {
+    return res.status(401).json({ error: "Authentication token required" });
+  } else if (!token) {
+    return tokenRefresher(req, res, next);
   }
 
   try {
@@ -135,35 +136,39 @@ function authenticateJWT(req, res, next) {
     req.user = decoded;
     next();
   } catch (err) {
-    // Refresh token logic
     if( err.name === "TokenExpiredError") { 
       console.log("Token expired, checking for refresh token...");
-      if (req.cookies && req.cookies.refreshToken) {
-        refreshToken = req.cookies.refreshToken;
-        try{
-          decodedRefresh = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-        }
-        catch (error) {
-          console.error("Refresh token verification failed:", error);
-          return res.status(403).redirect("/login.html");
-        } 
-        newToken = jwt.sign(
-              { id: decodedRefresh.id, email: decodedRefresh.email },
-              process.env.JWT_SECRET,
-              { expiresIn: process.env.JWT_EXPIRES_IN }
-            );
-        res.cookie("token", newToken, {
-              httpOnly: true,
-              secure: process.env.NODE_ENV === "production",
-              sameSite: "lax",
-              maxAge: 1000 * 60 * 60, // expires in 1h
-            });
-        req.user = decodedRefresh;
-        return next();
+      return tokenRefresher(req, res, next);
       }
-    }else{
+    else{
       return res.status(403).json({ error: "Invalid token" });
     }
+  }
+}
+
+function tokenRefresher(req, res, next) {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) {
+    return res.status(401).json({ error: "Refresh token required" });
+  }
+  try{
+    decodedRefresh = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    newToken = jwt.sign(
+          { id: decodedRefresh.id, email: decodedRefresh.email },
+          process.env.JWT_SECRET,
+          { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+    res.cookie("token", newToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 1000 * 60 * 60, // expires in 1h
+        });
+    req.user = decodedRefresh;
+    return next();
+  } catch (err) {
+    console.error("Refresh token verification failed:", err);
+    return res.status(403).json({ error: "Invalid refresh token" });
   }
 }
 
