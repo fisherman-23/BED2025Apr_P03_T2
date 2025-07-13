@@ -49,7 +49,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    await handleSubmit();
 
+    const formInputs = form.querySelectorAll("input, select");
+    formInputs.forEach((input) => {
+      input.addEventListener("keydown", async (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          await handleSubmit();
+        }
+      });
+    });
+  });
+
+  async function handleSubmit() {
     // get form values
     const email = document.getElementById("Email").value.trim();
     const password = document.getElementById("Password").value;
@@ -107,15 +120,16 @@ document.addEventListener("DOMContentLoaded", () => {
       Name: name,
       PhoneNumber: phoneNumber,
       DateOfBirth: dob,
-      ProfilePicture: uploadedImageUrl || null // use uploaded image URL or null if not uploaded
+      ProfilePicture: uploadedImageUrl ||  null,
     };
 
     try {
       const res = await fetch("/users", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(userData)
       });
 
@@ -131,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error submitting form:", err);
       alert("Something went wrong. Please try again.");
     }
-  });
+  }
 });
 
 // populate DOB dropdowns dynamically

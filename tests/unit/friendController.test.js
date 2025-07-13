@@ -21,10 +21,18 @@ describe("friendController", () => {
   });
 
   describe("sendFriendRequest", () => {
-    it("sends a request successfully", async () => {
-      req.params.uuid = "uuid";
-      friendModel.getUserIdByUUID.mockResolvedValue(2);
-      friendModel.checkRequestOrFriendshipExists.mockResolvedValue(false);
+    beforeEach(() => {
+      jest.clearAllMocks();
+      req.user = { id: 1 };
+      req.params = {};
+      res.status = jest.fn().mockReturnThis();
+      res.json = jest.fn();
+    });
+
+    it("sends a friend request successfully", async () => {
+      req.params.uuid = "receiver-uuid";
+      friendModel.getUserIdByUUID.mockResolvedValue(2); // receiverId
+      friendModel.getFriendshipStatus.mockResolvedValue(null); // no existing relation
       friendModel.insertFriendRequest.mockResolvedValue();
 
       await friendController.sendFriendRequest(req, res);
@@ -33,8 +41,8 @@ describe("friendController", () => {
       expect(res.json).toHaveBeenCalledWith({ message: "Friend request sent" });
     });
 
-    it("returns 404 if user not found", async () => {
-      req.params.uuid = "uuid";
+    it("returns 404 if receiver user not found", async () => {
+      req.params.uuid = "receiver-uuid";
       friendModel.getUserIdByUUID.mockResolvedValue(null);
 
       await friendController.sendFriendRequest(req, res);
@@ -44,7 +52,7 @@ describe("friendController", () => {
     });
 
     it("returns 400 if sending request to self", async () => {
-      req.params.uuid = "uuid";
+      req.params.uuid = "receiver-uuid";
       friendModel.getUserIdByUUID.mockResolvedValue(1); // same as sender
 
       await friendController.sendFriendRequest(req, res);
@@ -55,21 +63,63 @@ describe("friendController", () => {
       });
     });
 
-    it("returns 400 if request already exists", async () => {
-      req.params.uuid = "uuid";
+    it("returns 400 if already friends", async () => {
+      req.params.uuid = "receiver-uuid";
       friendModel.getUserIdByUUID.mockResolvedValue(2);
-      friendModel.checkRequestOrFriendshipExists.mockResolvedValue(true);
+      friendModel.getFriendshipStatus.mockResolvedValue("friends");
 
       await friendController.sendFriendRequest(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
-        message: "Request or friendship already exists",
+        message: "You are already friends",
       });
     });
 
-    it("returns 500 on error", async () => {
-      req.params.uuid = "uuid";
+    it("returns 400 if outgoing pending request already sent", async () => {
+      req.params.uuid = "receiver-uuid";
+      friendModel.getUserIdByUUID.mockResolvedValue(2);
+      friendModel.getFriendshipStatus.mockResolvedValue("outgoing_pending");
+
+      await friendController.sendFriendRequest(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        message:
+          "You have already sent a request. Please wait for the other user to accept.",
+      });
+    });
+
+    it("returns 400 if incoming pending request exists", async () => {
+      req.params.uuid = "receiver-uuid";
+      friendModel.getUserIdByUUID.mockResolvedValue(2);
+      friendModel.getFriendshipStatus.mockResolvedValue("incoming_pending");
+
+      await friendController.sendFriendRequest(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        message:
+          "The other user has sent you a request. Please accept it from your friend requests tab.",
+      });
+    });
+
+    it("returns 400 if request was previously rejected", async () => {
+      req.params.uuid = "receiver-uuid";
+      friendModel.getUserIdByUUID.mockResolvedValue(2);
+      friendModel.getFriendshipStatus.mockResolvedValue("rejected");
+
+      await friendController.sendFriendRequest(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        message:
+          "A friend request was previously rejected. You cannot send another request.",
+      });
+    });
+
+    it("returns 500 on server error", async () => {
+      req.params.uuid = "receiver-uuid";
       friendModel.getUserIdByUUID.mockRejectedValue(new Error("DB error"));
 
       await friendController.sendFriendRequest(req, res);
