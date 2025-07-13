@@ -2,11 +2,7 @@ const reviewModel = require("../models/reviewModel.js");
 
 async function getReviewsByFacilityId(req, res) {
     try {
-        const facilityId = parseInt(req.params.facilityId, 10);
-        if (isNaN(facilityId)) {
-            return res.status(400).json({ error: "Invalid facility ID" });
-        }
-        const reviews = await reviewModel.getReviewsByFacilityId(facilityId);
+        const reviews = await reviewModel.getReviewsByFacilityId(req.params.facilityId);
         res.status(200).json(reviews);
     } catch (error) {
         console.error("Error in getReviewsByFacilityId:", error);
@@ -16,18 +12,11 @@ async function getReviewsByFacilityId(req, res) {
 
 async function addReview(req, res) {
     try {
-        const { facilityId, rating, comment } = req.body;
-        const userId = req.user.id;
-
-        if (!facilityId || !rating || !comment) {
-            return res.status(400).json({ error: "All fields are required" });
-        }
-
         const reviewData = {
-            FacilityId: facilityId,
-            UserId: userId,
-            Rating: rating,
-            Comment: comment
+            FacilityId: req.body.facilityId,
+            UserId: req.user.id,
+            Rating: req.body.rating,
+            Comment: req.body.comment
         };
 
         const success = await reviewModel.addReview(reviewData);
@@ -44,25 +33,17 @@ async function addReview(req, res) {
 
 async function updateReview(req, res) {
     try {
-        const reviewId = parseInt(req.params.id, 10);
-        const { rating, comment } = req.body;
-        const userId = req.user.id; // Assuming user ID is stored in req.user after authentication
-
-        if (isNaN(reviewId) || !rating || !comment) {
-            return res.status(400).json({ error: "Invalid input" });
-        }
-
         const reviewData = {
-            UserId: userId,
-            Rating: rating,
-            Comment: comment
+            UserId: req.user.id,
+            Rating: req.body.rating,
+            Comment: req.body.comment
         };
 
-        const success = await reviewModel.updateReview(reviewId, reviewData);
+        const success = await reviewModel.updateReview(req.params.id, reviewData);
         if (success) {
             res.status(200).json({ message: "Review updated successfully" });
         } else {
-            res.status(500).json({ error: "Failed to update review" });
+            res.status(404).json({ error: "Review not found" });
         }
     } catch (error) {
         console.error("Error in updateReview:", error);
@@ -72,17 +53,11 @@ async function updateReview(req, res) {
 
 async function deleteReview(req, res) {
     try {
-        const reviewId = parseInt(req.params.id, 10);
-        const userId = req.user.id; // Assuming user ID is stored in req.user after authentication
-        if (isNaN(reviewId)) {
-            return res.status(400).json({ error: "Invalid review ID" });
-        }
-
-        const success = await reviewModel.deleteReview(reviewId, userId);
+        const success = await reviewModel.deleteReview(req.params.id, req.user.id);
         if (success) {
             res.status(200).json({ message: "Review deleted successfully" });
         } else {
-            res.status(500).json({ error: "Failed to delete review" });
+            res.status(404).json({ error: "Review not found" });
         }
     } catch (error) {
         console.error("Error in deleteReview:", error);
@@ -92,16 +67,11 @@ async function deleteReview(req, res) {
 
 async function createReport(req, res) {
     try {
-        const { reviewId, reason } = req.body;
-        const userId = req.user.id;
-
-        if (!reviewId || isNaN(reviewId)) {
-            return res.status(400).json({ error: "Invalid review ID" });
-        }
+        console.log("Creating report for review ID:", req.body.reviewId);
         const reportData = {
-            ReviewId: reviewId,
-            UserId: userId,
-            Reason: reason
+            reviewId: req.body.reviewId,
+            userId: req.user.id,
+            reason: req.body.reason
         };
         const success = await reviewModel.createReport(reportData);
         if (success) {
