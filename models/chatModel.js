@@ -33,7 +33,6 @@ async function getOrCreateConversation(user1Id, user2Id) {
 }
 
 async function getUserConversations(userId) {
-  console.log("Fetching conversations for user:", userId);
   let connection;
   try {
     connection = await sql.connect(config);

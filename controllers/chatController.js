@@ -25,6 +25,7 @@ async function getMessages(req, res) {
   const { conversationId } = req.params;
   try {
     const result = await chatModel.getMessages(conversationId);
+    console.log("Fetched messages:", result);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: "Error fetching messages" });

@@ -32,6 +32,12 @@ IF OBJECT_ID('dbo.MatchProfile', 'U') IS NOT NULL
 IF OBJECT_ID('dbo.MatchInteractions', 'U') IS NOT NULL
     DROP TABLE dbo.MatchInteractions;
 
+IF OBJECT_ID('dbo.Conversations', 'U') IS NOT NULL
+    DROP TABLE dbo.Conversations;
+    
+IF OBJECT_ID('dbo.Messages', 'U') IS NOT NULL
+    DROP TABLE dbo.Messages;
+
 
 CREATE TABLE Users (
     ID INT PRIMARY KEY IDENTITY(1,1),
@@ -248,12 +254,11 @@ CREATE TABLE Messages (
     SenderID INT NOT NULL,
     Content TEXT NOT NULL,
 
-    SentAt DATETIME DEFAULT GETDATE(),
+    SentAt DATETIME2 DEFAULT SYSUTCDATETIME(),
 
-    -- Soft delete
     IsDeleted BIT DEFAULT 0,
-    DeletedAt DATETIME NULL,
+	DeletedAt DATETIME2 NULL
 
     CONSTRAINT FK_Message_Conversation FOREIGN KEY (ConversationID) REFERENCES Conversations(ID) ON DELETE CASCADE,
-    CONSTRAINT FK_Message_Sender FOREIGN KEY (SenderID) REFERENCES Users(ID) ON DELETE CASCADE
+    CONSTRAINT FK_Message_Sender FOREIGN KEY (SenderID) REFERENCES Users(ID) ON DELETE NO ACTION
 );
