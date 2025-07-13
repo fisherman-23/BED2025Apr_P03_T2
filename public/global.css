@@ -45,3 +45,43 @@ body {
   height: 100%;
   object-fit: cover;
 }
+
+@keyframes toast-timer {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.toastify-with-timer {
+  position: relative;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 2.5rem;
+  padding-bottom: 6px;
+  border-radius: 12px; 
+  overflow: hidden; 
+}
+
+
+.toastify-with-timer .toastify-close {
+  position: relative;
+  z-index: 2;
+}
+
+.toastify-with-timer::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  width: 100%;
+  background: linear-gradient(to right, #48bb78, #2f855a);
+  animation: toast-timer 3s linear forwards;
+  border-radius: 0 0 12px 12px;
+  z-index: 1;
+  pointer-events: none;
+}

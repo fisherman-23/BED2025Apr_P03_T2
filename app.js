@@ -10,6 +10,7 @@ const { upload, handleUpload } = require("./utils/fileUpload.js");
 const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
+const eventsController = require("./controllers/eventsController.js");
 
 const facilitiesController = require("./controllers/facilitiesController.js");
 const bookmarkController = require("./controllers/bookmarkController.js");
@@ -21,6 +22,10 @@ const appointmentController = require("./controllers/appointmentController.js");
 const goalController = require("./controllers/goalController.js");
 
 const {
+  validateCreateGroup,
+  validateGroupId,
+} = require("./middlewares/eventsValidation.js");
+const {
   validateUserId,
   validateLoginUser,
   validateCreateUser,
@@ -31,6 +36,7 @@ const {
   protectSpecificRoutes,
   redirectIfAuthenticated,
 } = require("./middlewares/protectRoute");
+
 const validateMatchProfile = require("./middlewares/validateMatchProfile.js");
 const validateGoal = require("./middlewares/goalValidation.js");
 const {
@@ -112,7 +118,14 @@ app.patch(
   friendController.acceptFriendRequest
 );
 
-app.post('/api/upload/:folder', upload.single('file'), handleUpload);
+
+app.post(
+  "/api/upload/:folder",
+  authenticateJWT, upload.single("file"),
+  handleUpload
+);
+
+
 
 app.patch(
   "/friend-requests/:id/reject",
@@ -170,6 +183,43 @@ app.post(
   authenticateJWT,
   matchController.skipUser
 );
+
+
+// Module 2: Community Events
+
+app.get(
+  "/groups/joined",
+  authenticateJWT,
+  eventsController.getJoinedGroups
+);
+
+app.get(
+  "/groups/available",
+  authenticateJWT,
+  eventsController.getAvailableGroups
+);
+
+app.post(
+  "/groups",
+  authenticateJWT,
+  validateCreateGroup,
+  eventsController.createGroup
+)
+
+app.post(
+  "/groups/join",
+  authenticateJWT, 
+  validateGroupId, 
+  eventsController.joinGroup
+);
+
+app.delete(
+  "/groups/leave", 
+  authenticateJWT, 
+  validateGroupId, 
+  eventsController.leaveGroup
+);
+
 
 // Module 3: Transport Navigator
 app.get(
@@ -371,9 +421,10 @@ app.get("/medicationManager", (req, res) => {
   res.sendFile(path.join(__dirname, "public/medicationManager.html"));
 });
 
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
-});
+});  
 
 if (require.main === module) {
   app.listen(port, () => {

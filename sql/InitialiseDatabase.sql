@@ -39,14 +39,13 @@ CREATE TABLE Users (
     Email VARCHAR(100) UNIQUE NOT NULL,
     Password VARCHAR(100) NOT NULL,
     Name VARCHAR(30) NOT NULL,
-	AboutMe VARCHAR(200) NULL,
+	  AboutMe VARCHAR(200) NULL,
     PhoneNumber CHAR(8) NOT NULL,
     DateOfBirth DATE NOT NULL,
     ProfilePicture VARCHAR(500) NULL,
     CreatedAt DATETIME DEFAULT GETDATE(),
     UpdatedAt DATETIME DEFAULT GETDATE(),
     IsActive BIT DEFAULT 1
-
 );
 
 CREATE UNIQUE INDEX idx_users_publicuuid ON Users(PublicUUID);
@@ -440,6 +439,35 @@ CREATE TABLE Reports (
     FOREIGN KEY (reviewId) REFERENCES Reviews(reviewId),
     FOREIGN KEY (userId) REFERENCES Users(ID)
 );
+
+-- Module 2: Community events
+-- Groups functionality
+CREATE TABLE Groups (
+  ID INT PRIMARY KEY IDENTITY(1,1),
+  Name VARCHAR(50) NOT NULL,
+  Description VARCHAR(200) NULL,
+  GroupPicture VARCHAR(1000) NULL,
+  IsPrivate BIT NOT NULL DEFAULT 0,
+  CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+  InviteToken UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+  CreatedBy INT NOT NULL,
+  FOREIGN KEY (CreatedBy) REFERENCES Users(ID)
+);
+
+CREATE TABLE GroupMembers (
+  GroupID INT NOT NULL,
+  UserID INT NOT NULL,
+
+  PRIMARY KEY (GroupID, UserID),
+  FOREIGN KEY (GroupID) REFERENCES Groups(ID),
+  FOREIGN KEY (UserID) REFERENCES Users(ID)
+);
+
+
+
+
+
+
 
 -- Module 5: Buddy System
 -- Friend Functionality
