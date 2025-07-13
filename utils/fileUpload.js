@@ -66,7 +66,7 @@ const handleUpload = (req, res) => {
   blobStream.on('finish', async () => {
     try {
       await blob.makePublic();
-      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${encodeURIComponent(blob.name)}`;
       res.status(200).send({ url: publicUrl });
     } catch (err) {
       res.status(500).send({ message: "Uploaded but failed to make public", error: err.message });

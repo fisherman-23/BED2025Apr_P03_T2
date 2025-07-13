@@ -1,197 +1,295 @@
-const request = require('supertest');
-const app = require('../app');
 const Appointment = require('../models/appointmentModel');
 
-// mock the appointment model
-jest.mock('../models/appointmentModel');
-
-describe('Appointment Controller', () => {
-    let authToken;
-    const mockUser = { id: 1, email: 'test@example.com' };
-
-    beforeEach(() => {
-        jest.clearAllMocks();
-        authToken = 'mock-jwt-token';
-    });
-
-    describe('POST /api/appointments', () => {
-        test('should create a new appointment successfully', async () => {
-            const mockAppointment = {
-                appointmentId: 1,
-                userId: 1,
-                doctorId: 1,
-                appointmentDate: '2024-12-15T10:00:00.000Z',
-                reason: 'Regular checkup'
-            };
-
-            const appointmentData = {
-                doctorId: 1,
-                appointmentDate: '2024-12-15T10:00:00.000Z',
-                reason: 'Regular checkup',
-                duration: '30 min'
-            };
-
-            Appointment.createAppointment.mockResolvedValue(mockAppointment);
-
-            const response = await request(app)
-                .post('/api/appointments')
-                .set('Cookie', [`token=${authToken}`])
-                .send(appointmentData);
-
-            expect(response.status).toBe(201);
-            expect(response.body.message).toBe('Appointment created successfully');
-            expect(response.body.appointment).toEqual(mockAppointment);
-            expect(Appointment.createAppointment).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    userId: mockUser.id,
-                    doctorId: appointmentData.doctorId,
-                    reason: appointmentData.reason
-                })
-            );
-        });
-
-        test('should return 400 for missing required fields', async () => {
-            const response = await request(app)
-                .post('/api/appointments')
-                .set('Cookie', [`token=${authToken}`])
-                .send({
-                    doctorId: 1
-                    // missing appointmentDate and reason
-                });
-
-            expect(response.status).toBe(400);
-            expect(response.body.error).toContain('Missing required fields');
-        });
-
-        test('should return 400 for appointment date in the past', async () => {
-            const pastDate = new Date('2020-01-01T10:00:00.000Z');
+class AppointmentController {
+    // creates a new appointment
+    async createAppointment(req, res) {
+        try {
+            const appointmentData = req.body;
+            appointmentData.userId = req.user.id; // from JWT token
             
-            const response = await request(app)
-                .post('/api/appointments')
-                .set('Cookie', [`token=${authToken}`])
-                .send({
-                    doctorId: 1,
-                    appointmentDate: pastDate.toISOString(),
-                    reason: 'Test appointment'
+            const newAppointment = await Appointment.createAppointment(appointmentData);
+            
+            res.status(201).json({
+                status: 'success',
+                message: 'Appointment booked successfully',
+                data: { appointment: newAppointment }
+            });
+        } catch (error) {
+            console.error('Error creating appointment:', error);
+            res.status(500).json({
+                status: 'error',
+                message: 'Failed to book appointment',
+                error: error.message
+            });
+        }
+    }
+
+    // gets all appointments for the current user
+    async getUserAppointments(req, res) {
+        try {
+            const appointments = await Appointment.getAppointmentsByUserId(req.user.id);
+            
+            res.status(200).json({
+                status: 'success',
+                data: { appointments }
+            });
+        } catch (error) {
+            console.error('Error fetching appointments:', error);
+            res.status(500).json({
+                status: 'error',
+                message: 'Failed to retrieve appointments',
+                error: error.message
+            });
+        }
+    }
+
+    // gets a specific appointment by ID
+    async getAppointmentById(req, res) {
+        try {
+            const appointmentId = req.params.id;
+            const appointment = await Appointment.getAppointmentById(appointmentId);
+            
+            if (!appointment) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: 'Appointment not found'
                 });
+            }
 
-            expect(response.status).toBe(400);
-            expect(response.body.error).toBe('Appointment date must be in the future');
-        });
-    });
+            // check if appointment belongs to current user
+            if (appointment.userId !== req.user.id) {
+                return res.status(403).json({
+                    status: 'error',
+                    message: 'Access denied to this appointment'
+                });
+            }
+            
+            res.status(200).json({
+                status: 'success',
+                data: { appointment }
+            });
+        } catch (error) {
+            console.error('Error fetching appointment:', error);
+            res.status(500).json({
+                status: 'error',
+                message: 'Failed to retrieve appointment',
+                error: error.message
+            });
+        }
+    }
 
-    describe('GET /api/appointments', () => {
-        test('should get all appointments for user', async () => {
-            const mockAppointments = [
-                {
-                    appointmentId: 1,
-                    userId: 1,
-                    doctorName: 'Dr. Smith',
-                    specialty: 'Cardiologist',
-                    appointmentDate: '2024-12-15T10:00:00.000Z',
-                    reason: 'Regular checkup'
-                }
-            ];
+    // updates an appointment
+    async updateAppointment(req, res) {
+        try {
+            const appointmentId = req.params.id;
+            const updateData = req.body;
+            
+            // first check if appointment exists and belongs to user
+            const existingAppointment = await Appointment.getAppointmentById(appointmentId);
+            if (!existingAppointment) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: 'Appointment not found'
+                });
+            }
 
-            Appointment.getAppointmentsByUserId.mockResolvedValue(mockAppointments);
+            if (existingAppointment.userId !== req.user.id) {
+                return res.status(403).json({
+                    status: 'error',
+                    message: 'Access denied to this appointment'
+                });
+            }
+            
+            const updated = await Appointment.updateAppointment(appointmentId, updateData);
+            
+            if (updated) {
+                res.status(200).json({
+                    status: 'success',
+                    message: 'Appointment updated successfully'
+                });
+            } else {
+                res.status(400).json({
+                    status: 'error',
+                    message: 'Failed to update appointment'
+                });
+            }
+        } catch (error) {
+            console.error('Error updating appointment:', error);
+            res.status(500).json({
+                status: 'error',
+                message: 'Failed to update appointment',
+                error: error.message
+            });
+        }
+    }
 
-            const response = await request(app)
-                .get('/api/appointments')
-                .set('Cookie', [`token=${authToken}`]);
+    // deletes an appointment
+    async deleteAppointment(req, res) {
+        try {
+            const appointmentId = req.params.id;
+            
+            // first check if appointment exists and belongs to user
+            const existingAppointment = await Appointment.getAppointmentById(appointmentId);
+            if (!existingAppointment) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: 'Appointment not found'
+                });
+            }
 
-            expect(response.status).toBe(200);
-            expect(response.body.message).toBe('Appointments retrieved successfully');
-            expect(response.body.appointments).toEqual(mockAppointments);
-            expect(Appointment.getAppointmentsByUserId).toHaveBeenCalledWith(mockUser.id);
-        });
-    });
+            if (existingAppointment.userId !== req.user.id) {
+                return res.status(403).json({
+                    status: 'error',
+                    message: 'Access denied to this appointment'
+                });
+            }
+            
+            const deleted = await Appointment.deleteAppointment(appointmentId);
+            
+            if (deleted) {
+                res.status(200).json({
+                    status: 'success',
+                    message: 'Appointment cancelled successfully'
+                });
+            } else {
+                res.status(400).json({
+                    status: 'error',
+                    message: 'Failed to cancel appointment'
+                });
+            }
+        } catch (error) {
+            console.error('Error deleting appointment:', error);
+            res.status(500).json({
+                status: 'error',
+                message: 'Failed to cancel appointment',
+                error: error.message
+            });
+        }
+    }
 
-    describe('GET /api/appointments/doctors/all', () => {
-        test('should get all doctors', async () => {
-            const mockDoctors = [
-                {
-                    doctorId: 1,
-                    name: 'Dr. Smith',
-                    specialty: 'Cardiologist',
-                    rating: 4.9
-                },
-                {
-                    doctorId: 2,
-                    name: 'Dr. Johnson',
-                    specialty: 'Family Medicine',
-                    rating: 4.7
-                }
-            ];
+    // gets all available doctors
+    async getAllDoctors(req, res) {
+        try {
+            const doctors = await Appointment.getAllDoctors();
+            
+            res.status(200).json({
+                status: 'success',
+                data: { doctors }
+            });
+        } catch (error) {
+            console.error('Error fetching doctors:', error);
+            res.status(500).json({
+                status: 'error',
+                message: 'Failed to retrieve doctors',
+                error: error.message
+            });
+        }
+    }
 
-            Appointment.getAllDoctors.mockResolvedValue(mockDoctors);
+    // searches doctors by specialty and location
+    async searchDoctors(req, res) {
+        try {
+            const { specialty, location } = req.query;
+            
+            const doctors = await Appointment.searchDoctors(specialty, location);
+            
+            res.status(200).json({
+                status: 'success',
+                data: { doctors }
+            });
+        } catch (error) {
+            console.error('Error searching doctors:', error);
+            res.status(500).json({
+                status: 'error',
+                message: 'Failed to search doctors',
+                error: error.message
+            });
+        }
+    }
 
-            const response = await request(app)
-                .get('/api/appointments/doctors/all')
-                .set('Cookie', [`token=${authToken}`]);
+    // gets doctor availability for appointment booking
+    async getDoctorAvailability(req, res) {
+        try {
+            const doctorId = req.params.doctorId;
+            const { date } = req.query;
+            
+            const availability = await Appointment.getDoctorAvailability(doctorId, date);
+            
+            res.status(200).json({
+                status: 'success',
+                data: { availability }
+            });
+        } catch (error) {
+            console.error('Error fetching doctor availability:', error);
+            res.status(500).json({
+                status: 'error',
+                message: 'Failed to retrieve doctor availability',
+                error: error.message
+            });
+        }
+    }
 
-            expect(response.status).toBe(200);
-            expect(response.body.message).toBe('Doctors retrieved successfully');
-            expect(response.body.doctors).toEqual(mockDoctors);
-        });
-    });
+    // sends appointment reminders
+    async sendAppointmentReminder(req, res) {
+        try {
+            const appointmentId = req.params.id;
+            
+            // check if appointment belongs to user
+            const appointment = await Appointment.getAppointmentById(appointmentId);
+            if (!appointment || appointment.userId !== req.user.id) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: 'Appointment not found'
+                });
+            }
+            
+            const result = await Appointment.sendReminder(appointmentId);
+            
+            res.status(200).json({
+                status: 'success',
+                message: 'Reminder sent successfully',
+                data: result
+            });
+        } catch (error) {
+            console.error('Error sending reminder:', error);
+            res.status(500).json({
+                status: 'error',
+                message: 'Failed to send reminder',
+                error: error.message
+            });
+        }
+    }
 
-    describe('PUT /api/appointments/:id', () => {
-        test('should update appointment successfully', async () => {
-            const appointmentId = 1;
-            const existingAppointment = {
-                appointmentId,
-                userId: mockUser.id,
-                doctorId: 1,
-                appointmentDate: '2024-12-15T10:00:00.000Z',
-                reason: 'Old reason',
-                status: 'scheduled'
-            };
+    // gets directions to clinic using OneMap API
+    async getDirections(req, res) {
+        try {
+            const appointmentId = req.params.id;
+            const { currentLocation } = req.body;
+            
+            // check if appointment belongs to user
+            const appointment = await Appointment.getAppointmentById(appointmentId);
+            if (!appointment || appointment.userId !== req.user.id) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: 'Appointment not found'
+                });
+            }
+            
+            const directions = await Appointment.getDirections(currentLocation, appointment.address);
+            
+            res.status(200).json({
+                status: 'success',
+                data: { directions }
+            });
+        } catch (error) {
+            console.error('Error getting directions:', error);
+            res.status(500).json({
+                status: 'error',
+                message: 'Failed to get directions',
+                error: error.message
+            });
+        }
+    }
+}
 
-            const updateData = {
-                appointmentDate: '2024-12-16T11:00:00.000Z',
-                reason: 'Updated reason',
-                duration: '45 min',
-                status: 'scheduled'
-            };
-
-            Appointment.getAppointmentById.mockResolvedValue(existingAppointment);
-            Appointment.updateAppointment.mockResolvedValue(true);
-            Appointment.getAppointmentById.mockResolvedValueOnce(existingAppointment)
-                .mockResolvedValueOnce({ ...existingAppointment, ...updateData });
-
-            const response = await request(app)
-                .put(`/api/appointments/${appointmentId}`)
-                .set('Cookie', [`token=${authToken}`])
-                .send(updateData);
-
-            expect(response.status).toBe(200);
-            expect(response.body.message).toBe('Appointment updated successfully');
-            expect(Appointment.updateAppointment).toHaveBeenCalledWith(
-                appointmentId,
-                expect.objectContaining(updateData)
-            );
-        });
-    });
-
-    describe('DELETE /api/appointments/:id', () => {
-        test('should delete appointment successfully', async () => {
-            const appointmentId = 1;
-            const appointment = {
-                appointmentId,
-                userId: mockUser.id,
-                reason: 'Test appointment'
-            };
-
-            Appointment.getAppointmentById.mockResolvedValue(appointment);
-            Appointment.deleteAppointment.mockResolvedValue(true);
-
-            const response = await request(app)
-                .delete(`/api/appointments/${appointmentId}`)
-                .set('Cookie', [`token=${authToken}`]);
-
-            expect(response.status).toBe(200);
-            expect(response.body.message).toBe('Appointment deleted successfully');
-            expect(Appointment.deleteAppointment).toHaveBeenCalledWith(appointmentId);
-        });
-    });
-});
+module.exports = new AppointmentController();

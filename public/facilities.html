@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/global.css">
     <link rel="stylesheet" href="/transportNavigator/style.css">
 </head>
-<body>
+<body class="facility-page">
     <nav class="navbar">
         <img src="/assets/Logo.svg" alt="Logo">
         <div class="nav-icons">
@@ -32,14 +32,19 @@
             <h1>Facilities near you</h1>
             <div class="search-bar">
                 <img src="/assets/icons/search.svg" alt="Search Icon">
-                <input type="text" id="search" placeholder="Seach for facilities...">
+                <input type="text" id="search" placeholder="Search for facilities...">
             </div>
             <section class="filter-options">
-                <button class="filter-saved" id="filterBySaved">Saved Facilities</button>
+                <button class="filter-all" id="filterByAll">All</button>
+                <button class="filter-bookmarked" id="filterByBookmarked">Bookmarked Facilities</button>
                 <button class="filter-polyclinics" id="filterByPolyclinics">Polyclinics</button>
+                <button class="filter-hospitals" id="filterByHospitals">Hospitals</button>
                 <button class="filter-community-centres" id="filterByCommunityCentres">Community Centres</button>
                 <button class="filter-parks" id="filterByParks">Parks</button>
             </section>
+            <div class="active-filters" id="activeFilters">
+                <!-- Active filters will be dynamically inserted here -->
+            </div>
             <ul class="facility-list" id="facilityList">
                 <!-- Facilities will be dynamically inserted here -->
             </ul>
@@ -48,22 +53,31 @@
             <div class="details-placeholder" id="detailsPlaceholder">
                 <p>Select a facility to view details.</p>
             </div>
-            <img id="facilityImage" src="" alt="Facility Image">
+            <img id="facilityImage" src="" referrerpolicy="no-referrer" alt="Facility Image">
             <div class="facility-header">
                 <h2 id="facilityName">Facility Name</h2>
                 <button id="bookmarkButton" class="icon-button">
-                    <img src="/assets/icons/bookmark.svg" alt="Bookmark" />
+                    <img id="bookmarkIcon" src="/assets/icons/bookmark.svg" alt="Bookmark" />
                 </button>
                 <button id="shareButton" class="icon-button">
                     <img src="/assets/icons/share.svg" alt="Share" />
                 </button>
             </div>
-            <div class="facility-info">
-                <p>Located in: <span id="facilityLocation"></span></p>
-                <p>Address: <span id="facilityAddress"></span></p>
-                <p>Phone: <span id="facilityPhone"></span></p>
-                <p>Hours: <span id="facilityHours"></span></p>
+            <div class="facility-description" id="facilityDescription">
+                <div class="facility-info">
+                    <p><strong>Address:</strong> <span id="facilityAddress"></span></p>
+                    <p><strong>Phone:</strong> <span id="facilityPhone"></span></p>
+                    <p><strong>Hours:</strong> <span id="facilityHours"></span></p>
+                </div>
+                <div class="facility-map">
+                    <img src="#" alt="Map Image" id="facilityMap">
+                </div>
             </div>
+            <a href="/reviews.html" class="view-reviews-button" id="viewReviewsButton">
+                View Reviews
+                <img src="/assets/icons/arrow-right.svg" alt="Arrow Right Icon">
+            </a>
+            <div class="bookmark-notes-section" id="bookmarkNotesSection"></div>
             <button class="start-nav" id="startNavButton">
                 <img src="/assets/icons/compass.svg" alt="Compass Icon">
                 Start Navigation
@@ -71,6 +85,19 @@
             </button>
         </section>
     </main>
+    <div id="bookmarkPopup" class="bookmark-popup">
+        <div class="bookmark-popup-content">
+            <button class="bookmark-close" id="closeBookmarkPopup">&times;</button>
+            <h2 id="bookmarkPopupTitle">Frequently visiting? Bookmark this facility!</h2>
+            <div class="bookmark-input">
+                <label for="locationName">Location Name:</label>
+                <input type="text" id="locationName" placeholder="Location Name" disabled>
+                <label for="locationNotes">Additional Notes:</label>
+                <textarea id="locationNotes" placeholder="Enter any additional notes here..."></textarea>
+            </div>
+            <button id="saveBookmark" class="save-bookmark-button">Save Bookmark</button>
+        </div>
+    </div>
     <script src="/transportNavigator/script.js"></script>
 </body>
 </html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise Steps</title>
+    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="/exercise-steps/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <img src="/assets/Logo.svg" alt="Logo">
+        <div class="nav-icons">
+            <a><img src="/assets/icons/NAV-House.svg" alt="home"></a>
+            <a><img src="/assets/icons/NAV-Hospital.svg" alt="medical"></a>
+            <a><img src="/assets/icons/NAV-Tram.svg" alt="transport"></a>
+            <a><img src="/assets/icons/NAV-exercise.svg" alt="exercise"></a>
+            <a><img src="/assets/icons/NAV-calendar.svg" alt="events"></a>
+            <a><img src="/assets/icons/NAV-users.svg" alt="user"></a>
+        </div>
+        <div class="profile-icon">
+            <img src="/assets/images/elderlyPFP.png" alt="Profile Picture">
+        </div>
+    </nav>
+    <main>
+        <div class="start">
+            <img src="/exercise/images/chairyoga.png" alt="exercise image">
+            <div class="exercise-info">
+                <h1 id="exerciseName">Welcome to Chair yoga</h1>
+                <hr>
+                <p id="exerciseDesc">Chair yoga adapts yoga for seated practice, enhancing flexibility, strength, and mindfulness.</p>
+                <p id="benefit">At the end of this exercise, you should feel a sense of increased calm and reduced stress. Experience improved flexibility and range of motion in your joints.Notice enhanced circulation throughout your body.</p>
+                <button class="startButton">Let's Start!</button>
+            </div>
+        </div>
+        <div class="Steps" id="Steps">
+            <div class="stepCard">
+                <div class="stepHeader">
+                    <h1>Step</h1>
+                    <div class="stepNumber">1</div>
+                </div>
+                <h2 class="insturctions">Find a sturdy chair: Make sure it's stable and doesn't have wheels. A dining chair or a folding chair is usually ideal.</h2>
+            </div>
+            <hr class="step-divider">
+            <div class="stepCard">
+                <div class="stepHeader">
+                    <h1>Step</h1>
+                    <div class="stepNumber">1</div>
+                </div>
+                <h2 class="insturctions">Find a sturdy chair: Make sure it's stable and doesn't have wheels. A dining chair or a folding chair is usually ideal.</h2>
+            </div>
+            <hr class="step-divider">
+            <div class="stepCard">
+                <div class="stepHeader">
+                    <h1>Step</h1>
+                    <div class="stepNumber">1</div>
+                </div>
+                <h2 class="insturctions">Find a sturdy chair: Make sure it's stable and doesn't have wheels. A dining chair or a folding chair is usually ideal.</h2>
+            </div>
+            <hr class="step-divider">
+        </div>
+        <button class="finish" id="finish">Finish Exercise <img src="/assets/icons/finish.svg" alt="finish"></button>
+    </main>
+    <div id="goal-popup" class="goal-popup">
+        <div class="goal-popup-content">
+            <button id="goal-close" class="goal-close">&#10006;</button>
+            <h2 id="goal-text">Let's update your goals</h2>
+            <diV class="goals">
+
+            </diV>
+            <div class="goal-buttons">
+                <button id="goal-update" class="goal-update">Update</button>
+                <button id="goal-finish" class="goal-finish" onclick="window.location.href = `exercise.html`">Exit</button>
+            </div>
+        </div>
+    </div>
+    <script src="/exercise-steps/script.js"></script>
+</body>
+</html>
