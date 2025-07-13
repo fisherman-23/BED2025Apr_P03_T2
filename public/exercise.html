@@ -35,25 +35,9 @@
             <div class="goals">
                 <div class="goalHeader">
                     <h1>Daily Goal Progress</h1>
-                    <button class="addGoal">+ Add Item</button>
+                    <button id="addGoal" class="addGoal">+ Add Item</button>
                 </div>
                 <div class="goalCards">
-                    <div class="goalcard">
-                        <img src="/assets/icons/goal.svg" alt="goalIcon">
-                        <div class="goalText">
-                            <h1>Daily Steps</h1>
-                            <p>10,000 steps</p>
-                        </div>
-                        <button class="goalDelete">&#10006;</button>
-                    </div>
-                    <div class="goalcard">
-                        <img src="/assets/icons/goal.svg" alt="goalIcon">
-                        <div class="goalText">
-                            <h1>Daily Steps</h1>
-                            <p>10,000 steps</p>
-                        </div>
-                        <button class="goalDelete">&#10006;</button>
-                    </div>
                 </div>
             </div>
             <div class="progress">
@@ -98,6 +82,19 @@
             <button id="personalise-add" class="personalise-add">Add</button>
             <button id="personalise-update" class="personalise-add">Update</button>
             <button id="personalise-clear" class="personalise-add">Clear</button>
+        </div>
+    </div>
+    <div id="goal-popup" class="goal-popup">
+        <div class="goal-popup-content">
+            <button id="goal-close" class="goal-close">&#10006;</button>
+            <h2 id="goal-text">Let's add some goals!</h2>
+            <form id="goal-form" class="goal-form">
+                <label id="goal-name" class="goal-name">Goal Name</label><br>
+                <input id="goal-name-input" class="goal-name-input" type="text"  placeholder="e.g. Daily Steps"><br>
+                <label id="goal-description" class="goal-description">Goal Description</label><br>
+                <textarea id="goal-description-input" class="goal-description-input" type="text" placeholder="e.g. 10,000 steps"></textarea>
+            </form>
+            <button id="goal-add" class="goal-add">Add</button>
         </div>
     </div>
     <script src="/exercise/script.js"></script>
