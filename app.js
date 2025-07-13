@@ -11,11 +11,14 @@ const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
 
+const facilitiesController = require("./controllers/facilitiesController.js");
+const bookmarkController = require("./controllers/bookmarkController.js");
+const reviewController = require("./controllers/reviewController.js");
+
 const exerciseController = require("./controllers/exerciseController.js");
 const medicationController = require("./controllers/medicationController.js");
 const appointmentController = require("./controllers/appointmentController.js");
 const goalController = require("./controllers/goalController.js");
-
 
 const {
   validateUserId,
@@ -30,6 +33,23 @@ const {
 } = require("./middlewares/protectRoute");
 const validateMatchProfile = require("./middlewares/validateMatchProfile.js");
 const validateGoal = require("./middlewares/goalValidation.js");
+const {
+  validateLocationAccess,
+  validateNearbyFacilities,
+  validateFacilityId,
+  validateFacilityType,
+} = require("./middlewares/facilitiesValidation.js");
+const {
+  validateBookmarkId,
+  validateFacilityIdParam,
+  validateBookmarkData,
+} = require("./middlewares/bookmarkValidation.js");
+const {
+  validateReviewIdParam,
+  validateReviewData,
+  validateUpdateReviewData,
+  validateReportData,
+} = require("./middlewares/reviewValidation.js");
 const { compareSync } = require("bcrypt");
 const app = express();
 const port = process.env.PORT || 3000;
@@ -92,11 +112,7 @@ app.patch(
   friendController.acceptFriendRequest
 );
 
-app.post(
-  "/api/upload/:folder",
-  /*authenticateJWT,*/ upload.single("file"),
-  handleUpload
-);
+app.post('/api/upload/:folder', upload.single('file'), handleUpload);
 
 app.patch(
   "/friend-requests/:id/reject",
@@ -153,6 +169,101 @@ app.post(
   "/match/skip/:targetUserId",
   authenticateJWT,
   matchController.skipUser
+);
+
+// Module 3: Transport Navigator
+app.get(
+  "/facilities/nearby",
+  authenticateJWT,
+  validateNearbyFacilities,
+  facilitiesController.getNearbyFacilities
+);
+
+app.get("/facilities/id/:id",
+  authenticateJWT,
+  validateFacilityId,
+  facilitiesController.getFacilityById
+);
+
+app.get(
+  "/facilities/type/:type",
+  authenticateJWT,
+  validateFacilityType,
+  facilitiesController.getFacilitiesByType
+);
+
+app.get(
+  "/facilities",
+  authenticateJWT,
+  facilitiesController.getFacilities
+);
+
+app.get(
+  "/api/geocode",
+  authenticateJWT,
+  validateLocationAccess,
+  facilitiesController.handleLocationAccess
+);
+
+app.get(
+  "/bookmarks/:facilityId",
+  authenticateJWT,
+  bookmarkController.checkIfBookmarked
+);
+
+app.get(
+  "/bookmarks",
+  authenticateJWT,
+  bookmarkController.getBookmarkedFacilities
+);
+
+app.post(
+  "/bookmarks",
+  authenticateJWT,
+  validateBookmarkData,
+  bookmarkController.saveBookmark
+);
+
+app.put(
+  "/bookmarks/:bookmarkId",
+  authenticateJWT,
+  validateBookmarkId,
+  bookmarkController.updateBookmark
+);
+
+app.delete(
+  "/bookmarks/:bookmarkId",
+  authenticateJWT,
+  validateBookmarkId,
+  bookmarkController.deleteBookmark
+);
+
+app.get(
+  "/reviews/:facilityId",
+  authenticateJWT,
+  reviewController.getReviewsByFacilityId
+);
+
+app.put(
+  "/reviews/:id",
+  authenticateJWT,
+  validateReviewIdParam,
+  validateUpdateReviewData,
+  reviewController.updateReview
+);
+
+app.delete(
+  "/reviews/:id",
+  authenticateJWT,
+  validateReviewIdParam,
+  reviewController.deleteReview
+);
+
+app.post(
+  "/reports",
+  authenticateJWT,
+  validateReportData,
+  reviewController.createReport
 );
 
 // Module 4: Senior fitness coach
@@ -259,7 +370,6 @@ app.post("/api/appointments/:id/directions", authenticateJWT, appointmentControl
 app.get("/medicationManager", (req, res) => {
   res.sendFile(path.join(__dirname, "public/medicationManager.html"));
 });
-
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

@@ -383,6 +383,63 @@ WHERE TABLE_SCHEMA = 'dbo'
 AND TABLE_NAME IN ('Medications', 'Doctors', 'Appointments', 'MedicationLogs', 'DrugInteractions', 'DrugConflicts', 'DoctorAvailability');
 GO
 
+-- Module 3: Transport Navigator
+-- Facilities data table
+CREATE TABLE Facilities (
+    facilityId INT PRIMARY KEY IDENTITY(1,1),
+    name VARCHAR(100) NOT NULL,
+    address TEXT NOT NULL,
+    facilityType VARCHAR(50) NOT NULL CHECK (facilityType IN ('Polyclinic', 'Hospital', 'Park', 'Community Center')),
+    phoneNo VARCHAR(20) NULL,
+    hours NVARCHAR(1000) NULL,
+    image_url NVARCHAR(1000) NULL,
+    static_map_url VARCHAR(500) NULL,
+    latitude FLOAT,
+    longitude FLOAT,
+    google_place_id VARCHAR(100) NULL,
+    lastVerified DATE DEFAULT GETDATE()
+);
+
+-- Bookmarks table
+CREATE TABLE Bookmarks (
+    bookmarkId INT PRIMARY KEY IDENTITY(1,1),
+    userId INT NOT NULL,
+    facilityId INT NOT NULL,
+    locationName NVARCHAR(100) NOT NULL,
+    note NVARCHAR(500) NULL,
+    createdAt DATETIME DEFAULT GETDATE(),
+    
+    FOREIGN KEY (userId) REFERENCES Users(ID),
+    FOREIGN KEY (facilityId) REFERENCES Facilities(facilityId),
+    CONSTRAINT UC_Bookmark UNIQUE (userId, facilityId)
+);
+
+-- Reviews table
+CREATE TABLE Reviews (
+    reviewId INT PRIMARY KEY IDENTITY(1,1),
+    userId INT NOT NULL,
+    facilityId INT NOT NULL,
+    rating INT CHECK (rating BETWEEN 1 AND 5),
+    comment NVARCHAR(1000) NULL,
+    createdAt DATETIME DEFAULT GETDATE(),
+    lastModified DATETIME DEFAULT GETDATE(),
+    isActive BIT DEFAULT 1,
+    FOREIGN KEY (userId) REFERENCES Users(ID),
+    FOREIGN KEY (facilityId) REFERENCES Facilities(facilityId),
+    CONSTRAINT UC_Review UNIQUE (userId, facilityId)
+);
+
+-- Reported Reviews table
+CREATE TABLE Reports (
+    reportId INT PRIMARY KEY IDENTITY(1,1),
+    reviewId INT NOT NULL,
+    userId INT NOT NULL,
+    reason NVARCHAR(500) NOT NULL,
+    createdAt DATETIME DEFAULT GETDATE(),
+    
+    FOREIGN KEY (reviewId) REFERENCES Reviews(reviewId),
+    FOREIGN KEY (userId) REFERENCES Users(ID)
+);
 
 -- Module 5: Buddy System
 -- Friend Functionality

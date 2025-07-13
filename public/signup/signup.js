@@ -120,15 +120,16 @@ document.addEventListener("DOMContentLoaded", () => {
       Name: name,
       PhoneNumber: phoneNumber,
       DateOfBirth: dob,
-      ProfilePicture: uploadedImageUrl || null // use uploaded image URL or null if not uploaded
+      ProfilePicture: uploadedImageUrl ||  null,
     };
 
     try {
       const res = await fetch("/users", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(userData)
       });
 
