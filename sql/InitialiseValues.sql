@@ -107,3 +107,198 @@ VALUES
     (1, 2, 3, 'Average experience, nothing special.')
     (2, 2, 5, 'Excellent care and very clean environment!'),
     (3, 1, 4, 'Very professional staff and quick service.');
+
+
+-- Module 4: Senior Fitness Coach
+-- Sample Data
+
+-- Categories
+INSERT INTO categories (name) VALUES
+('Limited Mobility / Seated Exercises'),
+('Full Mobility / Active Seniors'),
+('Heart Health & Light Cardio'),
+('Relaxation & Flexibility');
+
+-- Exercises
+INSERT INTO exercises (title, description, image_url, categoryId, benefits) VALUES
+-- Category 1: Limited Mobility / Seated Exercises
+('Seated Knee Lifts', 
+ 'A simple seated movement that strengthens thighs and supports circulation. Ideal for those with limited mobility.', 
+ '/exercise/images/seated_knee_lifts.png', 1,
+ 'This exercise helps stimulate blood flow in your legs and strengthens your thigh muscles. You may feel improved lower-body control and reduced stiffness.'),
+ 
+('Seated Arm Circles', 
+ 'A gentle arm movement performed while seated to promote flexibility and shoulder mobility.', 
+ '/exercise/images/seated_arm_circles.png', 1,
+ 'Expect improved range of motion in your shoulders and upper arms. You’ll feel more limber and energized in your upper body.'),
+
+('Seated Toe Taps', 
+ 'Tap your toes to light music while seated. Helps with ankle flexibility and blood flow.', 
+ '/exercise/images/seated_toe_taps.png', 1,
+ 'Your ankles will feel more mobile and engaged. This light cardio can also boost circulation in your lower legs.'),
+
+('Chair Yoga', 
+ 'A gentle form of yoga performed while seated or using a chair for support. Great for beginners and people with limited mobility.', 
+ '/exercise/images/chairyoga.png', 1,
+ 'You should feel a sense of calm, reduced stress, and gentle flexibility. Expect improved posture and mental clarity after the session.'),
+
+-- Category 2: Full Mobility / Active Seniors (Outdoor Activities)
+('Guided Nature Walk', 
+ 'A leisurely outdoor walk through parks or gardens that promotes mobility, cardiovascular health, and mental wellness.', 
+ '/exercise/images/guided_nature_walk.png', 2,
+ 'You’ll feel refreshed and energized, with better circulation and cardiovascular endurance. The outdoor setting also supports mental relaxation.'),
+
+('Outdoor Tai Chi', 
+ 'A flowing, low-impact movement routine practiced in open spaces to improve balance, flexibility, and mindfulness.', 
+ '/exercise/images/outdoor_tai_chi.png', 2,
+ 'You will notice increased mental clarity and body control. Expect a sense of peace and enhanced joint flexibility.'),
+
+('Park Pole Stretches', 
+ 'Use walking poles or park railings to support gentle stretches for the arms, shoulders, and back.', 
+ '/exercise/images/park_pole_stretches.png', 2,
+ 'This routine promotes flexibility and eases muscular tension in the upper body. You’ll finish with a looser, more open posture.'),
+
+-- Category 3: Heart Health & Light Cardio
+('Walk in Place', 
+ 'A gentle way to get the heart pumping by walking on the spot. Great for warming up or light movement.', 
+ '/exercise/images/walk_in_place.png', 3,
+ 'Your heart rate will gently increase, supporting cardiovascular fitness. You’ll feel warmer, more awake, and physically active.'),
+
+('Seated Jumping Jacks', 
+ 'A safe, modified version of jumping jacks done while seated. Encourages full-body movement.', 
+ '/exercise/images/seated_jumping_jacks.png', 3,
+ 'You’ll activate both your arms and legs while staying seated. Expect a light cardio boost and improved coordination.'),
+
+('Side Steps with Arm Swings', 
+ 'Step side to side while gently swinging arms to boost heart rate and coordination.', 
+ '/exercise/images/side_steps_arm_swings.png', 3,
+ 'This movement increases your overall mobility and elevates heart rate. It also improves coordination between upper and lower body.'),
+
+-- Category 4: Relaxation & Flexibility
+('Neck Rolls', 
+ 'A calming movement to reduce neck stiffness and relax upper body muscles. Done gently while seated.', 
+ '/exercise/images/neck_rolls.png', 4,
+ 'Expect a noticeable release of tension in your neck and shoulders. You may feel more at ease and less stiff in your upper body.'),
+
+('Deep Breathing', 
+ 'A mindful breathing technique to promote relaxation and reduce stress. Can be done anywhere.', 
+ '/exercise/images/deep_breathing.png', 4,
+ 'You will feel calmer and more centered, with slower breathing and reduced tension. It helps reset your body and mind.'),
+
+('Gentle Seated Twists', 
+ 'Turn your upper body slowly while seated to stretch the spine and improve flexibility.', 
+ '/exercise/images/gentle_seated_twists.png', 4,
+ 'This twist can enhance spinal flexibility and circulation. You’ll finish feeling refreshed and more mobile in your upper torso.');
+
+-- Exercises steps
+INSERT INTO exercise_steps (exerciseId, step_number, instruction) VALUES
+-- Seated Knee Lifts
+(1, 1, 'Sit upright on a sturdy chair with feet flat on the ground.'),
+(1, 2, 'Place hands on the sides of the chair for balance.'),
+(1, 3, 'Lift your right knee slowly toward your chest.'),
+(1, 4, 'Lower your right leg back to the floor.'),
+(1, 5, 'Lift your left knee toward your chest.'),
+(1, 6, 'Lower your left leg back to the floor.'),
+(1, 7, 'Repeat for 10–12 repetitions per leg.'),
+
+-- Seated Arm Circles
+(2, 1, 'Sit comfortably with your back straight.'),
+(2, 2, 'Extend both arms out to the sides at shoulder height.'),
+(2, 3, 'Slowly make small circles with your arms forward.'),
+(2, 4, 'Increase the size of the circles gradually.'),
+(2, 5, 'Reverse and make circles in the opposite direction.'),
+(2, 6, 'Lower arms and relax.'),
+(2, 7, 'Repeat 2–3 sets as comfortable.'),
+
+-- Seated Toe Taps
+(3, 1, 'Sit on a chair with your feet flat and back straight.'),
+(3, 2, 'Tap your toes on the ground while keeping your heels down.'),
+(3, 3, 'Tap in rhythm, alternating feet if desired.'),
+(3, 4, 'Add light music for pacing if preferred.'),
+(3, 5, 'Continue tapping for 20–30 seconds.'),
+(3, 6, 'Rest and repeat for 2 more rounds.'),
+
+-- Chair Yoga
+(4, 1, 'Sit on a chair with your back straight and feet grounded.'),
+(4, 2, 'Inhale deeply and raise your arms overhead.'),
+(4, 3, 'Exhale and slowly bend forward, reaching toward your toes.'),
+(4, 4, 'Return to upright and twist gently to the right.'),
+(4, 5, 'Return to center and twist to the left.'),
+(4, 6, 'Raise arms again and take a deep breath.'),
+(4, 7, 'Exhale and lower arms to relax.'),
+
+-- Guided Nature Walk
+(5, 1, 'Start at a comfortable walking pace.'),
+(5, 2, 'Take deep breaths and observe your surroundings.'),
+(5, 3, 'Maintain good posture and relaxed arms.'),
+(5, 4, 'Pause at intervals to stretch or rest.'),
+(5, 5, 'Hydrate if needed and continue walking.'),
+(5, 6, 'Walk for 15–30 minutes depending on ability.'),
+
+-- Outdoor Tai Chi
+(6, 1, 'Stand tall with feet shoulder-width apart.'),
+(6, 2, 'Inhale and slowly raise both arms in front of you.'),
+(6, 3, 'Exhale while bending knees slightly and pushing arms forward.'),
+(6, 4, 'Perform gentle flowing movements in a continuous rhythm.'),
+(6, 5, 'Shift weight from one leg to the other slowly.'),
+(6, 6, 'Repeat basic forms for 5–10 minutes.'),
+(6, 7, 'End by standing still and breathing deeply.'),
+
+-- Park Pole Stretches
+(7, 1, 'Stand near a walking pole or railing.'),
+(7, 2, 'Place hands on the pole at shoulder height.'),
+(7, 3, 'Step back slightly and stretch your arms forward.'),
+(7, 4, 'Hold the stretch for 10–15 seconds.'),
+(7, 5, 'Perform side stretches by leaning to each side.'),
+(7, 6, 'Gently rotate shoulders and back using the pole.'),
+(7, 7, 'Repeat each stretch 2–3 times.'),
+
+-- Walk in Place
+(8, 1, 'Stand with feet shoulder-width apart.'),
+(8, 2, 'Begin marching gently in place.'),
+(8, 3, 'Swing arms naturally for balance.'),
+(8, 4, 'Increase pace slightly to elevate heart rate.'),
+(8, 5, 'Continue walking for 1–2 minutes.'),
+(8, 6, 'Slow down gradually and stop.'),
+(8, 7, 'Repeat for 2–3 rounds with rest.'),
+
+-- Seated Jumping Jacks
+(9, 1, 'Sit upright in a chair with feet flat.'),
+(9, 2, 'Extend arms and legs outwards like a jumping jack.'),
+(9, 3, 'Return arms and legs to the center.'),
+(9, 4, 'Continue the motion in a rhythmic pattern.'),
+(9, 5, 'Maintain a steady pace for 30 seconds.'),
+(9, 6, 'Rest and repeat 2 more sets.'),
+
+-- Side Steps with Arm Swings
+(10, 1, 'Stand with feet together and arms by your side.'),
+(10, 2, 'Step to the right and swing arms gently forward.'),
+(10, 3, 'Step back to center and repeat to the left.'),
+(10, 4, 'Keep movements light and controlled.'),
+(10, 5, 'Repeat steps for 1–2 minutes.'),
+(10, 6, 'Rest and do another set if desired.'),
+
+-- Neck Rolls
+(11, 1, 'Sit or stand comfortably.'),
+(11, 2, 'Tilt your head gently toward your right shoulder.'),
+(11, 3, 'Roll your head slowly to the front.'),
+(11, 4, 'Continue rolling to the left shoulder.'),
+(11, 5, 'Complete a full circle slowly and gently.'),
+(11, 6, 'Reverse direction and repeat.'),
+(11, 7, 'Do 3–5 neck rolls per direction.'),
+
+-- Deep Breathing
+(12, 1, 'Sit or lie down in a relaxed position.'),
+(12, 2, 'Close your eyes and place one hand on your chest.'),
+(12, 3, 'Inhale slowly through your nose for 4 seconds.'),
+(12, 4, 'Hold your breath for 2 seconds.'),
+(12, 5, 'Exhale slowly through your mouth for 6 seconds.'),
+(12, 6, 'Repeat the breathing cycle for 5–10 minutes.'),
+
+-- Gentle Seated Twists
+(13, 1, 'Sit tall in a sturdy chair with feet flat.'),
+(13, 2, 'Place right hand on the left knee.'),
+(13, 3, 'Gently twist your upper body to the left.'),
+(13, 4, 'Hold for 5–10 seconds while breathing.'),
+(13, 5, 'Return to center and repeat on the other side.'),
+(13, 6, 'Do 3–5 repetitions per side.');

@@ -509,14 +509,15 @@ CREATE TABLE exercises (
   description TEXT,
   image_url TEXT,
   categoryId INT,
+  benefits TEXT,
   CONSTRAINT fk_exercise_category FOREIGN KEY (categoryId) REFERENCES categories(categoryId)
 );
 
 CREATE TABLE exercise_preferences (
   userId INT,
   categoryId INT,
-  PRIMARY KEY (userID, categoryId),
-  FOREIGN KEY (userID) REFERENCES Users(ID),
+  PRIMARY KEY (userId, categoryId),
+  FOREIGN KEY (userId) REFERENCES Users(ID),
   FOREIGN KEY (categoryId) REFERENCES categories(categoryId)
 );
 
@@ -536,34 +537,4 @@ CREATE TABLE goals (
     last_completed_at DATETIME,
     FOREIGN KEY (userId) REFERENCES Users(ID)
 );
- 
--- Sample data
-
-INSERT INTO categories (name) VALUES
-('Limited Mobility / Seated Exercises'),
-('Full Mobility / Active Seniors'),
-('Heart Health & Light Cardio'),
-('Relaxation & Flexibility');
-
--- Category 1: Limited Mobility / Seated Exercises
-INSERT INTO exercises (title, description, image_url, categoryId) VALUES
-('Seated Knee Lifts', 'A simple seated movement that strengthens thighs and supports circulation. Ideal for those with limited mobility.', '/exercise/images/seated_knee_lifts.png', 1),
-('Seated Arm Circles', 'A gentle arm movement performed while seated to promote flexibility and shoulder mobility.', '/exercise/images/seated_arm_circles.png', 1),
-('Seated Toe Taps', 'Tap your toes to light music while seated. Helps with ankle flexibility and blood flow.', '/exercise/images/seated_toe_taps.png', 1),
-('Chair Yoga', 'A gentle form of yoga performed while seated or using a chair for support. Great for beginners and people with limited mobility.', '/exercise/images/chairyoga.png', 1),
-
--- Category 2: Full Mobility / Active Seniors (Outdoor Activities)
-('Guided Nature Walk', 'A leisurely outdoor walk through parks or gardens that promotes mobility, cardiovascular health, and mental wellness.', '/exercise/images/guided_nature_walk.png', 2),
-('Outdoor Tai Chi', 'A flowing, low-impact movement routine practiced in open spaces to improve balance, flexibility, and mindfulness.', '/exercise/images/outdoor_tai_chi.png', 2),
-('Park Pole Stretches', 'Use walking poles or park railings to support gentle stretches for the arms, shoulders, and back.', '/exercise/images/park_pole_stretches.png', 2),
-
--- Category 3: Heart Health & Light Cardio
-('Walk in Place', 'A gentle way to get the heart pumping by walking on the spot. Great for warming up or light movement.', '/exercise/images/walk_in_place.png', 3),
-('Seated Jumping Jacks', 'A safe, modified version of jumping jacks done while seated. Encourages full-body movement.', '/exercise/images/seated_jumping_jacks.png', 3),
-('Side Steps with Arm Swings', 'Step side to side while gently swinging arms to boost heart rate and coordination.', '/exercise/images/side_steps_arm_swings.png', 3),
-
--- Category 4: Relaxation & Flexibility
-('Neck Rolls', 'A calming movement to reduce neck stiffness and relax upper body muscles. Done gently while seated.', '/exercise/images/neck_rolls.png', 4),
-('Deep Breathing', 'A mindful breathing technique to promote relaxation and reduce stress. Can be done anywhere.', '/exercise/images/deep_breathing.png', 4),
-('Gentle Seated Twists', 'Turn your upper body slowly while seated to stretch the spine and improve flexibility.', '/exercise/images/gentle_seated_twists.png', 4);
 

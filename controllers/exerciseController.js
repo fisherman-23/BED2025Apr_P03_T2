@@ -3,7 +3,7 @@ const exerciseModel = require('../models/exerciseModel');
 // Get exercises based on user preferences or all exercises if no preferences are set
 async function getExercises(req, res) {
     try {
-        const userId = req.params.userId;
+        const userId = req.user.id;
         const exercises = await exerciseModel.getExercises(userId);
         res.status(200).json(exercises);
     } catch (error) {
@@ -26,7 +26,8 @@ async function getSteps(req, res) {
 
 // Add user preferences for exercises
 async function personalisation(req, res) {
-    const { categoryIds, userId } = req.body;
+    const { categoryIds} = req.body;
+    const userId = req.user.id;
     try {
         const result = await exerciseModel.personalisation(categoryIds, userId);
         if (result) {
@@ -43,7 +44,7 @@ async function personalisation(req, res) {
 // Get user preferences
 async function getExercisePreferences(req, res) {
     try{
-        const userId = req.params.userId;
+        const userId = req.user.id;
         const preferences = await exerciseModel.getExercisePreferences(userId);
         if (!preferences || preferences.length === 0) {
             res.status(200).json({ categoryIds: [], message: 'No preferences found' });
@@ -58,7 +59,8 @@ async function getExercisePreferences(req, res) {
 
 // Update user preferences
 async function updateExercisePreferences(req, res) {
-    const { categoryIds, userId } = req.body;
+    const { categoryIds} = req.body;
+    const userId = req.user.id;
     try {
         await exerciseModel.updateExercisePreferences(categoryIds, userId);
         res.status(200).json({ message: 'Preferences updated successfully' });
@@ -70,7 +72,7 @@ async function updateExercisePreferences(req, res) {
 
 // Delete user preferences
 async function deleteExercisePreference(req, res) {
-    const userId = req.params.userId;
+    const userId = req.user.id;
     try {
         await exerciseModel.deleteExercisePreference(userId);
         res.status(200).json({ message: 'Preference deleted successfully' });

@@ -1,62 +1,65 @@
-// Fetch and display exercise steps
+// Fetch and display exercise
+let currentIndex = 0;
+const batchSize = 4;
+let exercises = [];
+const container = document.querySelector(".exercise-cards");
+const viewMoreBtn = document.getElementById("viewMore");
+
 async function fetchExercise() {
   try {
-    const res = await fetch(`/exercises/1`, {
-    method: "GET",
-    credentials: "include"
+    const res = await fetch(`/exercises`, {
+      method: "GET",
+      credentials: "include"
     });
     if (!res.ok) {
-    throw new Error(`Server error: ${res.status} ${res.statusText}`);
+      throw new Error(`Server error: ${res.status} ${res.statusText}`);
     }
-    const exercises = await res.json();
+
+    exercises = await res.json();
+    currentIndex = 0;  
     localStorage.setItem("exerciseList", JSON.stringify(exercises));
     console.log(exercises);
 
-    let currentIndex = 0;
-    const batchSize = 4;
-    const container = document.querySelector(".exercise-cards");
-    container.innerHTML = ""; 
-    const viewMoreBtn = document.getElementById("viewMore");
-    
-    function renderNextBatch() {
-      const nextBatch = exercises.slice(currentIndex, currentIndex + batchSize);
-
-      nextBatch.forEach(exercise => {
-        const card = document.createElement("div");
-        card.className = "card-wrapper";
-        card.innerHTML = `
-          <div class="bg-overlay"></div>
-          <div class="exercise-card">
-            <img src="${exercise.image_url}" alt="Exercise Image">
-            <h1>${exercise.title}</h1>
-            <hr>
-            <p>${exercise.description}</p>
-            <button id="viewExercise" class="viewExercise" data-id="${exercise.exerciseId}">View Exercise</button>
-          </div>
-        `;
-        container.appendChild(card);
-        const button = card.querySelector('.viewExercise');
-          button.addEventListener('click', () => {
-            window.location.href = `exercise-steps.html?id=${exercise.exerciseId}`;
-          });
-      });
-
-      currentIndex += batchSize;
-      if (currentIndex >= exercises.length) {
-        viewMoreBtn.style.display = "none";
-      }else {
-        viewMoreBtn.style.display = "flex";
-      }
-    }
-
-    renderNextBatch();
-    viewMoreBtn.addEventListener("click", renderNextBatch);
-
-    } catch (error) {
+    currentIndex = 0; // Reset index
+    container.innerHTML = ""; // Clear existing cards
+    renderNextBatch(); // Render first batch
+  } catch (error) {
     console.error("Error fetching exercises:", error);
     alert("Failed to fetch exercises. Please try again later.");
   }
-};
+}
+
+
+async function renderNextBatch() {
+  const nextBatch = exercises.slice(currentIndex, currentIndex + batchSize);
+
+  nextBatch.forEach(exercise => {
+    const card = document.createElement("div");
+    card.className = "card-wrapper";
+    card.innerHTML = `
+      <div class="bg-overlay"></div>
+      <div class="exercise-card">
+        <img src="${exercise.image_url}" alt="Exercise Image">
+        <h1>${exercise.title}</h1>
+        <hr>
+        <p>${exercise.description}</p>
+        <button class="viewExercise" data-id="${exercise.exerciseId}">View Exercise</button>
+      </div>
+    `;
+    container.appendChild(card);
+    const button = card.querySelector('.viewExercise');
+      button.addEventListener('click', () => {
+        window.location.href = `exercise-steps.html?id=${exercise.exerciseId}`;
+      });
+  });
+
+  currentIndex += batchSize;
+  if (currentIndex >= exercises.length) {
+    viewMoreBtn.style.display = "none";
+  }else {
+    viewMoreBtn.style.display = "flex";
+  }
+}
 
 // Preferences
 
@@ -85,7 +88,7 @@ document.getElementById('personalise').addEventListener("click", async () => {
   document.querySelectorAll('.exercise-option').forEach(btn => {btn.classList.remove('selected');});
   personalise_popup.style.opacity = 1;
   personalise_popup.style.visibility = "visible";
-  const pref = await fetch("/exercises/preferences/1", {
+  const pref = await fetch("/exercises/preferences", {
     method: "GET",
     credentials: "include"
   });
@@ -120,7 +123,6 @@ document.getElementById('personalise-update').addEventListener("click", async ()
       credentials: "include",
       body: JSON.stringify({
         categoryIds: selectedOptions,
-        userId: 1 // Replace with actual user ID
       })
     });
 
@@ -130,7 +132,7 @@ document.getElementById('personalise-update').addEventListener("click", async ()
     const result = await res.json();
     console.log(result);
     alert("Preferences updated successfully!");
-    await fetchExerciseSteps(); // Refresh the exercise list
+    await fetchExercise(); // Refresh the exercise list
     personalise_popup.style.opacity = 0;
     personalise_popup.style.visibility = "hidden";
   } catch (error) {
@@ -142,7 +144,7 @@ document.getElementById('personalise-update').addEventListener("click", async ()
 // Delete preferences
 document.getElementById('personalise-clear').addEventListener("click", async () => {
   try {
-    const res = await fetch("/exercises/preferences/1", {
+    const res = await fetch("/exercises/preferences", {
       method: "DELETE",
       credentials: "include"
     });
@@ -151,7 +153,7 @@ document.getElementById('personalise-clear').addEventListener("click", async () 
     }
     alert("Preferences cleared successfully!");
     document.querySelectorAll('.exercise-option').forEach(btn => {btn.classList.remove('selected');});
-    await fetchExerciseSteps(); // Refresh the exercise list
+    await fetchExercise(); // Refresh the exercise list
     personalise_popup.style.opacity = 0;
     personalise_popup.style.visibility = "hidden";
     document.getElementById('personalise-text').textContent = "PLease select which type of exercises you prefer";
@@ -181,7 +183,6 @@ document.getElementById('personalise-add').addEventListener("click", async () =>
       credentials: "include",
       body: JSON.stringify({
         categoryIds: selectedOptions,
-        userId: 1 // Replace with actual user ID
       })
     });
 
@@ -192,7 +193,7 @@ document.getElementById('personalise-add').addEventListener("click", async () =>
     const result = await res.json();
     console.log(result);
     alert("Preferences saved successfully!");
-    await fetchExerciseSteps(); // Refresh the exercise list
+    await fetchExercise(); // Refresh the exercise list
     personalise_popup.style.opacity = 0;
     personalise_popup.style.visibility = "hidden";
   } catch (error) {
@@ -379,3 +380,7 @@ async function resetGoals() {
   await fetchGoals();
   await fetchExercise();
 })();
+
+viewMoreBtn.addEventListener("click", () => {
+  renderNextBatch();
+});

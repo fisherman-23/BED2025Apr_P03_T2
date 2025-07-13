@@ -281,7 +281,7 @@ app.get(
 );
 
 app.get(
-  "/exercises/:userId",
+  "/exercises",
   authenticateJWT,
   exerciseController.getExercises
 );
@@ -293,7 +293,7 @@ app.get(
 );
 
 app.get(
-  "/exercises/preferences/:userId",
+  "/exercises/preferences",
   authenticateJWT,
   exerciseController.getExercisePreferences
 );
@@ -336,7 +336,7 @@ app.delete(
 );
 
 app.delete(
-  "/exercises/preferences/:userId",
+  "/exercises/preferences",
   authenticateJWT,
   exerciseController.deleteExercisePreference
 );
