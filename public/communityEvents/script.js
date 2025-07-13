@@ -8,7 +8,7 @@ async function loadJoinedGroups() {
     }
     const groups = await response.json();
     const container = document.getElementById("joinedGroupsContainer");
-    container.innerHTML = "";
+    container.innerHTML = `<h2 class="font-bold text-2xl">My Groups</h2>`
 
     if (groups.length === 0) {
       const message = document.createElement("p");
@@ -35,16 +35,16 @@ async function loadJoinedGroups() {
           alt="${group.Name} Group Image" 
           class="w-96 h-48 rounded-2xl md:ml-4 object-cover">
 
-          <div class="w-[5vw] flex justify-center items-center md:hidden flex absolute right-14">
-            <div class="flex flex-row justify-center items-center gap-1 exit-group">
+          <div class="w-fit-content flex justify-center items-center md:hidden flex absolute right-14">
+            <div class="flex flex-row justify-center items-center gap-1 exit-group cursor-pointer leave-group-button" data-group-id="${group.ID}">
               <h5>Exit</h5>
               <img src="communityEvents/assets/cross.svg" alt="Exit group icon" class="w-8 h-8">
             </div>
           </div>
         </div>
 
-        <div class="w-[5vw] flex justify-center items-center hidden md:flex">
-          <div class="flex flex-row justify-center items-center gap-1 exit-group">
+        <div class="w-fit-content ml-4 flex justify-center items-center hidden md:flex">
+          <div class="flex flex-row justify-center items-center gap-1 exit-group cursor-pointer leave-group-button" data-group-id="${group.ID}">
             <h5>Exit</h5>
             <img src="communityEvents/assets/cross.svg" alt="Exit group icon" class="w-8 h-8">
           </div>
@@ -64,8 +64,24 @@ async function loadJoinedGroups() {
       });
     });
 
+    container.querySelectorAll(".leave-group-button").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        const groupId = e.currentTarget.dataset.groupId;
+        try {
+          await leaveGroup(groupId);
+          toastSuccess("Left group successfully!");
+          loadJoinedGroups();    // refresh both lists
+          loadAvailableGroups();
+        } catch (err) {
+          console.error("Error leaving group:", err);
+          toastError("Unable to leave group. Please try again.");
+        }
+      });
+    });
+
   } catch (error) {
     console.error("Error loading joined groups:", error);
+    toastError("Unable to load your joined groups.");
   }
 }
 
@@ -108,10 +124,12 @@ async function loadAvailableGroups() {
       button.addEventListener("click", e => {
         const groupId = e.currentTarget.getAttribute("data-groupId");
         joinGroup(groupId).then(() => {
+          toastSuccess("Joined group!");
           loadJoinedGroups();
           loadAvailableGroups();
         }).catch(error => {
           console.error("Error joining group:", error);
+          toastError("Unable to join group. Please try again.");
         })
       });
     }
@@ -119,35 +137,202 @@ async function loadAvailableGroups() {
 
   } catch (error) {
     console.error("Error loading available groups:", error);
+    toastError("Unable to load available groups.");
   }
 }
 
 async function joinGroup(groupId) {
+  const response = await fetch("/groups/join", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ groupId }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Failed to join group");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+async function createGroup() {
+  const nameInput = document.getElementById('groupname');
+  const descInput = document.getElementById('groupdesc');
+  const publicRadio = document.getElementById('publicGroup');
+  const fileInput = document.getElementById('groupIconInput');
+  const createButton = document.querySelector('.modal-overlay button.bg-blue-500');
+
+  createButton.disabled = true;
+  createButton.textContent = 'Creating...';
+
   try {
-    const response = await fetch("/groups/join", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ groupId }),
+    const Name = nameInput.value.trim();
+    const Description = descInput.value.trim() || null;
+    const IsPrivate = !publicRadio.checked;
+    let GroupPicture = null;
+
+    if (fileInput.files && fileInput.files[0]) {
+      const uploadForm = new FormData();
+      uploadForm.append('file', fileInput.files[0]);
+
+      const uploadRes = await fetch('/api/upload/communityEvents', {
+        method: 'POST',
+        credentials: 'include',
+        body: uploadForm
+      });
+
+      if (!uploadRes.ok) {
+        const err = await uploadRes.text();
+        throw new Error(err || uploadRes.statusText);
+      }
+
+      const uploadData = await uploadRes.json();
+      console.log('Upload data:', uploadData);
+
+      if (!uploadData.url) {
+        throw new Error("Upload succeeded but no URL returned");
+      }
+
+      GroupPicture = uploadData.url;
+      fileInput.value = '';
+    }
+
+    const groupPayload = { Name, Description, IsPrivate };
+    if (GroupPicture) {
+      groupPayload.GroupPicture = GroupPicture;
+    }
+    const response = await fetch('/groups', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(groupPayload)    
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || "Failed to join group");
+      throw new Error(errorData.error || "Failed to create group");
     }
 
-    const data = await response.json();
-    return data;
+    toastSuccess("Group created successfully!");
+    closeModal();
+    loadJoinedGroups();
+    loadAvailableGroups();
+
   } catch (error) {
-    throw error;
+    console.error("Create group failed:", error);
+    toastError("Unable to create group: " + error.message);
+  } finally {
+    createButton.disabled = false;
+    createButton.textContent = 'Create Group';
   }
 }
 
 
-window.addEventListener("DOMContentLoaded", () => {
+
+function closeModal() {
+  const modal = document.querySelector('.modal-overlay');
+  modal.classList.remove('opacity-100');
+  modal.classList.add('opacity-0');
+  setTimeout(() => {
+    modal.classList.add('pointer-events-none');
+  }, 300);
+
+    document.getElementById('groupname').value = '';
+  document.getElementById('groupdesc').value = '';
+  document.getElementById('publicGroup').checked = true;
+
+  const fileInput = document.getElementById('groupIconInput');
+  const previewImg = document.getElementById('iconUploadPreview');
+  const previewText = document.getElementById('iconUploadText');
+
+  fileInput.value = '';
+  previewImg.src = 'communityEvents/assets/plus-icon.svg';
+  previewImg.classList.remove('max-w-full', 'max-h-full', 'rounded-lg', 'p-2');
+  previewImg.classList.add('w-6', 'h-6');
+  previewImg.style.display = 'block';
+  previewText.textContent = 'Group Icon';
+  previewText.style.display = 'block';
+}
+
+function openModal() {
+  const modal = document.querySelector('.modal-overlay');
+  const createBtn = document.querySelector('.create-group-button');
+  const closeBtn = modal.querySelector('.close-modal-btn');
+  const fileInput = document.getElementById('groupIconInput');
+  const previewImg = document.getElementById('iconUploadPreview');
+  const previewText = document.getElementById('iconUploadText');
+  
+  fileInput.addEventListener('change', () => {
+    if (!fileInput.files || fileInput.files.length === 0) {
+      previewImg.src = 'communityEvents/assets/plus-icon.svg';
+      previewImg.classList.remove('max-w-full','max-h-full','rounded-lg','p-2');
+      previewImg.classList.add('w-6','h-6');
+      previewImg.style.display = 'block';
+      previewText.textContent = 'Group Icon';
+      previewText.style.display = 'block';
+      return;
+    }
+    const file = fileInput.files[0];
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        previewImg.src = e.target.result;
+        previewImg.classList.remove('w-6','h-6');
+        previewImg.classList.add('max-w-full','max-h-full','rounded-lg','p-2');
+        previewImg.style.display = 'block';
+        previewText.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    } else {
+      previewImg.style.display = 'none';
+      previewText.textContent = file.name;
+      previewText.style.display = 'block';
+    }
+  });
+  
+  createBtn.addEventListener('click', () => {
+    modal.classList.remove('pointer-events-none', 'opacity-0');
+    modal.classList.add('opacity-100');
+  });
+  
+  closeBtn.addEventListener('click', () => {
+    closeModal();
+  });
+}
+
+async function leaveGroup(groupId) {
+    const response = await fetch("/groups/leave", {
+    method: "DELETE",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ groupId })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Failed to leave group");
+  }
+
+  return await response.json();
+}
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
   loadJoinedGroups();
   loadAvailableGroups();
-});
+  openModal();
 
+  const submitBtn = document.querySelector('.create-group');
+  submitBtn.addEventListener('click', () => {
+    createGroup().catch(e => {
+      console.error(e);
+      toastError("Unable to create group. Please try again.");
+    });
+  });
+});

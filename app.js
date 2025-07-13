@@ -13,6 +13,10 @@ const matchController = require("./controllers/matchController.js");
 const eventsController = require("./controllers/eventsController.js");
 
 const {
+  validateCreateGroup,
+  validateGroupId,
+} = require("./middlewares/eventsValidation.js");
+const {
   validateUserId,
   validateLoginUser,
   validateCreateUser,
@@ -86,7 +90,7 @@ app.patch(
 
 app.post(
   "/api/upload/:folder",
-  /*authenticateJWT,*/ upload.single("file"),
+  authenticateJWT, upload.single("file"),
   handleUpload
 );
 
@@ -158,10 +162,24 @@ app.get(
 app.post(
   "/groups",
   authenticateJWT,
+  validateCreateGroup,
   eventsController.createGroup
 )
 
-app.post("/groups/join", authenticateJWT, eventsController.joinGroup);
+app.post(
+  "/groups/join",
+  authenticateJWT, 
+  validateGroupId, 
+  eventsController.joinGroup
+);
+
+app.delete(
+  "/groups/leave", 
+  authenticateJWT, 
+  validateGroupId, 
+  eventsController.leaveGroup
+);
+
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

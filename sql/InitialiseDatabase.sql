@@ -174,21 +174,24 @@ INSERT INTO HealthData (userId, recordDate, bloodPressureSystolic, bloodPressure
 -- Module 2: Community events
 -- Groups functionality
 CREATE TABLE Groups (
-    ID INT PRIMARY KEY IDENTITY(1,1),
-    Name VARCHAR(50) NOT NULL,
-    Description VARCHAR(200) NULL,
-    GroupPicture VARCHAR(1000) NULL,
-    IsPrivate BIT NOT NULL DEFAULT 0,
-    CreatedAt DATETIME NOT NULL DEFAULT GETDATE()
+  ID INT PRIMARY KEY IDENTITY(1,1),
+  Name VARCHAR(50) NOT NULL,
+  Description VARCHAR(200) NULL,
+  GroupPicture VARCHAR(1000) NULL,
+  IsPrivate BIT NOT NULL DEFAULT 0,
+  CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+  InviteToken UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+  CreatedBy INT NOT NULL,
+  FOREIGN KEY (CreatedBy) REFERENCES Users(ID)
 );
 
 CREATE TABLE GroupMembers (
-    GroupID INT NOT NULL,
-    UserID INT NOT NULL,
+  GroupID INT NOT NULL,
+  UserID INT NOT NULL,
 
-    PRIMARY KEY (GroupID, UserID),
-    FOREIGN KEY (GroupID) REFERENCES Groups(ID),
-    FOREIGN KEY (UserID) REFERENCES Users(ID)
+  PRIMARY KEY (GroupID, UserID),
+  FOREIGN KEY (GroupID) REFERENCES Groups(ID),
+  FOREIGN KEY (UserID) REFERENCES Users(ID)
 );
 
 
