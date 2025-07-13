@@ -31,7 +31,7 @@ async function handleLocationAccess(latitude, longitude) {
     }
 }
 
-async function getNearbyFacilities(latitude, longitude, radius = 50000) {
+async function getNearbyFacilities(latitude, longitude, radius = 5000) {
     let connection;
     try {
         connection = await sql.connect(dbConfig);

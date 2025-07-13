@@ -19,9 +19,12 @@ const facilityIdSchema = Joi.object({
     }),
 });
 
-const facilityTypeSchema = Joi.string().required().messages({
-    "string.base": "Facility type must be a string",
-    "any.required": "Facility type is required",
+const facilityTypeSchema = Joi.object({
+    type: Joi.string().valid("Polyclinic", "Hospital", "Community Center", "Park").required().messages({
+        "string.base": "Facility type must be a string",
+        "any.only": "Facility type must be one of the following: Polyclinic, Hospital, Community Center, Park",
+        "any.required": "Facility type is required",
+    }),
 });
 
 function validateLocationAccess(req, res, next) {

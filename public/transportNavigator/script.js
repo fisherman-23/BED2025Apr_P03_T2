@@ -2,6 +2,7 @@ class FacilityManager {
   constructor() {
     this.currentLocation = null;
     this.filtered = [];
+    this.facilities = [];
     this.selectedFilter = null;
     this.currentFacility = null;
     this.currentNotes = null;
@@ -131,7 +132,8 @@ class FacilityManager {
         throw new Error(`Failed to fetch facilities: ${res.statusText}`);
       }
       const facilities = await res.json();
-      this.filtered = facilities;
+      this.facilities = facilities;
+      this.filtered = this.facilities;
       this.selectedFilter = null;
       this.activeFiltersContainer.innerHTML = '';
       this.renderList();
@@ -191,7 +193,7 @@ class FacilityManager {
     const searchInput = document.getElementById('search');
     searchInput.addEventListener('input', () => {
       const keyword = searchInput.value.toLowerCase();
-      this.filtered = this.filtered.filter(f =>
+      this.filtered = this.facilities.filter(f =>
         f.name.toLowerCase().includes(keyword) ||
         f.address.toLowerCase().includes(keyword) ||
         f.facilityType.toLowerCase().includes(keyword)
