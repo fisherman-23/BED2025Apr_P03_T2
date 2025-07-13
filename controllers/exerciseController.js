@@ -1,5 +1,6 @@
 const exerciseModel = require('../models/exerciseModel');
 
+// Get exercises based on user preferences or all exercises if no preferences are set
 async function getExercises(req, res) {
     try {
         const userId = req.params.userId;
@@ -11,6 +12,7 @@ async function getExercises(req, res) {
     }
 }
 
+// Get steps for a specific exercise
 async function getSteps(req, res) {
     const exerciseId = parseInt(req.params.exerciseId);
     try {
@@ -22,6 +24,7 @@ async function getSteps(req, res) {
     }
 }
 
+// Add user preferences for exercises
 async function personalisation(req, res) {
     const { categoryIds, userId } = req.body;
     try {
@@ -37,6 +40,7 @@ async function personalisation(req, res) {
     }
 }
 
+// Get user preferences
 async function getExercisePreferences(req, res) {
     try{
         const userId = req.params.userId;
@@ -52,6 +56,7 @@ async function getExercisePreferences(req, res) {
     }
 }
 
+// Update user preferences
 async function updateExercisePreferences(req, res) {
     const { categoryIds, userId } = req.body;
     try {
@@ -63,6 +68,7 @@ async function updateExercisePreferences(req, res) {
     }
 }
 
+// Delete user preferences
 async function deleteExercisePreference(req, res) {
     const userId = req.params.userId;
     try {

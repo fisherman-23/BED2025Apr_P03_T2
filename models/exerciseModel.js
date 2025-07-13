@@ -1,7 +1,7 @@
 const sql = require('mssql');
 const dbConfig = require('../dbConfig');
 
-
+// Get user preferences
 async function getExercisePreferences(userId) {
     let connection;
     try {
@@ -25,6 +25,7 @@ async function getExercisePreferences(userId) {
     }
 }
 
+// Update user preferences
 async function updateExercisePreferences(categoryIds, userId) {
   let connection;
   try {
@@ -54,6 +55,7 @@ async function updateExercisePreferences(categoryIds, userId) {
   }
 }
 
+// Delete user preferences
 async function deleteExercisePreference(userId) {
   let connection;
   try {
@@ -77,6 +79,7 @@ async function deleteExercisePreference(userId) {
   }
 }
 
+// Get exercises based on user preferences or all exercises if no preferences are set
 async function getExercises(userId){
     let connection;
     try {
@@ -105,6 +108,7 @@ async function getExercises(userId){
   }
 }
 
+// Get steps for a specific exercise
 async function getSteps(exerciseId) {
     let connection;
     try {
@@ -128,6 +132,7 @@ async function getSteps(exerciseId) {
   }
 }
 
+// Add user preferences for exercises
 async function personalisation(categoryIds, userId) {
     let connection;
     try {
