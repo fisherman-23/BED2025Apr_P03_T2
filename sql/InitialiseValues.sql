@@ -1,4 +1,82 @@
 -- PUT Sample Insert Statements Here for values
+SET IDENTITY_INSERT Users ON;
+
+INSERT INTO Users (
+  userID,
+  email,
+  password,
+  name,
+  aboutMe,
+  phoneNumber,
+  dateOfBirth,
+  profilePicture,
+  createdAt,
+  updatedAt,
+  isActive
+)
+VALUES (
+  1,
+  'ranen@gmail.com',
+  '$2b$05$roSzDWAjjGhHLWuWFLUJWO2pspgpw8ESJUNnqpEct6u3xD7M3i40q',
+  'Ranen Sim',
+  NULL,
+  '55555555',
+  '2000-01-01',
+  'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/profile_pictures%2F1752402549388_Penguin%20PFP%20Rounded.png',
+  '2025-07-13 18:29:11.453',
+  '2025-07-13 18:29:11.453',
+  1
+);
+
+SET IDENTITY_INSERT Users OFF;
+
+-- Module 3: Community Events
+-- Sample data for community groups
+INSERT INTO Groups (Name, Description, GroupPicture, IsPrivate, CreatedAt, CreatedBy)
+VALUES 
+(
+  'Nature Explorers of Singapore - Hiking and Trails',
+  'Join fellow nature lovers on weekend hikes, wildlife spotting, and eco-outings across Singapore’s best parks and hidden trails. Everyone is welcome, no experience needed!',
+  'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1752402184362_couple-hiking-mountain-climbing.jpg',
+  0,
+  '2025-07-13 10:23:05.883',
+  1
+),
+(
+  'Singapore Tech Talk Collective - AI, Apps, and Mor',
+  'Dive into lively discussions on artificial intelligence, mobile apps, smart gadgets, and tech news over casual meetups. Great for all ages and skill levels.',
+  'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1752402245024_tech%20talks.jpg',
+  0,
+  '2025-07-13 10:24:06.550',
+  1
+),
+(
+  'Golden Groove Society - Music Lovers and Jammers',
+  'Whether you sing, strum, or just love to listen, this group connects generations through music appreciation sessions, informal jam nights, and storytelling.',
+  'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1752402291784_655e0fa544c67c1ee5ce0f7c_how-to.jpg',
+  0,
+  '2025-07-13 10:24:53.320',
+  1
+),
+(
+  'Book Buddies Reading Circle - Monthly Book Discuss',
+  'From thrillers to biographies, our members vote on a new book every month and meet to discuss over tea. Ideal for casual readers and literary enthusiasts alike.',
+  'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1752402308787_older-male-friends-reading-newsp.jpg',
+  0,
+  '2025-07-13 10:25:10.370',
+  1
+),
+(
+  'Early Risers Walking Group - Morning Wellness Stro',
+  'Kickstart your mornings with a refreshing walk and friendly chatter. We explore parks, gardens, and local landmarks while promoting healthy living and community bonding.',
+  'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1752402321077_360_F_462429607_hh4RpG0tYZ5j9BFx.jpg',
+  0,
+  '2025-07-13 10:25:22.573',
+  1
+);
+
+
+
 
 -- Module 3: Transport Navigator
 -- Sample data for facilities
