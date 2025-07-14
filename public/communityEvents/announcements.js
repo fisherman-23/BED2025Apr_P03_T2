@@ -59,25 +59,72 @@ async function bindComments(annId) {
   const section = container.querySelector(`[data-ann-id="${annId}"]`);
   const listDiv = section.querySelector('.comments-list');
   listDiv.innerHTML = '';
+
   try {
     const res = await fetch(`/announcements/${annId}/comments`, { credentials: 'include' });
     if (!res.ok) throw new Error('Failed to fetch comments');
     const comments = await res.json();
+
     comments.forEach(c => {
+      // outer wrapper to detect hover/click
+      const wrapper = document.createElement('div');
+      wrapper.className = 'own-comment-wrapper relative group'; // for positioning
+
+      // normal comment container
       const div = document.createElement('div');
       div.className = 'comment flex items-start gap-3 mb-4';
+
       div.innerHTML = `
-        <img src="${c.ProfilePicture || '/assets/images/elderlyPFP.png'}" alt="${c.Name}" class="w-10 h-10 rounded-full object-cover">
+        <img src="${c.ProfilePicture || '/assets/images/elderlyPFP.png'}"
+             alt="${c.Name}"
+             class="w-10 h-10 rounded-full object-cover">
         <div class="flex-1">
           <div class="flex items-center gap-2 mb-1">
             <span class="font-semibold text-sm">${c.Name}</span>
           </div>
-          <p class="text-gray-700 text-sm">${c.Content}</p>
+          <p class="comment-text text-gray-700 text-sm">${c.Content}</p>
         </div>
       `;
-      listDiv.appendChild(div);
+      wrapper.appendChild(div);
+
+      if (c.IsOwnComment) {
+        const original = c.Content;
+        const p = div.querySelector('.comment-text');
+        const commentId = c.ID;            // ← grab it here
+
+        wrapper.addEventListener('mouseenter', () => {
+          p.textContent = 'Delete comment?';
+          p.classList.replace('text-gray-700', 'text-red-500');
+          p.classList.add('font-semibold', 'cursor-pointer');
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+          p.textContent = original;
+          p.classList.replace('text-red-500', 'text-gray-700');
+          p.classList.remove('font-semibold', 'cursor-pointer');
+        });
+
+        wrapper.addEventListener('click', async () => {
+          if (!confirm('Delete this comment?')) return;
+          try {
+            const delRes = await fetch(
+              `/announcements/${annId}/comments/${commentId}`,  // ← use our local commentId
+              { method: 'DELETE', credentials: 'include' }
+            );
+            if (!delRes.ok) throw new Error('Failed to delete comment');
+            toastSuccess('Comment deleted');
+            bindComments(annId);
+          } catch (err) {
+            console.error(err);
+            toastError('Unable to delete comment');
+          }
+        });
+      }
+
+      listDiv.appendChild(wrapper);
     });
 
+    // now bind the global "post comment" button once
     const postBtn = section.querySelector('.post-comment-btn');
     postBtn.onclick = async () => {
       const field = section.querySelector('.comment-field');
@@ -99,11 +146,18 @@ async function bindComments(annId) {
         toastError('Unable to post comment');
       }
     };
+
   } catch (err) {
     console.error(err);
     toastError('Unable to load comments');
   }
 }
+
+
+
+
+
+
 
 async function postNewAnnouncement({ groupId, title, content, imageUrl }) {
   const payload = {

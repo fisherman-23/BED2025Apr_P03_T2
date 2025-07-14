@@ -31,19 +31,29 @@ const {
 const {
   validateCreateAnnouncement,
   validatePostComment,
+  validateDeleteComment,
 } = require("./middlewares/announcementsValidation.js");
 
 const {
   validateUserId,
   validateLoginUser,
   validateCreateUser,
-  validateUpdateUser,
+  validateUpdateUser, 
   authenticateJWT,
 } = require("./middlewares/userValidation");
 const {
   protectSpecificRoutes,
   redirectIfAuthenticated,
 } = require("./middlewares/protectRoute");
+
+
+
+
+
+
+
+
+
 
 const validateMatchProfile = require("./middlewares/validateMatchProfile.js");
 const validateGoal = require("./middlewares/goalValidation.js");
@@ -255,6 +265,15 @@ app.post(
   validatePostComment,
   announcementsController.postComment
 );
+
+app.delete(
+  "/announcements/:annId/comments/:id",
+  authenticateJWT,
+  validateDeleteComment,
+  announcementsController.deleteComment
+);
+
+
 
 
 // Module 3: Transport Navigator

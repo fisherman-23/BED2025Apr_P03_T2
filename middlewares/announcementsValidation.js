@@ -43,6 +43,34 @@ const postCommentSchema = Joi.object({
   }),
 });
 
+
+const deleteCommentSchema = Joi.object({
+  annId: Joi.number().integer().positive().required().messages({
+    "number.base": "Announcement ID must be a number",
+    "number.integer": "Announcement ID must be an integer",
+    "number.positive": "Announcement ID must be a positive number",
+    "any.required": "Announcement ID is required",
+  }),
+  id: Joi.number().integer().positive().required().messages({
+    "number.base": "Comment ID must be a number",
+    "number.integer": "Comment ID must be an integer",
+    "number.positive": "Comment ID must be a positive number",
+    "any.required": "Comment ID is required",
+  })
+});
+
+
+async function validateDeleteComment(req, res, next) {
+  try {
+    await deleteCommentSchema.validateAsync(req.params, { abortEarly: false });
+    next();
+  } catch (validationError) {
+    const errors = validationError.details.map(d => d.message).join(", ");
+    return res.status(400).json({ error: errors });
+  }
+}
+
+
 async function validateCreateAnnouncement(req, res, next) {
   try {
     await createAnnouncementSchema.validateAsync(req.body, { abortEarly: false });
@@ -65,5 +93,6 @@ async function validatePostComment(req, res, next) {
 
 module.exports = {
   validateCreateAnnouncement,
-  validatePostComment
+  validatePostComment,
+  validateDeleteComment
 };

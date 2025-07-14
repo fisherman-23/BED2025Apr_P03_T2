@@ -87,39 +87,107 @@ async function getCommentsForAnnouncement(announcementId) {
   }
 }
 
+
 async function postComment({ AnnouncementID, UserID, Content }) {
   let connection;
   try {
     connection = await sql.connect(dbConfig);
-    const query = `
-      INSERT INTO Comments
-        (AnnouncementID, UserID, Content)
-      VALUES
-        (@AnnouncementID, @UserID, @Content);
-      SELECT SCOPE_IDENTITY() AS ID;
-    `;
     const request = connection.request();
+
     request.input("AnnouncementID", sql.Int, AnnouncementID);
     request.input("UserID", sql.Int, UserID);
-    request.input("Content", sql.VarChar(1000), Content);
-    const result = await request.query(query);
-    const newId = result.recordset[0].ID;
-    connection.close();
-    return newId;
-  } catch (error) {
-    console.error("Database error in postComment:", error);
-    throw error;
+    const check = await request.query(`
+      SELECT 1
+        FROM Announcements a
+        JOIN GroupMembers gm
+          ON a.GroupID = gm.GroupID
+          WHERE a.ID = @AnnouncementID
+         AND gm.UserID = @UserID
+    `);
+    if (!check.recordset.length) {
+      const err = new Error("Must be a member to comment");
+      err.code = "NOT_MEMBER";
+      throw err;
+    }
+
+    const insertReq = connection.request();
+    insertReq.input("AnnouncementID", sql.Int, AnnouncementID);
+    insertReq.input("UserID", sql.Int, UserID);
+    insertReq.input("Content", sql.VarChar(1000), Content);
+
+    const result = await insertReq.query(`
+      INSERT INTO Comments (AnnouncementID, UserID, Content)
+      VALUES (@AnnouncementID, @UserID, @Content);
+      SELECT SCOPE_IDENTITY() AS ID;
+    `);
+
+    return result.recordset[0].ID;
+  } catch (err) {
+    console.error("Database error in postComment:", err);
+    throw err;
   } finally {
     if (connection) {
       try { await connection.close(); }
-      catch (err) { console.error("Error closing connection in postComment:", err); }
+      catch (closeErr) { console.error("Error closing connection in postComment:", closeErr); }
     }
   }
 }
+
+async function deleteComment(userId, commentId) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const request = connection.request();
+    request.input("UserID",    sql.Int, userId);
+    request.input("CommentID", sql.Int, commentId);
+
+    const result = await request.query(`
+      DELETE FROM Comments
+      WHERE ID = @CommentID AND UserID = @UserID
+    `);
+
+    if (result.rowsAffected[0] === 0) {
+      const err = new Error("You are not authorized to delete this comment");
+      err.code = "FORBIDDEN";
+      throw err;
+    }
+
+    return true;
+  } catch (err) {
+    console.error("DB error in deleteComment:", err);
+    throw err;
+  } finally {
+    if (connection) await connection.close();
+  }
+}
+
+
+
+
+async function getGroupById(groupId) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const result = await connection
+      .request()
+      .input("ID", sql.Int, groupId)
+      .query(`SELECT CreatedBy FROM Groups WHERE ID = @ID`);
+    return result.recordset[0] || null;
+  } catch (err) {
+    console.error("DB error in getGroupById:", err);
+    throw err;
+  } finally {
+    if (connection) await connection.close();
+  }
+}
+
+
 
 module.exports = {
   getAnnouncementsByGroup,
   createAnnouncement,
   getCommentsForAnnouncement,
-  postComment
+  postComment,
+  deleteComment,
+  getGroupById
 };

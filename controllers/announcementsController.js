@@ -12,44 +12,40 @@ async function getAnnouncements(req, res) {
   }
 }
 
+
 async function createAnnouncement(req, res) {
   const userId = req.user.id;
   const { GroupID, Title, Content, ImageURL } = req.body;
-  try {
-    const pool = await sql.connect(require("../dbConfig"));
-    const result = await pool.request()
-      .input("GroupID", sql.Int, GroupID)
-      .query(`
-        SELECT CreatedBy
-        FROM Groups
-        WHERE ID = @GroupID
-      `);
 
-    if (!result.recordset.length) {
+  try {
+    const group = await announcementsModel.getGroupById(GroupID);
+    if (!group) {
       return res.status(404).json({ error: "Group not found" });
     }
 
-    const { CreatedBy } = result.recordset[0];
-
-    if (CreatedBy !== userId) {
+    if (group.CreatedBy !== userId) {
       return res.status(403).json({ error: "Only the group owner can post announcements" });
     }
 
-    const newId = await announcementsModel.createAnnouncement({
-      GroupID, Title, Content, ImageURL, CreatedBy: userId
-    });
-    res.status(201).json({ id: newId });
+    const newId = await announcementsModel.createAnnouncement({ GroupID, Title, Content, ImageURL, CreatedBy: userId });
+
+    return res.status(201).json({ id: newId });
   } catch (err) {
     console.error("Controller error in createAnnouncement:", err);
-    res.status(500).json({ error: "Error creating announcement" });
+    return res.status(500).json({ error: "Error creating announcement" });
   }
 }
 
 
 async function getComments(req, res) {
   const announcementId = Number(req.params.id);
+  const userId = req.user.id;
   try {
-    const list = await announcementsModel.getCommentsForAnnouncement(announcementId);
+    const raw = await announcementsModel.getCommentsForAnnouncement(announcementId);
+    const list = raw.map(c => ({
+      ...c,
+      IsOwnComment: c.UserID === userId
+    }));
     res.json(list);
   } catch (err) {
     console.error("Controller error in getComments:", err);
@@ -59,27 +55,13 @@ async function getComments(req, res) {
 
 async function postComment(req, res) {
   const userId = req.user.id;
-  const announcementId = req.body.announcementId;
-  const content = req.body.content;
-  try {
-    const pool = await sql.connect(require("../dbConfig"));
-    const check = await pool.request()
-      .input("AnnouncementID", announcementId)
-      .input("UserID", userId)
-      .query(`
-        SELECT 1
-        FROM Announcements a
-        JOIN GroupMembers gm ON a.GroupID = gm.GroupID
-        WHERE a.ID = @AnnouncementID
-          AND gm.UserID = @UserID
-      `);
-    if (!check.recordset.length)
-      return res.status(403).json({ error: "Must be a member to comment" });
+  const { announcementId, content } = req.body;
 
+  try {
     const commentId = await announcementsModel.postComment({
       AnnouncementID: announcementId,
       UserID: userId,
-      Content: content
+      Content: content,
     });
     res.status(201).json({ id: commentId });
   } catch (err) {
@@ -89,9 +71,29 @@ async function postComment(req, res) {
 }
 
 
+async function deleteComment(req, res) {
+  const userId = req.user.id;
+  const commentId = Number(req.params.id);
+
+  try {
+    await announcementsModel.deleteComment(userId, commentId);
+    res.status(200).json({ message: "Comment deleted" });
+  } catch (err) {
+    if (err.code === "FORBIDDEN") {
+      return res.status(403).json({ error: err.message });
+    }
+    console.error("Controller error in deleteComment:", err);
+    res.status(500).json({ error: "Error deleting comment" });
+  }
+}
+
+
+
+
 module.exports = {
   getAnnouncements,
   createAnnouncement,
   getComments,
-  postComment
+  postComment,
+  deleteComment
 };
