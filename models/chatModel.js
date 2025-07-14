@@ -73,7 +73,7 @@ async function getMessages(conversationId) {
     const result = await connection
       .request()
       .input("id", sql.Int, conversationId).query(`
-        SELECT * FROM Messages WHERE ConversationID = @id AND IsDeleted = 0 ORDER BY SentAt ASC
+        SELECT * FROM Messages WHERE ConversationID = @id ORDER BY SentAt ASC
       `);
 
     return result.recordset;
