@@ -73,7 +73,9 @@ async function loadChatList() {
 
       // Get last message (or placeholder if no messages)
       const lastMessage =
-        messages.length > 0 ? messages[messages.length - 1] : null;
+        messages.length > 0 && !messages[messages.length - 1].IsDeleted
+          ? messages[messages.length - 1]
+          : null;
 
       // Determine friend's info (the other user in conversation)
 
@@ -215,7 +217,7 @@ async function loadChatMessages(conversationId, friendID, friendName) {
       <div class="bg-blue-100 p-4 rounded-2xl max-w-xs relative pr-10">
         <button 
           class="absolute top-2 right-2 text-gray-400 hover:text-red-500" 
-          onclick="deleteMessage('${message.ID}')"
+          onclick="deleteMessage('${message.ID}', '${conversationId}', '${friendID}', '${friendName}')"
           title="Delete message"
         >
           <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -398,7 +400,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-async function deleteMessage(messageId) {
+async function deleteMessage(messageId, conversationId, friendID, friendName) {
   if (!confirm("Are you sure you want to delete this message?")) return;
 
   try {
@@ -412,13 +414,6 @@ async function deleteMessage(messageId) {
     if (!response.ok) throw new Error("Failed to delete message");
     console.log("Message deleted successfully");
     // Reload the chat messages after deletion
-    const chatMessages = document.getElementById("chatMessages");
-    const conversationId = document.querySelector(".chat-item.bg-gray-200")
-      ?.dataset.conversationId;
-    const friendID = document.querySelector(".chat-item.bg-gray-200")?.dataset
-      .friendId;
-    const friendName = document.querySelector(".chat-item.bg-gray-200")?.dataset
-      .friendName;
     loadChatMessages(conversationId, friendID, friendName);
   } catch (err) {
     console.error("Error deleting message:", err);
