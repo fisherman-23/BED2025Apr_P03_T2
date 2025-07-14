@@ -32,6 +32,12 @@ IF OBJECT_ID('dbo.MatchProfile', 'U') IS NOT NULL
 IF OBJECT_ID('dbo.MatchInteractions', 'U') IS NOT NULL
     DROP TABLE dbo.MatchInteractions;
 
+IF OBJECT_ID('dbo.Conversations', 'U') IS NOT NULL
+    DROP TABLE dbo.Conversations;
+    
+IF OBJECT_ID('dbo.Messages', 'U') IS NOT NULL
+    DROP TABLE dbo.Messages;
+
 
 CREATE TABLE Users (
     ID INT PRIMARY KEY IDENTITY(1,1),
@@ -549,6 +555,39 @@ CREATE TABLE MatchInteractions (
 );
 
 
+CREATE TABLE Conversations (
+    ID INT PRIMARY KEY IDENTITY(1,1),
+
+    -- Store consistent user pairing: User1ID < User2ID
+    User1ID INT NOT NULL,
+    User2ID INT NOT NULL,
+
+    CreatedAt DATETIME DEFAULT GETDATE(),
+
+    CONSTRAINT FK_Conversation_User1 FOREIGN KEY (User1ID) REFERENCES Users(ID) ON DELETE CASCADE,
+    CONSTRAINT FK_Conversation_User2 FOREIGN KEY (User2ID) REFERENCES Users(ID) ON DELETE CASCADE,
+
+    -- Prevent duplicate conversations between same two users
+    CONSTRAINT UQ_UserPair UNIQUE (User1ID, User2ID)
+);
+
+CREATE TABLE Messages (
+    ID INT PRIMARY KEY IDENTITY(1,1),
+
+    ConversationID INT NOT NULL,
+    SenderID INT NOT NULL,
+    Content TEXT NOT NULL,
+
+    SentAt DATETIME2 DEFAULT SYSUTCDATETIME(),
+
+    IsDeleted BIT DEFAULT 0,
+	DeletedAt DATETIME2 NULL
+
+    CONSTRAINT FK_Message_Conversation FOREIGN KEY (ConversationID) REFERENCES Conversations(ID) ON DELETE CASCADE,
+    CONSTRAINT FK_Message_Sender FOREIGN KEY (SenderID) REFERENCES Users(ID) ON DELETE NO ACTION
+);
+
+
 
 -- Module 4: Senior Fitness Coach
 
@@ -591,4 +630,5 @@ CREATE TABLE goals (
     last_completed_at DATETIME,
     FOREIGN KEY (userId) REFERENCES Users(ID)
 );
+
 

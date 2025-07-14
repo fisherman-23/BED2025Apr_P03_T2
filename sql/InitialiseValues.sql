@@ -1,4 +1,15 @@
--- PUT Sample Insert Statements Here for values
+INSERT INTO Conversations (User1ID, User2ID)
+VALUES
+(1, 2),  -- Alice & Bob
+(1, 3);  -- Alice & Carol
+
+INSERT INTO Messages (ConversationID, SenderID, Content)
+VALUES
+(1, 1, 'Hey Bob, how are you?'),          -- Alice to Bob
+(1, 2, 'Hi Alice! I am good, thanks!'),   -- Bob replies
+(2, 3, 'Hey Alice, ready for the meeting?'), -- Carol to Alice
+(2, 1, 'Yes, Carol! Starting soon.');     -- Alice replies
+
 SET IDENTITY_INSERT Users ON;
 
 INSERT INTO Users (
@@ -174,17 +185,6 @@ VALUES
     103.8416067,
     'ChIJoSghZGwZ2jERh4q9jEcnnXM'
     );
-
--- Sample data for reviews
-INSERT INTO Reviews (
-    userId, facilityId, rating, comment
-)
-VALUES
-    (1, 1, 5, 'Great service and friendly staff!'),
-    (2, 1, 4, 'Good facilities but can be crowded at times.'),
-    (1, 2, 3, 'Average experience, nothing special.')
-    (2, 2, 5, 'Excellent care and very clean environment!'),
-    (3, 1, 4, 'Very professional staff and quick service.');
 
 
 -- Module 4: Senior Fitness Coach
@@ -380,3 +380,4 @@ INSERT INTO exercise_steps (exerciseId, step_number, instruction) VALUES
 (13, 4, 'Hold for 5–10 seconds while breathing.'),
 (13, 5, 'Return to center and repeat on the other side.'),
 (13, 6, 'Do 3–5 repetitions per side.');
+
