@@ -181,6 +181,16 @@ async function loadChatMessages(conversationId, friendID, friendName) {
     infoButton.classList.remove("hidden"); // Show info button
     messageInputContainer.classList.remove("hidden"); // Show message input
     chatHeaderMessage.classList.add("hidden"); // Hide default message
+
+    // Add messages to smartReply function
+    const messageContentWithUsernames = messages.map((msg) => ({
+      Content: msg.Content,
+      SenderID: msg.SenderID,
+      SenderName: msg.SenderID === friendID ? friendName : "You",
+    }));
+    const smartReplyButton = document.getElementById("smartReplyButton");
+    smartReplyButton.onclick = () => smartReply(messageContentWithUsernames);
+
     // Render each message
     messages.forEach((message) => {
       const messageEl = document.createElement("div");
@@ -417,5 +427,40 @@ async function deleteMessage(messageId, conversationId, friendID, friendName) {
     loadChatMessages(conversationId, friendID, friendName);
   } catch (err) {
     console.error("Error deleting message:", err);
+  }
+}
+
+async function smartReply(content) {
+  const messageInput = document.getElementById("messageInput");
+
+  // Get up to last 3 messages from the chat
+  if (!Array.isArray(content) || content.length === 0) {
+    console.error("No messages available for smart reply");
+    return;
+  }
+  console.log("Content for smart reply:", content);
+  content = content
+    .slice(-3)
+    .map((msg) => `${msg.SenderName}: ${msg.Content}`)
+    .join(";");
+  console.log("Generating smart reply for content:", content);
+  if (!content) {
+    console.error("No content available for smart reply");
+    return;
+  }
+  try {
+    const response = await fetch("/smart-reply", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ content }),
+    });
+    if (!response.ok) throw new Error("Failed to get smart reply");
+    const reply = await response.json();
+    messageInput.value = reply.content; // Set the smart reply in the input
+  } catch (err) {
+    console.error("Error getting smart reply:", err);
   }
 }

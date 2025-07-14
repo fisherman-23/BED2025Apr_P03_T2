@@ -61,10 +61,28 @@ async function deleteMessage(req, res) {
     res.status(500).json({ error: "Error deleting message" });
   }
 }
+
+export async function getSmartReplies(req, res) {
+  const { message } = req.body;
+
+  if (!message) {
+    return res.status(400).json({ error: "Message is required." });
+  }
+
+  try {
+    const suggestions = await chatModel.generateSmartReplies(message);
+    res.json({ suggestions });
+  } catch (err) {
+    console.error("Smart reply error:", err);
+    res.status(500).json({ error: "Failed to generate suggestions." });
+  }
+}
+
 module.exports = {
   startConversation,
   getConversations,
   getMessages,
   sendMessage,
   deleteMessage,
+  getSmartReplies,
 };
