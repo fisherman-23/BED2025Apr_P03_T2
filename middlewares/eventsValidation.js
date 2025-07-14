@@ -24,10 +24,10 @@ const createGroupSchema = Joi.object({
 
 const groupIdSchema = Joi.object({
   groupId: Joi.number().integer().positive().required().messages({
-    "number.base":    "Group ID must be a number",
+    "number.base":  "Group ID must be a number",
     "number.integer": "Group ID must be an integer",
     "number.positive":"Group ID must be a positive number",
-    "any.required":   "Group ID is required",
+    "any.required": "Group ID is required",
   })
 });
 

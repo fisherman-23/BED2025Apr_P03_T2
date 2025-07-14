@@ -382,6 +382,57 @@ WHERE TABLE_SCHEMA = 'dbo'
 AND TABLE_NAME IN ('Medications', 'Doctors', 'Appointments', 'MedicationLogs', 'DrugInteractions', 'DrugConflicts', 'DoctorAvailability');
 GO
 
+
+
+-- Module 2: Community events
+-- Groups functionality
+CREATE TABLE Groups (
+  ID INT PRIMARY KEY IDENTITY(1,1),
+  Name VARCHAR(50) NOT NULL,
+  Description VARCHAR(200) NULL,
+  GroupPicture VARCHAR(1000) NULL,
+  IsPrivate BIT NOT NULL DEFAULT 0,
+  CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+  InviteToken UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+  CreatedBy INT NOT NULL,
+  FOREIGN KEY (CreatedBy) REFERENCES Users(ID)
+);
+
+CREATE TABLE GroupMembers (
+  GroupID INT NOT NULL,
+  UserID INT NOT NULL,
+
+  PRIMARY KEY (GroupID, UserID),
+  FOREIGN KEY (GroupID) REFERENCES Groups(ID),
+  FOREIGN KEY (UserID) REFERENCES Users(ID)
+);
+
+
+CREATE TABLE Announcements (
+    ID INT PRIMARY KEY IDENTITY(1,1),
+    GroupID INT NOT NULL,
+    Title VARCHAR(100) NOT NULL,
+    Content VARCHAR(1000) NOT NULL,
+    ImageUrl VARCHAR(500),
+    PostedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (GroupID) REFERENCES Groups(ID)
+);
+
+CREATE TABLE Comments (
+    ID INT PRIMARY KEY IDENTITY(1,1),
+    AnnouncementID INT NOT NULL,
+    UserID INT NOT NULL,
+    Content VARCHAR(1000) NOT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+
+    FOREIGN KEY (AnnouncementID) REFERENCES Announcements(ID),
+    FOREIGN KEY (UserID) REFERENCES Users(ID)
+);
+
+
+
+
+
 -- Module 3: Transport Navigator
 -- Facilities data table
 CREATE TABLE Facilities (
@@ -439,31 +490,6 @@ CREATE TABLE Reports (
     FOREIGN KEY (reviewId) REFERENCES Reviews(reviewId),
     FOREIGN KEY (userId) REFERENCES Users(ID)
 );
-
--- Module 2: Community events
--- Groups functionality
-CREATE TABLE Groups (
-  ID INT PRIMARY KEY IDENTITY(1,1),
-  Name VARCHAR(50) NOT NULL,
-  Description VARCHAR(200) NULL,
-  GroupPicture VARCHAR(1000) NULL,
-  IsPrivate BIT NOT NULL DEFAULT 0,
-  CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
-  InviteToken UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
-  CreatedBy INT NOT NULL,
-  FOREIGN KEY (CreatedBy) REFERENCES Users(ID)
-);
-
-CREATE TABLE GroupMembers (
-  GroupID INT NOT NULL,
-  UserID INT NOT NULL,
-
-  PRIMARY KEY (GroupID, UserID),
-  FOREIGN KEY (GroupID) REFERENCES Groups(ID),
-  FOREIGN KEY (UserID) REFERENCES Users(ID)
-);
-
-
 
 
 
