@@ -12,6 +12,7 @@ const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
 const chatController = require("./controllers/chatController.js");
 const eventsController = require("./controllers/eventsController.js");
+const announcementsController = require("./controllers/announcementsController.js");
 
 
 const facilitiesController = require("./controllers/facilitiesController.js");
@@ -27,6 +28,11 @@ const {
   validateCreateGroup,
   validateGroupId,
 } = require("./middlewares/eventsValidation.js");
+const {
+  validateCreateAnnouncement,
+  validatePostComment,
+} = require("./middlewares/announcementsValidation.js");
+
 const {
   validateUserId,
   validateLoginUser,
@@ -220,6 +226,34 @@ app.delete(
   authenticateJWT, 
   validateGroupId, 
   eventsController.leaveGroup
+);
+
+
+
+app.get(
+  "/announcements",
+  authenticateJWT,
+  announcementsController.getAnnouncements
+);
+
+app.post(
+  "/announcements",
+  authenticateJWT,
+  validateCreateAnnouncement,
+  announcementsController.createAnnouncement
+);
+
+app.get(
+  "/announcements/:id/comments",
+  authenticateJWT,
+  announcementsController.getComments
+);
+
+app.post(
+  "/announcements/:id/comments",
+  authenticateJWT,
+  validatePostComment,
+  announcementsController.postComment
 );
 
 

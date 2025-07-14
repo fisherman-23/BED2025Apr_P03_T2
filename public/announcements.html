@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Group Announcements</title>
+  <link rel="stylesheet" href="/global.css">
+  <link rel="stylesheet" href="/communityEvents/style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script src="./toastify.js" defer></script>
+</head>
+<body class="w-screen overflow-x-hidden">
+  <nav class="navbar">
+    <img src="/assets/Logo.svg" alt="Logo">
+    <div class="nav-icons">
+      <a><img src="/assets/icons/NAV-House.svg" alt="home"></a>
+      <a><img src="/assets/icons/NAV-Hospital.svg" alt="medical"></a>
+      <a><img src="/assets/icons/NAV-Tram.svg" alt="transport"></a>
+      <a><img src="/assets/icons/NAV-exercise.svg" alt="exercise"></a>
+      <a><img src="/assets/icons/NAV-calendar.svg" alt="events"></a>
+      <a><img src="/assets/icons/NAV-users.svg" alt="user"></a>
+    </div>
+    <div class="profile-icon">
+      <img src="/assets/images/elderlyPFP.png" alt="Profile Picture">
+    </div>
+  </nav>
+
+  <div class="flex flex-col items-center justify-center w-screen gap-6 my-8">
+    <h2 id="group-title" class="font-bold text-2xl">Weekly Baking Club</h2>
+    
+    <div class="announcements-container flex flex-col w-[90vw] md:w-[50vw] gap-6">
+      <!-- 
+      The static sample announcement cards go here, but they are now generated dynamically in announcements.js.
+      -->
+      <!--
+      <div class="announcement-card">…</div>
+      <div class="announcement-card">…</div>
+      -->
+    </div>
+
+    <button class="fixed top-24 left-10 md:flex items-center gap-2 bg-[#d7e961] py-3 px-4 rounded-xl hover:bg-[#cbd347] transition-colors shadow-md hidden">
+      <img src="communityEvents/assets/arrow.svg" alt="Back arrow" class="w-4 h-auto">
+      <span class="text-sm font-medium text-gray-700">Back</span>
+    </button>
+
+    <button class="relative flex items-center gap-2 bg-[#d7e961] py-3 px-8 rounded-xl hover:bg-[#cbd347] transition-colors shadow-md md:hidden">
+      <img src="communityEvents/assets/arrow.svg" alt="Back arrow" class="w-4 h-auto">
+      <span class="text-sm font-medium text-gray-700">Back</span>
+    </button>
+
+
+  </div>
+
+  <script src="communityEvents/announcements.js" type="module"></script>
+</body>
+</html>

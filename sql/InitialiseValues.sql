@@ -41,7 +41,7 @@ VALUES (
 
 SET IDENTITY_INSERT Users OFF;
 
--- Module 3: Community Events
+-- Module 2: Community Events
 -- Sample data for community groups
 INSERT INTO Groups (Name, Description, GroupPicture, IsPrivate, CreatedAt, CreatedBy)
 VALUES 
