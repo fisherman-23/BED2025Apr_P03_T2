@@ -4,7 +4,6 @@ const sql = require("mssql");
 async function getAnnouncements(req, res) {
   const groupId = Number(req.query.groupId);
   try {
-    // only group members should call; assume route is protected
     const list = await announcementsModel.getAnnouncementsByGroup(groupId);
     res.json(list);
   } catch (err) {
@@ -17,8 +16,25 @@ async function createAnnouncement(req, res) {
   const userId = req.user.id;
   const { GroupID, Title, Content, ImageURL } = req.body;
   try {
-    // ensure req.user is group creator
-    // (you could fetch group.CreatedBy from DB and compare)
+    const pool = await sql.connect(require("../dbConfig"));
+    const result = await pool.request()
+      .input("GroupID", sql.Int, GroupID)
+      .query(`
+        SELECT CreatedBy
+        FROM Groups
+        WHERE ID = @GroupID
+      `);
+
+    if (!result.recordset.length) {
+      return res.status(404).json({ error: "Group not found" });
+    }
+
+    const { CreatedBy } = result.recordset[0];
+
+    if (CreatedBy !== userId) {
+      return res.status(403).json({ error: "Only the group owner can post announcements" });
+    }
+
     const newId = await announcementsModel.createAnnouncement({
       GroupID, Title, Content, ImageURL, CreatedBy: userId
     });
@@ -28,6 +44,7 @@ async function createAnnouncement(req, res) {
     res.status(500).json({ error: "Error creating announcement" });
   }
 }
+
 
 async function getComments(req, res) {
   const announcementId = Number(req.params.id);
@@ -45,7 +62,6 @@ async function postComment(req, res) {
   const announcementId = req.body.announcementId;
   const content = req.body.content;
   try {
-    // membership‐check…
     const pool = await sql.connect(require("../dbConfig"));
     const check = await pool.request()
       .input("AnnouncementID", announcementId)
