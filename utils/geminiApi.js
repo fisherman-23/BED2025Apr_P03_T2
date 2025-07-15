@@ -3,7 +3,7 @@ const axios = require("axios");
 async function callGemini(prompt) {
   const apiKey = process.env.GEMINI_API_KEY;
   const endpoint =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
   const body = {
     contents: [{ parts: [{ text: prompt }] }],

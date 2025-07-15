@@ -9,7 +9,6 @@ window.addEventListener("DOMContentLoaded", () => {
   loadChatList();
   document.getElementById("close-btn-1").addEventListener("click", () => {
     event.stopPropagation(); // stops it from triggering parent's onclick
-    console.log("Close button 1 clicked");
     document.getElementById("popup").classList.add("hidden");
     document.getElementById("popupContent1").classList.add("hidden");
   });
@@ -25,7 +24,6 @@ window.addEventListener("DOMContentLoaded", () => {
   popup.addEventListener("click", (event) => {
     // If click target is exactly the overlay (popup div), close popup
     if (event.target === popup) {
-      console.log("Popup background clicked");
       popup.classList.add("hidden");
       document.getElementById("popupContent1").classList.add("hidden");
       document.getElementById("popupContent2").classList.add("hidden");
@@ -96,9 +94,6 @@ async function loadChatList() {
           return response.json();
         })
         .then((currentUser) => {
-          console.log(convo);
-          console.log(currentUser);
-          console.log(convo.User1ID === currentUser.ID);
           const friendId =
             convo.User1ID === currentUser.id ? convo.User2ID : convo.User1ID;
           const friendName =
@@ -194,6 +189,7 @@ async function loadChatMessages(conversationId, friendID, friendName) {
       Content: msg.Content,
       SenderID: msg.SenderID,
       SenderName: msg.SenderID === friendID ? friendName : "You",
+      IsDeleted: msg.IsDeleted,
     }));
     const smartReplyButton = document.getElementById("smartReplyButton");
     smartReplyButton.onclick = () => smartReply(messageContentWithUsernames);
@@ -267,7 +263,6 @@ async function sendMessage(conversationId, friendID, friendName) {
 }
 
 function openPopup(contentId, optionalData) {
-  console.log("Opening popup with content ID:", contentId);
   const popup = document.getElementById("popup");
   const contents = document.querySelectorAll(
     '#popup > div[id^="popupContent"]'
@@ -330,7 +325,6 @@ async function showFriendsList() {
     if (!response.ok) throw new Error("Failed to fetch friends list");
     const friends = await response.json();
     const friendsData = friends.friends || [];
-    console.log("Friends fetched:", friends);
 
     friendsData.forEach((friend) => {
       const friendItem = document.createElement("div");
@@ -361,7 +355,6 @@ async function createChat(friendId) {
     });
     if (!response.ok) throw new Error("Failed to create chat");
     const conversation = await response.json();
-    console.log("Chat created:", conversation);
     // Reload page, not just reload chat list
     window.location.reload();
   } catch (err) {
@@ -397,7 +390,6 @@ window.addEventListener("DOMContentLoaded", () => {
   searchButton.addEventListener("click", filterChats);
   searchInput.addEventListener("keyup", (e) => {
     if (e.key === "Enter") {
-      console.log("Enter key pressed, filtering friends");
       filterChats();
     }
   });
@@ -415,7 +407,6 @@ async function deleteMessage(messageId, conversationId, friendID, friendName) {
       credentials: "include",
     });
     if (!response.ok) throw new Error("Failed to delete message");
-    console.log("Message deleted successfully");
     // Reload the chat messages after deletion
     loadChatMessages(conversationId, friendID, friendName);
   } catch (err) {
@@ -425,18 +416,24 @@ async function deleteMessage(messageId, conversationId, friendID, friendName) {
 
 async function smartReply(content) {
   const messageInput = document.getElementById("messageInput");
+  const smartReplyStatus = document.getElementById("smartReplyStatus");
+  const smartReplyButton = document.getElementById("smartReplyButton");
+  smartReplyButton.disable = true; // Disable button while generating reply
+  smartReplyStatus.classList.remove("hidden");
 
   // Get up to last 3 messages from the chat
   if (!Array.isArray(content) || content.length === 0) {
     console.error("No messages available for smart reply");
     return;
   }
-  console.log("Content for smart reply:", content);
   content = content
     .slice(-3)
-    .map((msg) => `${msg.SenderName}: ${msg.Content}`)
+    .map((msg) =>
+      msg.IsDeleted
+        ? `${msg.SenderName}: This message was deleted`
+        : `${msg.SenderName}: ${msg.Content}`
+    )
     .join(";");
-  console.log("Generating smart reply for content:", content);
   if (!content) {
     console.error("No content available for smart reply");
     return;
@@ -452,7 +449,12 @@ async function smartReply(content) {
     });
     if (!response.ok) throw new Error("Failed to get smart reply");
     const reply = await response.json();
-    messageInput.value = reply.content; // Set the smart reply in the input
+    console.log("Smart reply received:", reply);
+    const smartReplyText = reply.suggestions.replace(/^"|"$/g, "").trim();
+    messageInput.value = smartReplyText; // Set the smart reply in the input
+    smartReplyButton.disable = false; // Re-enable button
+
+    smartReplyStatus.classList.add("hidden"); // Hide status message
   } catch (err) {
     console.error("Error getting smart reply:", err);
   }

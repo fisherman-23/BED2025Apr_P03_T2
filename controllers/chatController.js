@@ -63,14 +63,15 @@ async function deleteMessage(req, res) {
 }
 
 async function getSmartReplies(req, res) {
-  const { message } = req.body;
+  const { content } = req.body;
+  console.log("Received message for smart reply:", content);
 
-  if (!message) {
+  if (!content) {
     return res.status(400).json({ error: "Message is required." });
   }
 
   try {
-    const suggestions = await chatModel.generateSmartReplies(message);
+    const suggestions = await chatModel.generateSmartReplies(content);
     res.json({ suggestions });
   } catch (err) {
     console.error("Smart reply error:", err);

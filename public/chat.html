@@ -156,11 +156,16 @@
             <p class="text-sm text-gray-400 text-right">11:45 PM</p>
           </div> -->
         </div>
-        <div class="flex flex-row mt-4 hidden" id="messageInputContainer">
+        <p class="hidden" id="smartReplyStatus">Generating smart reply...</p>
+
+        <div class="flex flex-row mt-2 hidden" id="messageInputContainer">
+
           <input type="text" id="messageInput" placeholder="Type your message here..."
             class="border-2 border-slate rounded-2xl p-2 w-full" />
-          <button id="sendButton" class="ml-2 bg-transparent border-slate border-2 px-4 py-2 rounded-2xl">Send</button>
-          <button id="smartReplyButton" class="ml-2 bg-transparent border-slate border-2 px-4 py-2 rounded-2xl">
+          <button id="sendButton"
+            class="ml-2 bg-transparent border-slate border-2 px-4 py-2 rounded-2xl hover:bg-gray-200">Send</button>
+          <button id="smartReplyButton"
+            class="ml-2 bg-transparent border-slate border-2 px-4 py-2 rounded-2xl hover:bg-gray-200">
             <div class="flex flex-row items-center gap-2">
               <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path

@@ -527,7 +527,7 @@ app.delete(
   chatController.deleteMessage
 );
 
-app.post("/smart-reply", chatController.getSmartReplies);
+app.post("/smart-reply", authenticateJWT, chatController.getSmartReplies);
 
 process.on("SIGINT", async () => {
   console.log("Server is gracefully shutting down");

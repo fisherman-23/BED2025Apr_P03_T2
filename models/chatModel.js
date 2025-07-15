@@ -122,10 +122,10 @@ async function deleteMessage(messageId, userId) {
 }
 
 async function generateSmartReplies(message) {
-  const prompt = `Suggest 3 short, friendly replies to this message: "${message}"`;
+  const prompt = `Suggest 1 short, friendly reply to these messages, do not include emojis. Messages: "${message}"`;
 
   const geminiResponse = await callGemini(prompt);
-  return extractReplies(geminiResponse); // make this smart
+  return geminiResponse.candidates[0].content.parts[0].text;
 }
 
 module.exports = {
