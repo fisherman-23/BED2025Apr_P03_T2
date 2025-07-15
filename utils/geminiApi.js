@@ -1,6 +1,6 @@
-import axios from "axios";
+const axios = require("axios");
 
-export async function callGemini(prompt) {
+async function callGemini(prompt) {
   const apiKey = process.env.GEMINI_API_KEY;
   const endpoint =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
@@ -12,3 +12,7 @@ export async function callGemini(prompt) {
   const { data } = await axios.post(`${endpoint}?key=${apiKey}`, body);
   return data;
 }
+
+module.exports = {
+  callGemini,
+};

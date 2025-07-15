@@ -62,7 +62,7 @@ async function deleteMessage(req, res) {
   }
 }
 
-export async function getSmartReplies(req, res) {
+async function getSmartReplies(req, res) {
   const { message } = req.body;
 
   if (!message) {

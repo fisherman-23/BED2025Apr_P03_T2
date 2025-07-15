@@ -121,7 +121,7 @@ async function deleteMessage(messageId, userId) {
   }
 }
 
-export async function generateSmartReplies(message) {
+async function generateSmartReplies(message) {
   const prompt = `Suggest 3 short, friendly replies to this message: "${message}"`;
 
   const geminiResponse = await callGemini(prompt);
