@@ -1,0 +1,166 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+.routes-container {
+    display: flex;
+    flex-direction: column;
+    margin: 0 4rem;
+    gap: 2rem;
+    padding-bottom: 2rem;
+}
+
+.routes-header {
+    margin-bottom: 2rem;
+}
+
+.routes-header h1 {
+    font-size: 2.5rem;
+    margin: 2rem 0;
+    color: #000000;
+}
+
+.location-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.input-group {
+    flex: 1;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #000000;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+}
+
+.routes-content {
+    display: flex;
+    gap: 2rem;
+}
+
+.map-container {
+    flex: 2;
+    height: 40rem;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.routes-sidebar {
+    flex: 1;
+    background: white;
+    border-radius: 1rem;
+    padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.transport-options {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.75rem;
+}
+
+.transport-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    width: 100%;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.transport-option img {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.transport-option.active {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    font-weight: 600;
+}
+
+.routes-list {
+    max-height: 40rem;
+    overflow-y: auto;
+}
+
+.route-item {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.route-item:hover {
+    background-color: #f0f0f0;
+}
+
+.route-item.active {
+    border-left: 4px solid #1976d2;
+    background-color: #e3f2fd;
+}
+
+.route-title {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.route-duration {
+    color: #1976d2;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.route-steps {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.route-step {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.route-step img {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+}
+@media (max-width: 1200px) {
+    .routes-container {
+        flex-direction: column;
+        margin: 0 2rem;
+        max-height: none;
+    }
+
+    .routes-content {
+        flex-direction: column;
+    }
+}

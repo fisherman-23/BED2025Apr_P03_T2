@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Routes - CircleAge</title>
+    <link rel="stylesheet" href="/global.css">
+    <link rel="stylesheet" href="/navigation-routes/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <img src="/assets/Logo.svg" alt="Logo">
+        <div class="nav-icons">
+            <a><img src="/assets/icons/NAV-House.svg" alt="home"></a>
+            <a><img src="/assets/icons/NAV-Hospital.svg" alt="medical"></a>
+            <a><img src="/assets/icons/NAV-Tram.svg" alt="transport"></a>
+            <a><img src="/assets/icons/NAV-exercise.svg" alt="exercise"></a>
+            <a><img src="/assets/icons/NAV-calendar.svg" alt="events"></a>
+            <a><img src="/assets/icons/NAV-users.svg" alt="user"></a>
+        </div>
+        <div class="profile-icon" onclick="window.location.href='/account.html';">
+            <img src="/assets/images/elderlyPFP.png" alt="Profile Picture">
+        </div>
+    </nav>
+    <main class="routes-container">
+        <div class="routes-header">
+            <h1>Finding the best routes for you</h1>
+            <div class="location-inputs">
+                <div class="input-group">
+                    <label for="startLocation">Start Location:</label>
+                    <input type="text" id="startLocation" placeholder="Use current location">
+                </div>
+                <div class="input-group">
+                    <label for="endLocation">Destination:</label>
+                    <input type="text" id="endLocation" disabled>
+                </div>
+            </div>
+        </div>
+        <div class="routes-content">
+            <div class="map-container" id="map"></div>
+            <div class="routes-sidebar">
+                <div class="transport-options">
+                    <button class="transport-option active" data-mode="WALKING">
+                        <img src="/assets/icons/walk.svg" alt="Walk">
+                        <span>Walk</span>    
+                    </button>
+                    <button class="transport-option" data-mode="TRANSIT">
+                        <img src="/assets/icons/bus.svg" alt="Public Transport">
+                        <span>Public Transport</span>
+                    </button>
+                    <button class="transport-option" data-mode="DRIVING">
+                        <img src="/assets/icons/car.svg" alt="Drive">
+                        <span>Drive</span>
+                    </button>
+                </div>
+                <div class="routes-list" id="routesList">
+                    <!-- Routes will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="/navigation-routes/script.js"></script>
+</body>
+</html>

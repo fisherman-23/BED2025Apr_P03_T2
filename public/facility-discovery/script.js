@@ -20,6 +20,10 @@ class FacilityManager {
     this.bookmarkPopup = document.getElementById('bookmarkPopup');
     this.locationNameInput = document.getElementById('locationName');
     this.locationNotesInput = document.getElementById('locationNotes');
+
+    this.startNavigation.addEventListener('click', () => {
+      this.handleStartNavigation();
+    });
   }
 
   async init() {
@@ -538,6 +542,15 @@ class FacilityManager {
       console.error("Error removing bookmark:", error);
       alert("Failed to remove bookmark. Please try again later.");
     }
+  }
+
+  // Handles the start navigation button click
+  async handleStartNavigation() {
+    if (!this.currentFacility || !this.currentFacility.static_map_url) {
+      alert("No facility selected for navigation.");
+      return;
+    }
+    window.location.href = `/navigation.html?facilityId=${this.currentFacility.facilityId}`;
   }
 }
 
