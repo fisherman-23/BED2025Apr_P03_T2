@@ -66,11 +66,9 @@ async function bindComments(annId) {
     const comments = await res.json();
 
     comments.forEach(c => {
-      // outer wrapper to detect hover/click
       const wrapper = document.createElement('div');
-      wrapper.className = 'own-comment-wrapper relative group'; // for positioning
+      wrapper.className = 'own-comment-wrapper relative group';
 
-      // normal comment container
       const div = document.createElement('div');
       div.className = 'comment flex items-start gap-3 mb-4';
 
@@ -90,7 +88,7 @@ async function bindComments(annId) {
       if (c.IsOwnComment) {
         const original = c.Content;
         const p = div.querySelector('.comment-text');
-        const commentId = c.ID;            // ← grab it here
+        const commentId = c.ID; 
 
         wrapper.addEventListener('mouseenter', () => {
           p.textContent = 'Delete comment?';
@@ -105,10 +103,10 @@ async function bindComments(annId) {
         });
 
         wrapper.addEventListener('click', async () => {
-          if (!confirm('Delete this comment?')) return;
+          if (!(await newConfirm('Delete this comment?'))) return;
           try {
             const delRes = await fetch(
-              `/announcements/${annId}/comments/${commentId}`,  // ← use our local commentId
+              `/announcements/${annId}/comments/${commentId}`, 
               { method: 'DELETE', credentials: 'include' }
             );
             if (!delRes.ok) throw new Error('Failed to delete comment');
@@ -299,3 +297,39 @@ fileInput.addEventListener('change', () => {
   };
   reader.readAsDataURL(file);
 });
+
+
+function newConfirm(message) {
+  return new Promise((resolve) => {
+    const modal = document.querySelector('#customConfirmModal');
+    const text = modal.querySelector('.confirm-message');
+    const yesBtn = modal.querySelector('.confirm-yes');
+    const noBtn = modal.querySelector('.confirm-no');
+
+    text.textContent = message;
+
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+    modal.classList.add('opacity-100');
+
+    const cleanUp = () => {
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      modal.classList.remove('opacity-100');
+      yesBtn.removeEventListener('click', onYes);
+      noBtn.removeEventListener('click', onNo);
+    };
+
+    const onYes = () => {
+      cleanUp();
+      resolve(true);
+    };
+
+    const onNo = () => {
+      cleanUp();
+      resolve(false);
+    };
+
+    yesBtn.addEventListener('click', onYes);
+    noBtn.addEventListener('click', onNo);
+  });
+}
+
