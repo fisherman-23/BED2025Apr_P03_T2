@@ -2,66 +2,192 @@ const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 
 async function getAnnouncementsByGroup(groupId) {
-  const pool = await sql.connect(dbConfig);
-  const result = await pool.request()
-    .input("GroupID", groupId)
-    .query(`
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const query = `
       SELECT a.ID, a.Title, a.Content, a.ImageURL, a.CreatedAt, u.Name AS CreatedByName
       FROM Announcements a
       JOIN Users u ON a.CreatedBy = u.ID
       WHERE a.GroupID = @GroupID
       ORDER BY a.CreatedAt DESC
-    `);
-  return result.recordset;
+    `;
+    const request = connection.request();
+    request.input("GroupID", sql.Int, groupId);
+    const result = await request.query(query);
+    connection.close();
+    return result.recordset;
+  } catch (error) {
+    console.error("Database error in getAnnouncementsByGroup:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try { await connection.close(); }
+      catch (err) { console.error("Error closing connection in getAnnouncementsByGroup:", err); }
+    }
+  }
 }
 
 async function createAnnouncement({ GroupID, Title, Content, ImageURL, CreatedBy }) {
-  const pool = await sql.connect(dbConfig);
-  const result = await pool.request()
-    .input("GroupID",    sql.Int,    GroupID)
-    .input("Title",      sql.VarChar(100), Title)
-    .input("Content",    sql.VarChar(2000), Content)
-    .input("ImageURL",   sql.VarChar(1000), ImageURL || null)
-    .input("CreatedBy",  sql.Int,    CreatedBy)
-    .query(`
-      INSERT INTO Announcements (GroupID, Title, Content, ImageURL, CreatedBy)
-      VALUES (@GroupID, @Title, @Content, @ImageURL, @CreatedBy);
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const query = `
+      INSERT INTO Announcements
+        (GroupID, Title, Content, ImageURL, CreatedBy)
+      VALUES
+        (@GroupID, @Title, @Content, @ImageURL, @CreatedBy);
       SELECT SCOPE_IDENTITY() AS ID;
-    `);
-  return result.recordset[0].ID;
+    `;
+    const request = connection.request();
+    request.input("GroupID",  sql.Int,         GroupID);
+    request.input("Title",    sql.VarChar(100), Title);
+    request.input("Content",  sql.VarChar(2000), Content);
+    request.input("ImageURL", sql.VarChar(1000), ImageURL || null);
+    request.input("CreatedBy",sql.Int,         CreatedBy);
+    const result = await request.query(query);
+    const newId = result.recordset[0].ID;
+    connection.close();
+    return newId;
+  } catch (error) {
+    console.error("Database error in createAnnouncement:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try { await connection.close(); }
+      catch (err) { console.error("Error closing connection in createAnnouncement:", err); }
+    }
+  }
 }
 
 async function getCommentsForAnnouncement(announcementId) {
-  const pool = await sql.connect(dbConfig);
-  const result = await pool.request()
-    .input("AnnouncementID", announcementId)
-    .query(`
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const query = `
       SELECT c.ID, c.Content, c.CreatedAt, u.ID AS UserID, u.Name, u.ProfilePicture
       FROM Comments c
       JOIN Users u ON c.UserID = u.ID
       WHERE c.AnnouncementID = @AnnouncementID
       ORDER BY c.CreatedAt ASC
-    `);
-  return result.recordset;
+    `;
+    const request = connection.request();
+    request.input("AnnouncementID", sql.Int, announcementId);
+    const result = await request.query(query);
+    connection.close();
+    return result.recordset;
+  } catch (error) {
+    console.error("Database error in getCommentsForAnnouncement:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try { await connection.close(); }
+      catch (err) { console.error("Error closing connection in getCommentsForAnnouncement:", err); }
+    }
+  }
 }
 
+
 async function postComment({ AnnouncementID, UserID, Content }) {
-  const pool = await sql.connect(dbConfig);
-  const result = await pool.request()
-    .input("AnnouncementID", sql.Int, AnnouncementID)
-    .input("UserID",        sql.Int, UserID)
-    .input("Content",       sql.VarChar(1000), Content)
-    .query(`
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const request = connection.request();
+
+    request.input("AnnouncementID", sql.Int, AnnouncementID);
+    request.input("UserID", sql.Int, UserID);
+    const check = await request.query(`
+      SELECT 1
+        FROM Announcements a
+        JOIN GroupMembers gm
+          ON a.GroupID = gm.GroupID
+          WHERE a.ID = @AnnouncementID
+         AND gm.UserID = @UserID
+    `);
+    if (!check.recordset.length) {
+      const err = new Error("Must be a member to comment");
+      err.code = "NOT_MEMBER";
+      throw err;
+    }
+
+    const insertReq = connection.request();
+    insertReq.input("AnnouncementID", sql.Int, AnnouncementID);
+    insertReq.input("UserID", sql.Int, UserID);
+    insertReq.input("Content", sql.VarChar(1000), Content);
+
+    const result = await insertReq.query(`
       INSERT INTO Comments (AnnouncementID, UserID, Content)
       VALUES (@AnnouncementID, @UserID, @Content);
       SELECT SCOPE_IDENTITY() AS ID;
     `);
-  return result.recordset[0].ID;
+
+    return result.recordset[0].ID;
+  } catch (err) {
+    console.error("Database error in postComment:", err);
+    throw err;
+  } finally {
+    if (connection) {
+      try { await connection.close(); }
+      catch (closeErr) { console.error("Error closing connection in postComment:", closeErr); }
+    }
+  }
 }
+
+async function deleteComment(userId, commentId) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const request = connection.request();
+    request.input("UserID",    sql.Int, userId);
+    request.input("CommentID", sql.Int, commentId);
+
+    const result = await request.query(`
+      DELETE FROM Comments
+      WHERE ID = @CommentID AND UserID = @UserID
+    `);
+
+    if (result.rowsAffected[0] === 0) {
+      const err = new Error("You are not authorized to delete this comment");
+      err.code = "FORBIDDEN";
+      throw err;
+    }
+
+    return true;
+  } catch (err) {
+    console.error("DB error in deleteComment:", err);
+    throw err;
+  } finally {
+    if (connection) await connection.close();
+  }
+}
+
+
+
+
+async function getGroupById(groupId) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const result = await connection
+      .request()
+      .input("ID", sql.Int, groupId)
+      .query(`SELECT CreatedBy FROM Groups WHERE ID = @ID`);
+    return result.recordset[0] || null;
+  } catch (err) {
+    console.error("DB error in getGroupById:", err);
+    throw err;
+  } finally {
+    if (connection) await connection.close();
+  }
+}
+
+
 
 module.exports = {
   getAnnouncementsByGroup,
   createAnnouncement,
   getCommentsForAnnouncement,
-  postComment
+  postComment,
+  deleteComment,
+  getGroupById
 };
