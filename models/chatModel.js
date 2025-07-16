@@ -1,5 +1,6 @@
 const sql = require("mssql");
 const config = require("../dbConfig");
+const { callGemini } = require("../utils/geminiApi");
 
 async function getOrCreateConversation(user1Id, user2Id) {
   const [userA, userB] =
@@ -120,10 +121,18 @@ async function deleteMessage(messageId, userId) {
   }
 }
 
+async function generateSmartReplies(message) {
+  const prompt = `Suggest 1 short, friendly reply to these messages, do not include emojis. Messages: "${message}"`;
+
+  const geminiResponse = await callGemini(prompt);
+  return geminiResponse.candidates[0].content.parts[0].text;
+}
+
 module.exports = {
   getOrCreateConversation,
   getUserConversations,
   getMessages,
   sendMessage,
   deleteMessage,
+  generateSmartReplies,
 };
