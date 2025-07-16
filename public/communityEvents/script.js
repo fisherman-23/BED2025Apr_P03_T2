@@ -28,7 +28,7 @@ async function loadJoinedGroups() {
             <h2 class="text-gray-800 text-opacity-50 text-xl">${group.IsPrivate ? "Private" : "Public"}</h2>
             <h1 class="font-bold text-[1.4rem]">${group.Name}</h1>
             <h3 class="text-gray-800 text-opacity-70 text-lg leading-snug">${group.Description || ""}</h3>
-            <button data-groupId="${group.ID}" class="view-announcements-btn bg-[#d7e961] w-fit px-4 py-2 rounded-xl mt-6">View Announcements</button>
+            <button data-groupId="${group.ID}" data-groupName="${group.Name}" class="view-announcements-btn bg-[#d7e961] w-fit px-4 py-2 rounded-xl mt-6">View Announcements</button>
           </div>
           <img src="${group.GroupPicture}"
           onerror="this.onerror=null; this.src='communityEvents/assets/failedImage.jpg';" 
@@ -54,15 +54,17 @@ async function loadJoinedGroups() {
       </div>
       `;
 
+
+      const button = groupDiv.querySelector("button.view-announcements-btn");
+      button.addEventListener("click", e => {
+        const groupId = e.currentTarget.getAttribute("data-groupId");
+        const groupName = e.currentTarget.getAttribute("data-groupName");
+        const encodedGroupName = encodeURIComponent(groupName);
+        window.location.href = `/announcements.html?groupId=${groupId}&groupName=${encodedGroupName}`;
+      });
       container.appendChild(groupDiv);
     });
 
-    container.querySelectorAll("button.view-announcements-btn").forEach(button => {
-        button.addEventListener("click", e => {
-        const groupId = e.currentTarget.getAttribute("data-groupId");
-        window.location.href = `/announcements.html?groupId=${groupId}`;
-      });
-    });
 
     container.querySelectorAll(".leave-group-button").forEach(btn => {
       btn.addEventListener("click", async (e) => {

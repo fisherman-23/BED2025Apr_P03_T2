@@ -1,6 +1,14 @@
 const container = document.querySelector('.announcements-container');
 const params = new URLSearchParams(window.location.search);
 const groupId = params.get('groupId');
+const groupName = params.get('groupName');
+
+const groupTitle = document.getElementById("group-title");
+
+if (groupTitle && groupName) {
+  const decodedGroupName = decodeURIComponent(groupName);
+  groupTitle.textContent = `${decodedGroupName}`;
+}
 
 function formatDate(dtString) {
   const d = new Date(dtString);
