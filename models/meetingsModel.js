@@ -20,6 +20,24 @@ async function createRoom(name) {
   };
 }
 
+async function createMeetingToken(roomName, isOwner = false) {
+  const endpoint = "https://api.daily.co/v1/meeting-tokens";
+  const headers = {
+    Authorization: `Bearer ${DAILY_API_KEY}`,
+    "Content-Type": "application/json",
+  };
+  const payload = {
+    properties: {
+      is_owner: isOwner,
+      room_name: roomName
+    }
+  };
+
+  const response = await axios.post(endpoint, payload, { headers });
+  return response.data.token;
+}
+
 module.exports = {
   createRoom,
+  createMeetingToken,
 };

@@ -1,5 +1,8 @@
 const params = new URLSearchParams(window.location.search);
 const roomUrl = params.get("room");
+const hostToken = params.get("token");
+
+
 if (!roomUrl) {
   alert("No meeting URL provided");
   throw new Error("Missing room URL");
@@ -24,3 +27,45 @@ const callFrame = window.DailyIframe.createFrame({
 
 
 callFrame.join({ url: roomUrl }).catch(console.error); // joins the room
+
+
+function renderParticipants(participants) {
+  const list = document.getElementById("participantList");   
+  list.innerHTML = ""; // Clear current list
+
+  Object.values(participants).forEach((participant) => {
+    const li = document.createElement("li");
+    li.textContent = participant.user_name || participant.session_id;
+
+    // Add "Kick" button if you're the meeting owner
+    if (isHost && participant.local === false) {
+      const btn = document.createElement("button");
+      btn.textContent = "Kick";
+      btn.className = "ml-2 px-2 py-1 text-sm bg-red-500 text-white rounded";
+      btn.onclick = () => {
+        callFrame.updateParticipant(participant.session_id, { eject: true });
+      };
+      li.appendChild(btn);
+    }
+
+    list.appendChild(li);
+  });
+}
+
+const isHost = true; // TEMP: just assume true for now
+
+// Update list on join/leave/update
+callFrame.on("participant-joined", (e) => {
+  renderParticipants(callFrame.participants());
+});
+callFrame.on("participant-left", (e) => {
+  renderParticipants(callFrame.participants());
+});
+callFrame.on("participant-updated", (e) => {
+  renderParticipants(callFrame.participants());
+});
+
+// Also update once after joining
+callFrame.on("joined-meeting", () => {
+  renderParticipants(callFrame.participants());
+});

@@ -10,13 +10,23 @@
   <script src="https://unpkg.com/@daily-co/daily-js"></script>
 </head>
 <body class="flex flex-col items-center p-6">
-  <h2 class="text-2xl font-bold mb-4">Your Meeting</h2>
-
-  <div id="callFrame" class="w-full h-[60vh] mb-4"></div>
-
-  <div class="flex flex-col items-center gap-3">
-    <a id="meetingLink" href="#" target="_blank" class="text-blue-600 underline"></a>
-    <canvas id="qrCanvas"></canvas>
+  <div class="w-full max-w-4xl mx-auto">
+  
+    <h2 class="text-2xl font-bold mb-4">Your Meeting</h2>
+    
+    <div id="callFrame" class="w-full h-[60vh] mb-4"></div>
+    
+    <div class="flex flex-col items-center gap-3">
+      <a id="meetingLink" href="#" target="_blank" class="text-blue-600 underline"></a>
+      <canvas id="qrCanvas"></canvas>
+      
+      <!-- Participant List -->
+      <div class="mt-6 w-full max-w-md">
+        <h3 class="text-lg font-semibold mb-2">Participants</h3>
+        <ul id="participantList" class="space-y-2 text-gray-800"></ul>
+      </div>
+      
+    </div>
   </div>
 
   <script src="/communityEvents/meetings.js" type="module"></script>
