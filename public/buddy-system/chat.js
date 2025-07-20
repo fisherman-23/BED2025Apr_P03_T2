@@ -409,6 +409,7 @@ async function deleteMessage(messageId, conversationId, friendID, friendName) {
     if (!response.ok) throw new Error("Failed to delete message");
     // Reload the chat messages after deletion
     loadChatMessages(conversationId, friendID, friendName);
+    console.log("Message deleted successfully");
   } catch (err) {
     console.error("Error deleting message:", err);
   }

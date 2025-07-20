@@ -37,22 +37,13 @@ const {
   validateUserId,
   validateLoginUser,
   validateCreateUser,
-  validateUpdateUser, 
+  validateUpdateUser,
   authenticateJWT,
 } = require("./middlewares/userValidation");
 const {
   protectSpecificRoutes,
   redirectIfAuthenticated,
 } = require("./middlewares/protectRoute");
-
-
-
-
-
-
-
-
-
 
 const validateMatchProfile = require("./middlewares/validateMatchProfile.js");
 const validateGoal = require("./middlewares/goalValidation.js");
@@ -73,6 +64,7 @@ const {
   validateUpdateReviewData,
   validateReportData,
 } = require("./middlewares/reviewValidation.js");
+const { validateMessage } = require("./middlewares/chatValidation.js");
 const { compareSync } = require("bcrypt");
 const app = express();
 const port = process.env.PORT || 3000;
@@ -535,6 +527,7 @@ app.get(
 app.post(
   "/conversations/:conversationId/messages",
   authenticateJWT,
+  validateMessage,
   chatController.sendMessage
 );
 
