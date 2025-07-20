@@ -11,6 +11,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   <script src="./toastify.js" defer></script>
+
+  <script src="https://unpkg.com/@daily-co/daily-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
 <body class="w-screen overflow-x-hidden">
   <nav class="navbar">
@@ -50,11 +53,11 @@
   </div>
 
   <div class="flex w-screen justify-center items-center md:gap-8 gap-4 my-12 md:flex-row flex-col">
-    <div class="flex justify-center items-center gap-8 bg-[#3b82f6] rounded-xl md:w-56 h-14 w-[80vw]">
+    <div class="flex justify-center items-center gap-8 bg-[#3b82f6] rounded-xl md:w-56 h-14 w-[80vw] create-meeting-button cursor-pointer">
       <img src="communityEvents/assets/camera-icon.svg" alt="">
       <h3 class="text-white">Create Meeting</h3>
     </div>
-    <div class="flex justify-center items-center gap-8 bg-[#22c55e] rounded-xl md:w-56 h-14 w-[80vw]">
+    <div class="flex justify-center items-center gap-8 bg-[#22c55e] rounded-xl md:w-56 h-14 w-[80vw] join-meeting-button cursor-pointer">
       <img src="communityEvents/assets/people-icon.svg" alt="">
       <h3 class="text-white">Join Meeting</h3>
     </div>

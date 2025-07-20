@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Meeting</title>
+  <link rel="stylesheet" href="/global.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="https://unpkg.com/@daily-co/daily-js"></script>
+</head>
+<body class="flex flex-col items-center p-6">
+  <h2 class="text-2xl font-bold mb-4">Your Meeting</h2>
+
+  <div id="callFrame" class="w-full h-[60vh] mb-4"></div>
+
+  <div class="flex flex-col items-center gap-3">
+    <a id="meetingLink" href="#" target="_blank" class="text-blue-600 underline"></a>
+    <canvas id="qrCanvas"></canvas>
+  </div>
+
+  <script src="/communityEvents/meetings.js" type="module"></script>
+</body>
+</html>

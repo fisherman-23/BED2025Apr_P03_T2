@@ -338,3 +338,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+
+
+const createMeetingBtn = document.querySelector('.create-meeting-button') 
+  || document.querySelectorAll('h3').forEach(el => {
+       if (el.textContent === 'Create Meeting') createMeetingBtn = el.parentElement;
+     });
+
+createMeetingBtn.addEventListener('click', async () => {
+  try {
+    const res = await fetch('/meetings', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error('Failed to create meeting');
+    const { url } = await res.json(); 
+
+    const meetingPage = `/meetings.html?room=${encodeURIComponent(url)}`;
+    window.open(meetingPage, '_blank');
+  } catch (err) {
+    console.error(err);
+    toastError('Unable to create meeting');
+  }
+});
