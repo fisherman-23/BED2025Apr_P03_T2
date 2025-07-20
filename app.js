@@ -23,6 +23,10 @@ const medicationController = require("./controllers/medicationController.js");
 const appointmentController = require("./controllers/appointmentController.js");
 const goalController = require("./controllers/goalController.js");
 
+const swaggerJsdoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
+const swaggerFile = require("./swagger-output.json");
+
 const {
   validateCreateGroup,
   validateGroupId,
@@ -78,6 +82,8 @@ app.use(redirectIfAuthenticated);
 app.get("/me", authenticateJWT, (req, res) => {
   res.json({ username: req.user.email, id: req.user.id, uuid: req.user.uuid });
 });
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 app.use(express.static(path.join(__dirname, "public")));
 
