@@ -356,7 +356,7 @@ createMeetingBtn.addEventListener('click', async () => {
     if (!res.ok) throw new Error('Failed to create meeting');
     const { url, token } = await res.json();
     window.location.href =
-      `/communityEvents/meetings.html?room=${encodeURIComponent(url)}&token=${token}`; 
+      `/meetings.html?room=${encodeURIComponent(url)}&token=${token}`; 
   } catch (err) {
     console.error(err);
     toastError('Unable to create meeting');

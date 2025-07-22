@@ -1,34 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Meeting</title>
-  <link rel="stylesheet" href="/global.css">
-
+  <link rel="stylesheet" href="/global.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {} } };
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script src="https://unpkg.com/@daily-co/daily-js"></script>
 </head>
-<body class="flex flex-col items-center p-6">
-  <div class="w-full max-w-4xl mx-auto">
-  
-    <h2 class="text-2xl font-bold mb-4">Your Meeting</h2>
-    
-    <div id="callFrame" class="w-full h-[60vh] mb-4"></div>
-    
-    <div class="flex flex-col items-center gap-3">
-      <a id="meetingLink" href="#" target="_blank" class="text-blue-600 underline"></a>
-      <canvas id="qrCanvas"></canvas>
-      
-      <!-- Participant List -->
-      <div class="mt-6 w-full max-w-md">
-        <h3 class="text-lg font-semibold mb-2">Participants</h3>
-        <ul id="participantList" class="space-y-2 text-gray-800"></ul>
-      </div>
-      
+<body class="flex flex-col items-center p-4 bg-gray-50 min-h-screen w-screen">
+  <h2 class="py-2 px-6 bg-[#d7e961] flex justify-center items-center h-fit w-fit rounded-lg absolute top-6 left-4 md:left-6">⬅ Back</h2>
+  <h2 class="text-2xl font-bold text-center mb-6 mt-2">Your Meeting</h2>
+
+  <div class="relative flex flex-col lg:flex-row items-start w-full mx-auto bg-gray-100 rounded-xl shadow p-6 space-y-6 lg:space-y-0 lg:space-x-6">
+
+    <div id="callFrame" class="flex-1 w-full h-[85vh] bg-black rounded-lg overflow-hidden"></div>
+    <canvas id="qrPopupCanvas" class="absolute top-1/2 right-full mr-4 hidden bg-white p-2 rounded border"></canvas>
+
+
+    <div class="w-full lg:w-64 flex flex-col space-y-4">
+      <h3 class="text-lg font-semibold">Participants</h3>
+      <ul id="participantList" class="space-y-2 text-gray-800 flex-1 overflow-auto"></ul>
+      <button id="qrButton" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Show QR Code</button>
     </div>
   </div>
 
-  <script src="/communityEvents/meetings.js" type="module"></script>
+   <script src="/communityEvents/meetings.js"></script>
 </body>
 </html>
