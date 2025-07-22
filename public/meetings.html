@@ -12,20 +12,21 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script src="https://unpkg.com/@daily-co/daily-js"></script>
 </head>
-<body class="flex flex-col items-center p-4 bg-gray-50 min-h-screen w-screen">
-  <h2 class="py-2 px-6 bg-[#d7e961] flex justify-center items-center h-fit w-fit rounded-lg absolute top-6 left-4 md:left-6">⬅ Back</h2>
-  <h2 class="text-2xl font-bold text-center mb-6 mt-2">Your Meeting</h2>
-
-  <div class="relative flex flex-col lg:flex-row items-start w-full mx-auto bg-gray-100 rounded-xl shadow p-6 space-y-6 lg:space-y-0 lg:space-x-6">
-
-    <div id="callFrame" class="flex-1 w-full h-[85vh] bg-black rounded-lg overflow-hidden"></div>
-    <canvas id="qrPopupCanvas" class="absolute top-1/2 right-full mr-4 hidden bg-white p-2 rounded border"></canvas>
+<body class="flex flex-col items-center justify-start lg:justify-center p-4 bg-gray-50 min-h-screen w-screen overflow-x-hidden">
+  <h2 id="backButton" class="py-2 px-6 bg-[#d7e961] flex justify-center items-center h-fit w-fit rounded-lg absolute top-6 left-4 md:left-6 cursor-pointer">⬅ Back</h2>
+  <h2 class="text-2xl font-bold mb-6 mt-2">Your Meeting</h2>
 
 
-    <div class="w-full lg:w-64 flex flex-col space-y-4">
+  <div class="relative flex flex-col lg:flex-row items-start w-full h-[calc(100vh-4rem)] md:h-auto mx-auto bg-gray-100 rounded-xl shadow p-6 space-y-6 lg:space-y-0 lg:space-x-6 overflow-hidden">
+
+    <div id="callFrame" class="w-full h-full md:h-[85vh] bg-black rounded-lg overflow-hidden"></div>
+
+
+    <div class="w-full lg:w-64 flex flex-col space-y-4 md:max-h-[85vh]">
       <h3 class="text-lg font-semibold">Participants</h3>
       <ul id="participantList" class="space-y-2 text-gray-800 flex-1 overflow-auto"></ul>
       <button id="qrButton" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Show QR Code</button>
+      <canvas id="qrPopupCanvas" class="hidden bg-white p-2 rounded border w-full max-w-xs mx-auto"></canvas>
     </div>
   </div>
 

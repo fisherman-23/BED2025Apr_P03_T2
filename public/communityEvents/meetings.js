@@ -16,7 +16,7 @@ const callFrame = window.DailyIframe.createFrame({
 });
 
 const container = document.getElementById("callFrame");
-container.innerHTML = ""; // clear any existing content
+container.innerHTML = "";
 container.appendChild(callFrame.iframe());
 
 // Join the call (with hostToken if any)
@@ -54,16 +54,19 @@ callFrame.on("participant-updated", () => {
   renderParticipants(callFrame.participants());
 });
 
-// QR Code popup beside meeting frame
 const qrButton = document.getElementById("qrButton");
 const qrPopup = document.getElementById("qrPopupCanvas");
 qrButton.addEventListener("click", () => {
   if (qrPopup.classList.contains("hidden")) {
-    QRCode.toCanvas(qrPopup, roomUrl).catch(console.error);
+    QRCode.toCanvas(qrPopup, roomUrl, { width: 200 }).catch(console.error);
     qrPopup.classList.remove("hidden");
     qrButton.textContent = "Hide QR Code";
   } else {
     qrPopup.classList.add("hidden");
     qrButton.textContent = "Show QR Code";
   }
+});
+
+document.getElementById("backButton").addEventListener("click", () => {
+  window.location.href = "/events.html";
 });
