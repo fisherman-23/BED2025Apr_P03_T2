@@ -343,8 +343,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const createMeetingBtn = document.querySelector('.create-meeting-button') 
   || document.querySelectorAll('h3').forEach(el => {
-       if (el.textContent === 'Create Meeting') createMeetingBtn = el.parentElement;
-     });
+    if (el.textContent === 'Create Meeting') createMeetingBtn = el.parentElement;
+  });
 
 createMeetingBtn.addEventListener('click', async () => {
   try {
@@ -354,9 +354,11 @@ createMeetingBtn.addEventListener('click', async () => {
       headers: { 'Content-Type': 'application/json' },
     });
     if (!res.ok) throw new Error('Failed to create meeting');
-    const { url, token } = await res.json();
-    window.location.href =
-      `/meetings.html?room=${encodeURIComponent(url)}&token=${token}`; 
+    const { meetingId, url, token } = await res.json();
+      window.location.href =
+      `/meetings.html?meetingId=${meetingId}` +
+      `&room=${encodeURIComponent(url)}` +
+      `&token=${token}`; 
   } catch (err) {
     console.error(err);
     toastError('Unable to create meeting');

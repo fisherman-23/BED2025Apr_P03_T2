@@ -1,4 +1,6 @@
 const axios = require("axios");
+const sql = require("mssql");
+const dbConfig = require("../dbConfig");
 
 const DAILY_API_KEY = process.env.DAILY_API_KEY;
 if (!DAILY_API_KEY) {
@@ -37,7 +39,45 @@ async function createMeetingToken(roomName, isOwner = false) {
   return response.data.token;
 }
 
+async function saveMeeting(roomName, roomUrl, hostId) {
+  const connection = await sql.connect(dbConfig);
+  try {
+    const result = await connection
+      .request()
+      .input("RoomName", sql.VarChar(100), roomName)
+      .input("RoomURL", sql.VarChar(500), roomUrl)
+      .input("HostID", sql.Int, hostId)
+      .query(`
+        INSERT INTO Meetings (RoomName, RoomURL, HostID)
+        VALUES (@RoomName, @RoomURL, @HostID);
+        SELECT SCOPE_IDENTITY() AS ID;
+      `);
+    return result.recordset[0].ID;
+  } finally {
+    await connection.close();
+  }
+}
+
+async function getMeetingById(meetingId) {
+  const conn = await sql.connect(dbConfig);
+  try {
+    const result = await conn
+      .request()
+      .input("ID", sql.Int, meetingId)
+      .query(`
+        SELECT ID, RoomName, RoomURL, HostID, CreatedAt
+        FROM Meetings
+        WHERE ID = @ID
+      `);
+    return result.recordset[0] || null;
+  } finally {
+    await conn.close();
+  }
+}
+
 module.exports = {
   createRoom,
   createMeetingToken,
+  getMeetingById,
+  saveMeeting,
 };

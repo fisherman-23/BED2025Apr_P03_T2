@@ -280,6 +280,13 @@ app.post(
   meetingsController.createMeeting
 );
 
+app.get(
+  "/meetings/:meetingId/data",
+  authenticateJWT,
+  meetingsController.getMeetingData
+);
+
+
 
 // Module 3: Transport Navigator
 app.get(

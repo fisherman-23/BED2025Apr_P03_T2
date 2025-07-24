@@ -4,8 +4,9 @@ const meetingsModel = require("../models/meetingsModel");
 async function createMeeting(req, res) {
   try {
     const { name, url } = await meetingsModel.createRoom();
-    const token = await meetingsModel.createMeetingToken(name, /* isOwner= */ true);
-    return res.status(201).json({ url, token });
+    const token = await meetingsModel.createMeetingToken(name, true);
+    const meetingId = await meetingsModel.saveMeeting(name, url, req.user.id);
+    return res.status(201).json({ meetingId, url, token });
   } catch (err) {
     console.error("Error creating Daily room or token:", err);
     return res
@@ -14,6 +15,20 @@ async function createMeeting(req, res) {
   }
 }
 
+async function getMeetingData(req, res) {
+  const meetingId = parseInt(req.params.meetingId, 10);
+  if (Number.isNaN(meetingId)) {
+    return res.status(400).json({ error: "Invalid meeting ID" });
+  }
+  const data = await meetingsModel.getMeetingById(meetingId);
+  if (!data) {
+    return res.status(404).json({ error: "Meeting not found" });
+  }
+  res.json({ hostId: data.HostID });
+}
+
+
 module.exports = {
   createMeeting,
+  getMeetingData,
 };

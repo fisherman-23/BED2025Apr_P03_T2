@@ -1,10 +1,21 @@
 const params = new URLSearchParams(window.location.search);
 const roomUrl = params.get("room");
+const meetingId = params.get("meetingId");
 const hostToken = params.get("token");
 if (!roomUrl) {
   alert("No meeting URL provided");
   throw new Error("Missing room URL");
 }
+
+const meRes = await fetch("/me", { credentials: "include" });
+const { id: currentUserId } = await meRes.json();
+
+
+const dataRes = await fetch(`/meetings/${meetingId}/data`, {
+  credentials: "include",
+});
+const { hostId } = await dataRes.json();
+
 
 
 const callFrame = window.DailyIframe.createFrame({
@@ -30,7 +41,7 @@ function renderParticipants(participants) {
     const li = document.createElement("li");
     li.className = "flex justify-between items-center";
     li.textContent = p.user_name || p.session_id;
-    if (p.owner && !p.local) {
+    if (currentUserId === hostId && !p.local) {
       const btn = document.createElement("button");
       btn.textContent = "Kick";
       btn.className = "ml-2 px-2 py-1 text-sm bg-red-500 text-white rounded";
