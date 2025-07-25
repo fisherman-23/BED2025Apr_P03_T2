@@ -13,7 +13,16 @@ async function createRoom(name) {
     Authorization: `Bearer ${DAILY_API_KEY}`,
     "Content-Type": "application/json",
   };
-  const payload = name ? { name } : {};
+
+  const newTime = Math.floor(Date.now() / 1000) + 3600;
+    const payload = {
+    properties: {
+      exp: newTime,
+    },
+  };
+  if (name) {
+    payload.name = name;
+  }
 
   const response = await axios.post(endpoint, payload, { headers });
   return {
