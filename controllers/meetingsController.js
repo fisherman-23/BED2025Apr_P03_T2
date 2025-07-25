@@ -27,8 +27,21 @@ async function getMeetingData(req, res) {
   res.json({ hostId: data.HostID });
 }
 
+async function joinByName(req, res) {
+  const roomName = (req.query.name || "").trim();
+  if (!roomName) {
+    return res.status(400).json({ error: "Room name is required" });
+  }
+  const url = await meetingsModel.getMeetingByName(roomName);
+  if (!url) {
+    return res.status(404).json({ error: "Meeting not found" });
+  }
+  res.json({ url });
+}
+
 
 module.exports = {
   createMeeting,
   getMeetingData,
+  joinByName,
 };

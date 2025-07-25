@@ -126,6 +126,19 @@
 
     </div>
   </div>
+
+  <div id="meetingPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center pointer-events-none opacity-0 transition-opacity">
+    <div class="bg-white p-6 rounded-lg w-80">
+      <h3 class="text-lg font-semibold mb-4">Enter Room Name</h3>
+      <input id="roomName" type="text" 
+            class="w-full border rounded p-2 mb-4" 
+            placeholder="Meeting room name" />
+      <div class="flex justify-end gap-2">
+        <button id="cancelJoinBtn" class="px-4 py-2 rounded bg-gray-200">Cancel</button>
+        <button id="confirmJoinBtn" class="px-4 py-2 rounded bg-blue-500 text-white">Join</button>
+      </div>
+    </div>
+  </div>
   
 
     

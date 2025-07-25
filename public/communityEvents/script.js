@@ -364,3 +364,51 @@ createMeetingBtn.addEventListener('click', async () => {
     toastError('Unable to create meeting');
   }
 });
+
+
+const joinBtn = document.querySelector('.join-meeting-button');
+const modal = document.getElementById('meetingPopup'); 
+const roomNameInput = document.getElementById('roomName');
+const cancelJoin = document.getElementById('cancelJoinBtn');
+const confirmJoin = document.getElementById('confirmJoinBtn');
+
+function openJoinModal() {
+  modal.classList.remove('pointer-events-none','opacity-0');
+  modal.classList.add('opacity-100');
+}
+function closeJoinModal() {
+  modal.classList.add('pointer-events-none','opacity-0');
+  modal.classList.remove('opacity-100');
+}
+
+joinBtn.addEventListener('click', openJoinModal);
+cancelJoin.addEventListener('click', closeJoinModal);
+
+confirmJoin.addEventListener('click', async () => {
+  const name = roomNameInput.value.trim();
+  if (!name) {
+    toastError('Please enter a room name');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/meetings/join?name=${encodeURIComponent(name)}`, {
+      credentials: 'include'
+    });
+    if (res.status === 404) {
+      toastError('Meeting not found');
+    } else if (!res.ok) {
+      throw new Error('Lookup failed');
+    } else {
+      const { url } = await res.json();
+      window.location.href =
+      `/meetings.html?meetingId=${encodeURIComponent(name)}` +
+      `&room=${encodeURIComponent(url)}`;
+      closeJoinModal();
+      toastSuccess('Joining meeting…');
+    }
+  } catch (err) {
+    console.error(err);
+    toastError('Unable to join meeting');
+  }
+});

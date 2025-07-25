@@ -84,9 +84,28 @@ async function getMeetingById(meetingId) {
   }
 }
 
+
+async function getMeetingByName(roomName) {
+  const connection = await sql.connect(dbConfig);
+  try {
+    const result = await connection.request()
+      .input("RoomName", sql.VarChar(100), roomName)
+      .query(`
+        SELECT RoomURL
+        FROM Meetings
+        WHERE RoomName = @RoomName
+      `);
+    return result.recordset[0]?.RoomURL || null;
+  } finally {
+    await connection.close();
+  }
+}
+
 module.exports = {
   createRoom,
   createMeetingToken,
   getMeetingById,
   saveMeeting,
+  getMeetingByName,
 };
+

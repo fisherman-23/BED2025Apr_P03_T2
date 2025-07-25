@@ -31,7 +31,11 @@ container.innerHTML = "";
 container.appendChild(callFrame.iframe());
 
 // Join the call (with hostToken if any)
-callFrame.join({ url: roomUrl, token: hostToken }).catch(console.error);
+if (hostToken) {
+  callFrame.join({ url: roomUrl, token: hostToken }).catch(console.error);
+} else {
+  callFrame.join({ url: roomUrl }).catch(console.error);
+}
 
 // Participant list rendering
 function renderParticipants(participants) {

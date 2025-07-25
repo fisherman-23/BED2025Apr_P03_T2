@@ -286,6 +286,12 @@ app.get(
   meetingsController.getMeetingData
 );
 
+app.get(
+  "/meetings/join",
+  authenticateJWT,
+  meetingsController.joinByName
+);
+
 
 
 // Module 3: Transport Navigator
