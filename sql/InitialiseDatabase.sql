@@ -436,7 +436,15 @@ CREATE TABLE Comments (
 );
 
 
+CREATE TABLE Meetings (
+    ID INT PRIMARY KEY IDENTITY(1,1),
+    RoomName VARCHAR(100) NOT NULL UNIQUE,
+    RoomURL VARCHAR(500) NOT NULL,
+    HostID INT NOT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
 
+    FOREIGN KEY (HostID) REFERENCES Users(ID)
+);
 
 
 -- Module 3: Transport Navigator

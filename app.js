@@ -11,8 +11,10 @@ const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
 const chatController = require("./controllers/chatController.js");
+
 const eventsController = require("./controllers/eventsController.js");
 const announcementsController = require("./controllers/announcementsController.js");
+const meetingsController = require("./controllers/meetingsController.js");
 
 const facilitiesController = require("./controllers/facilitiesController.js");
 const bookmarkController = require("./controllers/bookmarkController.js");
@@ -260,6 +262,26 @@ app.delete(
   validateDeleteComment,
   announcementsController.deleteComment
 );
+
+app.post(
+  "/meetings",
+  authenticateJWT,
+  meetingsController.createMeeting
+);
+
+app.get(
+  "/meetings/:meetingId/data",
+  authenticateJWT,
+  meetingsController.getMeetingData
+);
+
+app.get(
+  "/meetings/join",
+  authenticateJWT,
+  meetingsController.joinByName
+);
+
+
 
 // Module 3: Transport Navigator
 app.get(
