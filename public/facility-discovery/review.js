@@ -340,6 +340,7 @@ class ReviewManager {
             if (!res.ok) {
             throw new Error("Failed to report review");
             }
+            await this.loadReviews();
             alert("Review reported successfully.");
         } catch (error) {
             console.error("Error reporting review:", error);

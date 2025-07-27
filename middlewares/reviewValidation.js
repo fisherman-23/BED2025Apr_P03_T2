@@ -22,20 +22,9 @@ const ratingSchema = Joi.number().integer().min(1).max(5).required().messages({
     "any.required": "Rating is required",
 });
 
-const commentSchema = Joi.string().min(1).max(500).required().messages({
-    "string.base": "Comment must be a string",
-    "string.empty": "Comment cannot be empty",
-    "string.min": "Comment must be at least 1 character long",
-    "string.max": "Comment must be at most 500 characters long",
-    "any.required": "Comment is required",
-});
-
-const reasonSchema = Joi.string().min(1).max(200).required().messages({
-    "string.base": "Reason must be a string",
-    "string.empty": "Reason cannot be empty",
-    "string.min": "Reason must be at least 1 character long",
-    "string.max": "Reason must be at most 200 characters long",
-    "any.required": "Reason is required",
+const commentSchema = Joi.string().allow('', null).max(500).messages({
+        "string.base": "Comment must be a string",
+        "string.max": "Comment must be at most 500 characters long",
 });
 
 const reviewSchema = Joi.object({
@@ -47,11 +36,6 @@ const reviewSchema = Joi.object({
 const updateReviewSchema = Joi.object({
     rating: ratingSchema,
     comment: commentSchema
-});
-
-const reportSchema = Joi.object({
-    reviewId: reviewIdSchema,
-    reason: reasonSchema
 });
 
 function validateReviewIdParam(req, res, next) {
@@ -81,18 +65,8 @@ function validateUpdateReviewData(req, res, next) {
     next();
 }
 
-function validateReportData(req, res, next) {
-    const { error } = reportSchema.validate(req.body, { abortEarly: false });
-    if (error) {
-        const errorMessages = error.details.map((d) => d.message).join(", ");
-        return res.status(400).json({ error: errorMessages });
-    }
-    next();
-}
-
 module.exports = {
     validateReviewIdParam,
     validateReviewData,
     validateUpdateReviewData,
-    validateReportData
 };

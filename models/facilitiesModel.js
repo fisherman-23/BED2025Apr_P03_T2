@@ -31,7 +31,7 @@ async function handleLocationAccess(latitude, longitude) {
     }
 }
 
-async function getNearbyFacilities(latitude, longitude, radius = 5000) {
+async function getNearbyFacilities(latitude, longitude, radius = 2000) {
     let connection;
     try {
         connection = await sql.connect(dbConfig);
@@ -139,7 +139,7 @@ async function saveFacility(facilityData) {
         connection = await sql.connect(dbConfig);
         
         // Check if facility already exists by google_place_id to avoid duplicates
-        const checkQuery = `SELECT FacilityId FROM SampleFacilities WHERE google_place_id = @google_place_id`;
+        const checkQuery = `SELECT FacilityId FROM Facilities WHERE google_place_id = @google_place_id`;
         const checkRequest = connection.request();
         checkRequest.input("google_place_id", sql.VarChar, facilityData.google_place_id);
         const existingResult = await checkRequest.query(checkQuery);
@@ -151,7 +151,7 @@ async function saveFacility(facilityData) {
         
         // Insert new facility
         const insertQuery = `
-            INSERT INTO SampleFacilities (
+            INSERT INTO Facilities (
                 name, address, latitude, longitude, facilityType, 
                 phoneNo, hours, image_url, static_map_url, google_place_id
             ) 
