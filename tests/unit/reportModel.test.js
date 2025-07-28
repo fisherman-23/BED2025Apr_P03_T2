@@ -38,6 +38,30 @@ describe("reportModel.createReport", () => {
         expect(result).toBe(true);
     });
 
+    it("should return false when report creation fails", async () => {
+        const mockReportData = {
+            reviewId: 1,
+            userId: 1,
+            reason: "Inappropriate content"
+        };
+
+        const mockRequest = {
+            input: jest.fn().mockReturnThis(),
+            query: jest.fn().mockResolvedValue({ rowsAffected: [0] })
+        };
+
+        const mockConnection = {
+            request: jest.fn().mockReturnValue(mockRequest),
+            close: jest.fn().mockResolvedValue(undefined)
+        };
+
+        sql.connect.mockResolvedValue(mockConnection);
+
+        const result = await reportModel.createReport(mockReportData);
+
+        expect(result).toBe(false);
+    });
+
     it("should throw an error if the database connection fails", async () => {
         const mockError = new Error("Database connection failed");
         sql.connect.mockRejectedValue(mockError);

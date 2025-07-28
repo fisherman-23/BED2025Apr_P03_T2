@@ -234,6 +234,49 @@ async function initialize() {
     return;
   }
   await loadAnnouncements();
+  await checkIfUserIsGroupOwner();
+}
+
+async function checkIfUserIsGroupOwner() {
+  try {
+    const response = await fetch(`/groups/${groupId}/invite-token`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    
+    // If user can get the invite token, they are the owner
+    const isOwner = response.ok;
+    
+    // Show/hide share group buttons based on ownership
+    const shareGroupBtn = document.getElementById('shareGroupBtn');
+    const shareGroupBtnMobile = document.getElementById('shareGroupBtnMobile');
+    
+    if (shareGroupBtn) {
+      if (isOwner) {
+        shareGroupBtn.style.display = '';  // Reset to use CSS classes
+        shareGroupBtn.classList.remove('hidden');
+        shareGroupBtn.classList.add('md:flex');
+      } else {
+        shareGroupBtn.style.display = 'none';
+      }
+    }
+    if (shareGroupBtnMobile) {
+      if (isOwner) {
+        shareGroupBtnMobile.style.display = '';  // Reset to use CSS classes
+        shareGroupBtnMobile.classList.remove('hidden');
+        shareGroupBtnMobile.classList.add('flex', 'md:hidden');
+      } else {
+        shareGroupBtnMobile.style.display = 'none';
+      }
+    }
+  } catch (error) {
+    console.error('Error checking group ownership:', error);
+    // Hide buttons by default if there's an error
+    const shareGroupBtn = document.getElementById('shareGroupBtn');
+    const shareGroupBtnMobile = document.getElementById('shareGroupBtnMobile');
+    if (shareGroupBtn) shareGroupBtn.style.display = 'none';
+    if (shareGroupBtnMobile) shareGroupBtnMobile.style.display = 'none';
+  }
 }
 
 
@@ -398,106 +441,75 @@ const shareGroupBtn = document.getElementById('shareGroupBtn');
 const shareGroupBtnMobile = document.getElementById('shareGroupBtnMobile');
 const shareGroupModal = document.getElementById('shareGroupModal');
 const closeShareGroupModal = document.getElementById('closeShareGroupModal');
-const inviteTokenInput = document.getElementById('inviteTokenInput');
-const inviteActionBtn = document.getElementById('inviteActionBtn');
+const inviteTokenDisplay = document.getElementById('inviteTokenDisplay');
+const copyTokenBtn = document.getElementById('copyTokenBtn');
 const tokenMessage = document.getElementById('tokenMessage');
 
-let foundGroup = null; // will hold the found group data after search
-
-function openShareGroupModal() {
+async function openShareGroupModal() {
   shareGroupModal.classList.remove('opacity-0', 'pointer-events-none');
   shareGroupModal.classList.add('opacity-100');
-  resetModal();
+  
+  // Reset the display
+  inviteTokenDisplay.value = 'Loading...';
+  tokenMessage.textContent = '';
+  
+  try {
+    // Get the current group ID from URL params
+    const params = new URLSearchParams(window.location.search);
+    const groupId = params.get('groupId');
+    
+    if (!groupId) {
+      tokenMessage.textContent = 'No group selected';
+      inviteTokenDisplay.value = '';
+      return;
+    }
+    
+    const response = await fetch(`/groups/${groupId}/invite-token`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      inviteTokenDisplay.value = data.inviteToken;
+    } else {
+      const errorData = await response.json();
+      tokenMessage.textContent = errorData.error || 'Failed to load invite token';
+      inviteTokenDisplay.value = '';
+    }
+  } catch (error) {
+    console.error('Error fetching invite token:', error);
+    tokenMessage.textContent = 'Error loading invite token';
+    inviteTokenDisplay.value = '';
+  }
 }
 
 function closeShareGroup() {
   shareGroupModal.classList.add('opacity-0', 'pointer-events-none');
   shareGroupModal.classList.remove('opacity-100');
-  resetModal();
+  inviteTokenDisplay.value = '';
+  tokenMessage.textContent = '';
 }
 
-function resetModal() {
-  inviteTokenInput.value = '';
-  tokenMessage.textContent = '';
-  inviteActionBtn.textContent = 'Search';
-  inviteActionBtn.disabled = true;
-  foundGroup = null;
+function copyInviteToken() {
+  const token = inviteTokenDisplay.value;
+  if (token && token !== 'Loading...') {
+    navigator.clipboard.writeText(token).then(() => {
+      tokenMessage.textContent = 'Token copied to clipboard!';
+      setTimeout(() => {
+        tokenMessage.textContent = '';
+      }, 3000);
+    }).catch(err => {
+      console.error('Failed to copy token:', err);
+      tokenMessage.textContent = 'Failed to copy token';
+    });
+  }
 }
 
 shareGroupBtn?.addEventListener('click', openShareGroupModal);
 shareGroupBtnMobile?.addEventListener('click', openShareGroupModal);
 closeShareGroupModal.addEventListener('click', closeShareGroup);
-
-// Enable button only if input has some value
-inviteTokenInput.addEventListener('input', () => {
-  inviteActionBtn.disabled = inviteTokenInput.value.trim().length === 0;
-  tokenMessage.textContent = '';
-  if (foundGroup) {
-    // reset if token changed after finding group
-    inviteActionBtn.textContent = 'Search';
-    foundGroup = null;
-  }
-});
-
-inviteActionBtn.addEventListener('click', async () => {
-  const token = inviteTokenInput.value.trim();
-  if (!token) return;
-
-  if (!foundGroup) {
-    // Search group by invite token
-    inviteActionBtn.disabled = true;
-    tokenMessage.textContent = '';
-    try {
-      // Call backend API - adjust URL & method as needed
-      const res = await fetch(`/groups/invite/${encodeURIComponent(token)}`, {
-        method: 'GET',
-        credentials: 'include'
-      });
-      if (!res.ok) {
-        if (res.status === 404) {
-          tokenMessage.textContent = 'Group not found';
-        } else {
-          tokenMessage.textContent = 'Error searching group';
-        }
-        inviteActionBtn.disabled = false;
-        return;
-      }
-      foundGroup = await res.json();
-      tokenMessage.textContent = `Group found: ${foundGroup.Name || foundGroup.GroupName || 'Unnamed'}`;
-      inviteActionBtn.textContent = 'Join';
-      inviteActionBtn.disabled = false;
-    } catch (err) {
-      console.error(err);
-      tokenMessage.textContent = 'Error searching group';
-      inviteActionBtn.disabled = false;
-    }
-  } else {
-    // Join group
-    inviteActionBtn.disabled = true;
-    tokenMessage.textContent = '';
-    try {
-      const res = await fetch(`/groups/${foundGroup.ID}/join`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        tokenMessage.textContent = err.error || 'Failed to join group';
-        inviteActionBtn.disabled = false;
-        return;
-      }
-      tokenMessage.textContent = '';
-      closeShareGroup();
-      toastSuccess(`Joined group: ${foundGroup.Name || foundGroup.GroupName}`);
-      // Optionally reload or update group list here
-    } catch (err) {
-      console.error(err);
-      tokenMessage.textContent = 'Error joining group';
-      inviteActionBtn.disabled = false;
-    }
-  }
-});
+copyTokenBtn?.addEventListener('click', copyInviteToken);
 
 // Edit Announcement Modal
 const editModal = document.getElementById('editAnnouncementModal');

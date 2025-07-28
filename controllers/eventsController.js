@@ -73,11 +73,67 @@ async function leaveGroup(req, res) {
   }
 }
 
+async function getGroupInviteToken(req, res) {
+  try {
+    const userId = req.user.id;
+    const groupId = Number(req.params.groupId);
+    
+    const groupToken = await eventsModel.getGroupInviteToken(userId, groupId);
+    if (groupToken) {
+      res.json({ inviteToken: groupToken });
+    } else {
+      res.status(404).json({ error: "Group not found or you're not the owner" });
+    }
+  } catch (error) {
+    console.error("Controller error in getGroupInviteToken:", error);
+    res.status(500).json({ error: "Error retrieving group invite token" });
+  }
+}
+
+async function findGroupByToken(req, res) {
+  try {
+    const token = req.params.token;
+    const group = await eventsModel.findGroupByInviteToken(token);
+    if (group) {
+      res.json(group);
+    } else {
+      res.status(404).json({ error: "Group not found" });
+    }
+  } catch (error) {
+    console.error("Controller error in findGroupByToken:", error);
+    res.status(500).json({ error: "Error finding group" });
+  }
+}
+
+async function joinGroupByToken(req, res) {
+  try {
+    const userId = req.user.id;
+    const token = req.body.inviteToken;
+    
+    if (!token) {
+      return res.status(400).json({ error: "Invite token is required" });
+    }
+    
+    const result = await eventsModel.joinGroupByInviteToken(userId, token);
+    if (result.success) {
+      res.status(200).json({ message: result.message, groupName: result.groupName });
+    } else {
+      res.status(400).json({ error: result.message });
+    }
+  } catch (error) {
+    console.error("Controller error in joinGroupByToken:", error);
+    res.status(500).json({ error: "Error joining group" });
+  }
+}
+
 
 module.exports = {
   getJoinedGroups,
   getAvailableGroups,
   createGroup,
   joinGroup,
-  leaveGroup
+  leaveGroup,
+  getGroupInviteToken,
+  findGroupByToken,
+  joinGroupByToken
 };

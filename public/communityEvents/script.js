@@ -413,3 +413,84 @@ confirmJoin.addEventListener('click', async () => {
     toastError('Unable to join meeting');
   }
 });
+
+// Join Group Modal functionality
+const joinGroupButton = document.querySelector('.join-group-button');
+const joinGroupModal = document.getElementById('joinGroupModal');
+const closeJoinGroupModal = document.getElementById('closeJoinGroupModal');
+const joinTokenInput = document.getElementById('joinTokenInput');
+const joinTokenMessage = document.getElementById('joinTokenMessage');
+const joinGroupByTokenBtn = document.getElementById('joinGroupByTokenBtn');
+
+function openJoinGroupModal() {
+  joinGroupModal.classList.remove('opacity-0', 'pointer-events-none');
+  joinGroupModal.classList.add('opacity-100');
+  resetJoinGroupModal();
+}
+
+function closeJoinGroupModalFunc() {
+  joinGroupModal.classList.add('opacity-0', 'pointer-events-none');
+  joinGroupModal.classList.remove('opacity-100');
+  resetJoinGroupModal();
+}
+
+function resetJoinGroupModal() {
+  joinTokenInput.value = '';
+  joinTokenMessage.textContent = '';
+  joinGroupByTokenBtn.disabled = true;
+}
+
+// Enable/disable join button based on input
+joinTokenInput.addEventListener('input', () => {
+  const token = joinTokenInput.value.trim();
+  joinGroupByTokenBtn.disabled = token.length === 0;
+  joinTokenMessage.textContent = '';
+});
+
+// Join group by token
+joinGroupByTokenBtn.addEventListener('click', async () => {
+  const token = joinTokenInput.value.trim();
+  if (!token) {
+    joinTokenMessage.textContent = 'Please enter an invite token';
+    return;
+  }
+
+  try {
+    joinGroupByTokenBtn.disabled = true;
+    joinTokenMessage.textContent = 'Joining group...';
+    
+    const response = await fetch('/groups/join-by-token', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ inviteToken: token })
+    });
+
+    const data = await response.json();
+    
+    if (response.ok) {
+      joinTokenMessage.textContent = `Successfully joined ${data.groupName}!`;
+      joinTokenMessage.className = 'text-center text-green-500 min-h-[1.5rem] mt-2';
+      
+      // Refresh the groups list after a short delay
+      setTimeout(() => {
+        closeJoinGroupModalFunc();
+        window.location.reload(); // Refresh to show the new group
+      }, 1500);
+    } else {
+      joinTokenMessage.textContent = data.error || 'Failed to join group';
+      joinTokenMessage.className = 'text-center text-red-500 min-h-[1.5rem] mt-2';
+      joinGroupByTokenBtn.disabled = false;
+    }
+  } catch (error) {
+    console.error('Error joining group:', error);
+    joinTokenMessage.textContent = 'Error joining group';
+    joinTokenMessage.className = 'text-center text-red-500 min-h-[1.5rem] mt-2';
+    joinGroupByTokenBtn.disabled = false;
+  }
+});
+
+joinGroupButton?.addEventListener('click', openJoinGroupModal);
+closeJoinGroupModal?.addEventListener('click', closeJoinGroupModalFunc);

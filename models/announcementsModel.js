@@ -41,11 +41,11 @@ async function createAnnouncement({ GroupID, Title, Content, ImageURL, CreatedBy
       SELECT SCOPE_IDENTITY() AS ID;
     `;
     const request = connection.request();
-    request.input("GroupID",  sql.Int,         GroupID);
-    request.input("Title",    sql.VarChar(100), Title);
-    request.input("Content",  sql.VarChar(2000), Content);
+    request.input("GroupID", sql.Int, GroupID);
+    request.input("Title", sql.VarChar(100), Title);
+    request.input("Content", sql.VarChar(2000), Content);
     request.input("ImageURL", sql.VarChar(1000), ImageURL || null);
-    request.input("CreatedBy",sql.Int,         CreatedBy);
+    request.input("CreatedBy", sql.Int, CreatedBy);
     const result = await request.query(query);
     const newId = result.recordset[0].ID;
     connection.close();

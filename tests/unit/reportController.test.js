@@ -33,6 +33,24 @@ describe("reportController.createReport", () => {
         expect(res.json).toHaveBeenCalledWith({ message: "Review reported successfully" });
     });
 
+    it("should return 500 when report creation fails", async () => {
+        reportModel.createReport.mockResolvedValue(false);
+
+        const req = {
+            body: { reviewId: 1, reason: "Test reason" },
+            user: { id: 1 }
+        };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+
+        await reportController.createReport(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith({ error: "Failed to report review" });
+    });
+
     it("should handle errors and return a 500 status with error message", async () => {
         reportModel.createReport.mockRejectedValue(new Error("Database error"));
 

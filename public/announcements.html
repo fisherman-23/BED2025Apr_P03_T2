@@ -52,7 +52,8 @@
   </button>
   
   <button id="shareGroupBtn"
-          class="fixed top-40 right-10 hidden md:flex items-center gap-2 bg-[#61c9e9] py-3 px-4 rounded-xl hover:bg-[#4bb5d4] shadow-md">
+          class="fixed top-40 right-10 hidden md:flex items-center gap-2 bg-[#61c9e9] py-3 px-4 rounded-xl hover:bg-[#4bb5d4] shadow-md"
+          style="display: none;">
     <img src="communityEvents/assets/share.png" class="w-4 h-4" alt="Share">
     <span class="text-sm font-medium">Share Group</span>
   </button>
@@ -67,7 +68,8 @@
   </button>
   
   <button id="shareGroupBtnMobile"
-          class="relative flex md:hidden items-center gap-2 bg-[#61c9e9] py-3 px-8 rounded-xl hover:bg-[#4bb5d4] shadow-md mx-auto mb-4">
+          class="relative flex md:hidden items-center gap-2 bg-[#61c9e9] py-3 px-8 rounded-xl hover:bg-[#4bb5d4] shadow-md mx-auto mb-4"
+          style="display: none;">
     <img src="communityEvents/assets/share.png" class="w-4 h-4" alt="Share">
     <span class="text-sm font-medium">Share Group</span>
   </button>
@@ -147,18 +149,20 @@
      class="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center opacity-0 pointer-events-none transition-opacity duration-300 z-50">
   <div class="bg-white rounded-2xl w-[90vw] md:w-[40vw] p-8 flex flex-col gap-4 relative">
     <button id="closeShareGroupModal" class="absolute top-4 right-4 text-gray-500 hover:text-black text-xl font-bold">&times;</button>
-    <h3 class="text-lg font-semibold mb-4">Join Group by Invite Token</h3>
+    <h3 class="text-lg font-semibold mb-4">Share Group Invite Token</h3>
     
-    <input id="inviteTokenInput" type="text" placeholder="Enter invite token"
-           class="border border-gray-300 rounded-lg p-3 w-full text-center text-lg" />
+    <p class="text-center text-gray-600 mb-4">Share this token with others so they can join your group:</p>
     
-    <p id="tokenMessage" class="text-center text-red-500 min-h-[1.5rem] mt-2"></p>
+    <div class="flex items-center gap-2">
+      <input id="inviteTokenDisplay" type="text" readonly
+             class="border border-gray-300 rounded-lg p-3 w-full text-center text-lg bg-gray-50" />
+      <button id="copyTokenBtn"
+              class="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 whitespace-nowrap">
+        Copy
+      </button>
+    </div>
     
-    <button id="inviteActionBtn"
-            class="mt-4 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
-            disabled>
-      Search
-    </button>
+    <p id="tokenMessage" class="text-center text-green-500 min-h-[1.5rem] mt-2"></p>
   </div>
 </div>
 
