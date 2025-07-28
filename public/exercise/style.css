@@ -185,19 +185,34 @@ h1{
 .goalCards{
   display: flex;
   flex-direction: column;
+  max-height: 21rem;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  margin-top: 2rem;
+  gap: 1.8rem;
+}
+
+.goalCards::-webkit-scrollbar {
+  width: 0.2rem;
+}
+
+.goalCards::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.5);
+  border-radius: 1rem;
 }
 
 .goalcard {
-  margin-top: 2rem;
+  /* margin-top: 2rem; */
   display: flex;
   background-color: #F6F5F8;
   border-radius: 1rem;
   padding: 1.4rem;
   box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-  margin-bottom: 1rem;
+  /* margin-bottom: 1rem; */
   gap: 2rem;
   align-items: center;
   position: relative;
+  height: 6rem;
 }
 
 .goalcard.completed {
@@ -238,10 +253,11 @@ h1{
 }
 
 
-.progrssCards {
+.progressCards {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  margin-top: 2rem;
+  gap: 1.8rem;
 }
 
 .progressCard {
@@ -251,7 +267,8 @@ h1{
   border-radius: 1rem;
   padding: 1.4rem;
   box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-  margin-top: 2rem;
+  /* margin-top: 2rem; */
+  /* margin-bottom: 1rem; */
   gap: 2rem;
   height: 6rem;
 }
@@ -290,7 +307,8 @@ h1{
   border-radius: 1rem;
   padding: 1.4rem;
   box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-  margin-top: 2rem;
+  /* margin-top: 2rem; */
+  /* margin-bottom: 1rem; */
   gap: 2rem;
   height: 6rem;
 }

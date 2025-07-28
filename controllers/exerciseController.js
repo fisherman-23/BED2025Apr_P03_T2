@@ -81,11 +81,39 @@ async function deleteExercisePreference(req, res) {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }
+
+// Get user statistic
+async function getUserStats(req,res) {
+    const userID = req.user.id;
+    try{
+        const stat = await exerciseModel.getUserStats(userID);
+        res.status(200).json(stat);
+    }catch(error){
+        console.error("Error in getting user statistics", error)
+        res.status(500).json({ error: 'Internal Server Error' })
+    }
+}
+
+// Log user exercise completion
+async function logExerciseCompletion(req, res) {
+    const userID = req.user.id;
+    const exerciseID = req.params.exerciseID
+    try{
+        await exerciseModel.logExerciseCompletion(userID, exerciseID)
+        res.status(201).json({ message: "Exercise logged" });
+    }catch(error){
+        console.error("Error in logging user completed exercises", error)
+        res.status(500).json({ error: 'Internal Server Error' })
+    }
+}
+
 module.exports = {
     getExercises,
     getSteps,
     personalisation,
     getExercisePreferences,
     updateExercisePreferences,
-    deleteExercisePreference
+    deleteExercisePreference,
+    getUserStats,
+    logExerciseCompletion
 };

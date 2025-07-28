@@ -411,7 +411,7 @@ app.post(
 // Module 4: Senior fitness coach
 
 app.get("/exercises/goals", authenticateJWT, goalController.getGoals);
-
+app.get("/exercise/stats", authenticateJWT, exerciseController.getUserStats)
 app.get(
   "/exercises/incompleted-goals",
   authenticateJWT,
@@ -472,6 +472,18 @@ app.post(
   authenticateJWT,
   weatherController.getWeather
 );
+
+app.post(
+  '/exercise/logExercise/:exerciseID',
+  authenticateJWT,
+  exerciseController.logExerciseCompletion
+)
+
+app.post(
+  '/exercise/logGoals',
+  authenticateJWT,
+  goalController.logGoalCompletion
+)
 
 // Module 1: Medication & Appointment Manager
 // Medication routes

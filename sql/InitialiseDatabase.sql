@@ -639,4 +639,19 @@ CREATE TABLE goals (
     FOREIGN KEY (userId) REFERENCES Users(ID)
 );
 
+CREATE TABLE exerciseLogs (
+    logId INT PRIMARY KEY IDENTITY(1,1),
+    userID INT NOT NULL,
+    exerciseID INT NOT NULL,
+    completedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+	FOREIGN KEY (userId) REFERENCES Users(ID),
+	FOREIGN KEY (exerciseId) REFERENCES exercises(exerciseId) 
+);
 
+CREATE TABLE goalLogs (
+    logId INT PRIMARY KEY IDENTITY(1,1),
+    userID INT NOT NULL,
+    goalID INT NOT NULL,
+    completedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+	FOREIGN KEY (userId) REFERENCES Users(ID),
+);

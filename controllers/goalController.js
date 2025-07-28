@@ -79,11 +79,27 @@ async function resetGoal(req, res) {
     }
 }
 
+// log goal completion
+async function logGoalCompletion(req, res){
+    const userId = parseInt(req.user.id);
+    const goalIds = req.body.goalIds;
+    try{
+        for(const goalID of goalIds){
+            await goalModel.logGoalCompletion(userId, goalID)
+        }
+        res.status(201).json({ message: "Goal logged" })
+    }catch(error){
+        console.error('Error logging goal', error);
+        res.status(500).json({ error: 'Failed to log goal' });
+    }
+}
+
 module.exports = {
     createGoal,
     getGoals,
     deleteGoal,
     updateGoal,
     getIncompletedGoals,
-    resetGoal
+    resetGoal,
+    logGoalCompletion
 };

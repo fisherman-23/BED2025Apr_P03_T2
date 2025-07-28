@@ -27,7 +27,7 @@ if (list) {
   console.error("Exercise list not found in cache.");
 }
 
-// External API
+// // External API
 navigator.geolocation.getCurrentPosition(
   async (position) => {
     const lat = position.coords.latitude;
@@ -186,6 +186,18 @@ document.getElementById("goal-update").addEventListener("click", async () => {
     const result = await res.json();
     console.log("Goals updated:", result);
     alert("Goals updated successfully!");
+    const logGoals = await fetch("/exercise/logGoals",{
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      credentials: "include",
+      body: JSON.stringify({ goalIds: checkedGoalIds })
+    })
+    if (!logGoals.ok) {
+      throw new Error(`Server error: ${logGoals.status} ${logGoals.statusText}`);
+    }
+    console.log("Exercise logged successfully.");
     goalPopup.style.opacity = 0;
     goalPopup.style.visibility = "hidden";
     window.location.href = "exercise.html";
@@ -198,7 +210,24 @@ document.getElementById("goal-update").addEventListener("click", async () => {
 // Show goal popup
 const finish = document.getElementById("finish");
 const goalPopup = document.getElementById("goal-popup");
-finish.addEventListener("click", () => {
+finish.addEventListener("click", async () => {
+  console.log("logging exercises")
+  try {
+    const res = await fetch(`/exercise/logExercise/${id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      }, 
+      credentials: "include",
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to log exercise: ${res.status}`);
+    }
+    console.log("Exercise logged successfully.");
+  } catch (err) {
+    console.error("Error logging exercise:", err);
+    alert("Failed to log your exercise. Try again later.");
+  }
   goalPopup.style.opacity = 1;
   goalPopup.style.visibility = "visible";
 });

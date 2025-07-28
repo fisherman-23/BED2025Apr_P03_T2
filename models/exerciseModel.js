@@ -159,11 +159,75 @@ async function personalisation(categoryIds, userId) {
   }
 }
 
+async function getUserStats(userId){
+  let connection;
+  try{
+    connection = await sql.connect(dbConfig);
+    const query = `
+    SELECT u.ID AS userID, ISNULL(e.exercise_completed, 0) AS exercise_completed, ISNULL(g.goal_completed, 0) AS goal_completed FROM Users u
+    LEFT JOIN (
+      SELECT userID, COUNT(*) AS exercise_completed
+      FROM exerciseLogs
+      GROUP BY userID
+    ) e ON u.ID = e.userID
+    LEFT JOIN (
+      SELECT userID, COUNT(*) AS goal_completed
+      FROM goalLogs
+      GROUP BY userID
+    ) g ON u.ID = g.userID
+    WHERE u.ID = @userId;`
+    const request = connection.request();
+    request.input("userId", userId);
+    result = await request.query(query);
+    return result.recordset[0];
+  }catch(error){
+      console.error('Error getting user statistics', error);
+      throw error;
+  }finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error("Error closing connection:", err);
+      }
+    }
+  }
+}
+
+async function logExerciseCompletion(userID, exerciseID) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const query = `
+      INSERT INTO exerciseLogs (userID, exerciseID, completedAt)
+      VALUES (@userID, @exerciseID, CURRENT_TIMESTAMP);
+    `;
+    const request = connection.request();
+    request.input("userID", userID);
+    request.input("exerciseID", exerciseID);
+    await request.query(query);
+    return true;
+  } catch (error) {
+    console.error("Error logging exercise completion:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error("Error closing connection:", err);
+      }
+    }
+  }
+}
+
 module.exports = {
     getExercises,
     getSteps,
     personalisation,
     getExercisePreferences,
     updateExercisePreferences,
-    deleteExercisePreference
+    deleteExercisePreference,
+    getUserStats,
+    logExerciseCompletion
 };

@@ -176,6 +176,32 @@ async function resetGoal(userId) {
   }
 }}
 
+async function logGoalCompletion(userID, goalID) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const query = `
+      INSERT INTO goalLogs (userID, goalID, completedAt)
+      VALUES (@userID, @goalID, CURRENT_TIMESTAMP);
+    `;
+    const request = connection.request();
+    request.input("userID", userID);
+    request.input("goalID", goalID);
+    await request.query(query);
+    return true;
+  } catch (error) {
+    console.error("Error logging goal completion:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error("Error closing connection:", err);
+      }
+    }
+  }
+}
  
 module.exports = {
   createGoal,
@@ -183,5 +209,6 @@ module.exports = {
   deleteGoal,
   updateGoal,
   getIncompletedGoals,
-  resetGoal
+  resetGoal,
+  logGoalCompletion
 };
