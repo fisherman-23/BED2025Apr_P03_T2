@@ -492,6 +492,5 @@ joinGroupByTokenBtn.addEventListener('click', async () => {
   }
 });
 
-// Event listeners
 joinGroupButton?.addEventListener('click', openJoinGroupModal);
 closeJoinGroupModal?.addEventListener('click', closeJoinGroupModalFunc);

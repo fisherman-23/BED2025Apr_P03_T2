@@ -231,109 +231,195 @@ app.post("/match/skip/:targetUserId", authenticateJWT, (req, res) => {
 
 // Module 2: Community Events
 
-app.get("/groups/joined", authenticateJWT, eventsController.getJoinedGroups);
+app.get(
+  "/groups/joined",
+  authenticateJWT,
+  (req, res) => {
+    // #swagger.description = 'List all groups the authenticated user has joined'
+    eventsController.getJoinedGroups(req, res);
+  }
+);
 
 app.get(
   "/groups/available",
   authenticateJWT,
-  eventsController.getAvailableGroups
+  (req, res) => {
+    // #swagger.description = 'List all public/available groups the user can join'
+    eventsController.getAvailableGroups(req, res);
+  }
 );
 
 app.post(
   "/groups",
   authenticateJWT,
   validateCreateGroup,
-  eventsController.createGroup
+  (req, res) => {
+    // #swagger.description = 'Create a new group'
+    // #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/components/schemas/CreateGroup' } }
+    eventsController.createGroup(req, res);
+  }
 );
 
 app.post(
   "/groups/join",
   authenticateJWT,
   validateGroupId,
-  eventsController.joinGroup
+  (req, res) => {
+    // #swagger.description = 'Join an existing group by its ID'
+    // #swagger.parameters['body'] = { in: 'body', schema: { type: 'object', properties: { groupId: { type: 'integer' } } } }
+    eventsController.joinGroup(req, res);
+  }
 );
 
 app.delete(
   "/groups/leave",
   authenticateJWT,
   validateGroupId,
-  eventsController.leaveGroup
+  (req, res) => {
+    // #swagger.description = 'Leave a group'
+    // #swagger.parameters['body'] = { in: 'body', schema: { type: 'object', properties: { groupId: { type: 'integer' } } } }
+    eventsController.leaveGroup(req, res);
+  }
 );
 
-// New invite token routes
 app.get(
   "/groups/:groupId/invite-token",
   authenticateJWT,
-  eventsController.getGroupInviteToken
+  (req, res) => {
+    // #swagger.description = 'Retrieve the invite token for a specific group'
+    // #swagger.parameters['groupId'] = { in: 'path', required: true, type: 'integer', description: 'ID of the group' }
+    eventsController.getGroupInviteToken(req, res);
+  }
 );
 
 app.get(
   "/groups/token/:token",
   authenticateJWT,
-  eventsController.findGroupByToken
+  (req, res) => {
+    // #swagger.description = 'Find a group by its invite token'
+    // #swagger.parameters['token'] = { in: 'path', required: true, type: 'string', description: 'Invite token' }
+    eventsController.findGroupByToken(req, res);
+  }
 );
 
 app.post(
   "/groups/join-by-token",
   authenticateJWT,
-  eventsController.joinGroupByToken
+  (req, res) => {
+    // #swagger.description = 'Join a group using its invite token'
+    // #swagger.parameters['body'] = { in: 'body', schema: { type: 'object', properties: { token: { type: 'string' } } } }
+    eventsController.joinGroupByToken(req, res);
+  }
 );
 
 app.get(
   "/announcements",
   authenticateJWT,
-  announcementsController.getAnnouncements
+  (req, res) => {
+    // #swagger.description = 'List announcements for a specified group'
+    // #swagger.parameters['groupId'] = { in: 'query', required: true, type: 'integer', description: 'ID of the group' }
+    announcementsController.getAnnouncements(req, res);
+  }
 );
 
 app.post(
   "/announcements",
   authenticateJWT,
   validateCreateAnnouncement,
-  announcementsController.createAnnouncement
+  (req, res) => {
+    // #swagger.description = 'Create a new announcement in a group'
+    // #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/components/schemas/CreateAnnouncement' } }
+    announcementsController.createAnnouncement(req, res);
+  }
 );
 
 app.get(
   "/announcements/:id/comments",
   authenticateJWT,
-  announcementsController.getComments
+  (req, res) => {
+    // #swagger.description = 'Retrieve all comments for a given announcement'
+    // #swagger.parameters['id'] = { in: 'path', required: true, type: 'integer', description: 'Announcement ID' }
+    announcementsController.getComments(req, res);
+  }
 );
 
 app.post(
   "/announcements/:id/comments",
   authenticateJWT,
   validatePostComment,
-  announcementsController.postComment
+  (req, res) => {
+    // #swagger.description = 'Post a comment on an announcement'
+    // #swagger.parameters['id'] = { in: 'path', required: true, type: 'integer', description: 'Announcement ID' }
+    // #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/components/schemas/PostComment' } }
+    announcementsController.postComment(req, res);
+  }
 );
 
 app.delete(
   "/announcements/:annId/comments/:id",
   authenticateJWT,
   validateDeleteComment,
-  announcementsController.deleteComment
+  (req, res) => {
+    // #swagger.description = 'Delete a specific comment on an announcement'
+    // #swagger.parameters['annId'] = { in: 'path', required: true, type: 'integer', description: 'Announcement ID' }
+    // #swagger.parameters['id'] = { in: 'path', required: true, type: 'integer', description: 'Comment ID' }
+    announcementsController.deleteComment(req, res);
+  }
 );
 
-app.post("/meetings", authenticateJWT, meetingsController.createMeeting);
+app.post(
+  "/meetings",
+  authenticateJWT,
+  (req, res) => {
+    // #swagger.description = 'Create a new meeting room for a group'
+    // #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/components/schemas/CreateMeeting' } }
+    meetingsController.createMeeting(req, res);
+  }
+);
 
 app.get(
   "/meetings/:meetingId/data",
   authenticateJWT,
-  meetingsController.getMeetingData
+  (req, res) => {
+    // #swagger.description = 'Get WebRTC signaling data for joining a meeting'
+    // #swagger.parameters['meetingId'] = { in: 'path', required: true, type: 'integer', description: 'Meeting ID' }
+    meetingsController.getMeetingData(req, res);
+  }
 );
 
-app.get("/meetings/join", authenticateJWT, meetingsController.joinByName);
+app.get(
+  "/meetings/join",
+  authenticateJWT,
+  (req, res) => {
+    // #swagger.description = 'Join a meeting room by its name'
+    meetingsController.joinByName(req, res);
+  }
+);
 
 app.put(
   "/announcements/:id",
   authenticateJWT,
   validateEditAnnouncement,
-  announcementsController.editAnnouncement
+  (req, res) => {
+    // #swagger.description = 'Edit an existing announcement'
+    // #swagger.parameters['id'] = { in: 'path', required: true, type: 'integer', description: 'Announcement ID' }
+    // #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/components/schemas/EditAnnouncement' } }
+    announcementsController.editAnnouncement(req, res);
+  }
 );
 
 app.delete(
   "/announcements/:id",
   authenticateJWT,
-  announcementsController.deleteAnnouncement
+  (req, res) => {
+    // #swagger.description = 'Delete an announcement'
+    // #swagger.parameters['id'] = { in: 'path', required: true, type: 'integer', description: 'Announcement ID' }
+    announcementsController.deleteAnnouncement(req, res);
+  }
 );
+
+
+
 
 // Module 3: Transport Navigator
 app.get(

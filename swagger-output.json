@@ -763,7 +763,7 @@
     },
     "/groups/joined": {
       "get": {
-        "description": "",
+        "description": "List all groups the authenticated user has joined",
         "parameters": [
           {
             "name": "authorization",
@@ -789,7 +789,7 @@
     },
     "/groups/available": {
       "get": {
-        "description": "",
+        "description": "List all public/available groups the user can join",
         "parameters": [
           {
             "name": "authorization",
@@ -815,12 +815,19 @@
     },
     "/groups": {
       "post": {
-        "description": "",
+        "description": "Create a new group",
         "parameters": [
           {
             "name": "authorization",
             "in": "header",
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/components/schemas/CreateGroup"
+            }
           }
         ],
         "responses": {
@@ -847,7 +854,7 @@
     },
     "/groups/join": {
       "post": {
-        "description": "",
+        "description": "Join an existing group by its ID",
         "parameters": [
           {
             "name": "authorization",
@@ -860,8 +867,23 @@
             "schema": {
               "type": "object",
               "properties": {
-                "groupId": {
-                  "example": "any"
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "groupId": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "integer"
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -891,7 +913,7 @@
     },
     "/groups/leave": {
       "delete": {
-        "description": "",
+        "description": "Leave a group",
         "parameters": [
           {
             "name": "authorization",
@@ -904,8 +926,23 @@
             "schema": {
               "type": "object",
               "properties": {
-                "groupId": {
-                  "example": "any"
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "groupId": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "integer"
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -933,9 +970,137 @@
         }
       }
     },
+    "/groups/{groupId}/invite-token": {
+      "get": {
+        "description": "Retrieve the invite token for a specific group",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the group"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/groups/token/{token}": {
+      "get": {
+        "description": "Find a group by its invite token",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Invite token"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/groups/join-by-token": {
+      "post": {
+        "description": "Join a group using its invite token",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/announcements": {
       "get": {
-        "description": "",
+        "description": "List announcements for a specified group",
         "parameters": [
           {
             "name": "authorization",
@@ -945,7 +1110,9 @@
           {
             "name": "groupId",
             "in": "query",
-            "type": "string"
+            "required": true,
+            "type": "integer",
+            "description": "ID of the group"
           }
         ],
         "responses": {
@@ -964,7 +1131,7 @@
         }
       },
       "post": {
-        "description": "",
+        "description": "Create a new announcement in a group",
         "parameters": [
           {
             "name": "authorization",
@@ -975,21 +1142,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "type": "object",
-              "properties": {
-                "GroupID": {
-                  "example": "any"
-                },
-                "Title": {
-                  "example": "any"
-                },
-                "Content": {
-                  "example": "any"
-                },
-                "ImageURL": {
-                  "example": "any"
-                }
-              }
+              "$ref": "#/components/schemas/CreateAnnouncement"
             }
           }
         ],
@@ -1020,13 +1173,14 @@
     },
     "/announcements/{id}/comments": {
       "get": {
-        "description": "",
+        "description": "Retrieve all comments for a given announcement",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "integer",
+            "description": "Announcement ID"
           },
           {
             "name": "authorization",
@@ -1050,13 +1204,14 @@
         }
       },
       "post": {
-        "description": "",
+        "description": "Post a comment on an announcement",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "integer",
+            "description": "Announcement ID"
           },
           {
             "name": "authorization",
@@ -1067,15 +1222,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "type": "object",
-              "properties": {
-                "announcementId": {
-                  "example": "any"
-                },
-                "content": {
-                  "example": "any"
-                }
-              }
+              "$ref": "#/components/schemas/PostComment"
             }
           }
         ],
@@ -1103,19 +1250,21 @@
     },
     "/announcements/{annId}/comments/{id}": {
       "delete": {
-        "description": "",
+        "description": "Delete a specific comment on an announcement",
         "parameters": [
           {
             "name": "annId",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "integer",
+            "description": "Announcement ID"
           },
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "integer",
+            "description": "Comment ID"
           },
           {
             "name": "authorization",
@@ -1144,12 +1293,19 @@
     },
     "/meetings": {
       "post": {
-        "description": "",
+        "description": "Create a new meeting room for a group",
         "parameters": [
           {
             "name": "authorization",
             "in": "header",
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/components/schemas/CreateMeeting"
+            }
           }
         ],
         "responses": {
@@ -1173,13 +1329,14 @@
     },
     "/meetings/{meetingId}/data": {
       "get": {
-        "description": "",
+        "description": "Get WebRTC signaling data for joining a meeting",
         "parameters": [
           {
             "name": "meetingId",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "integer",
+            "description": "Meeting ID"
           },
           {
             "name": "authorization",
@@ -1208,16 +1365,16 @@
     },
     "/meetings/join": {
       "get": {
-        "description": "",
+        "description": "Join a meeting room by its name",
         "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          },
           {
             "name": "name",
             "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
             "type": "string"
           }
         ],
@@ -1242,13 +1399,14 @@
     },
     "/announcements/{id}": {
       "put": {
-        "description": "",
+        "description": "Edit an existing announcement",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "integer",
+            "description": "Announcement ID"
           },
           {
             "name": "authorization",
@@ -1259,18 +1417,7 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "type": "object",
-              "properties": {
-                "Title": {
-                  "example": "any"
-                },
-                "Content": {
-                  "example": "any"
-                },
-                "ImageURL": {
-                  "example": "any"
-                }
-              }
+              "$ref": "#/components/schemas/EditAnnouncement"
             }
           }
         ],
@@ -1296,13 +1443,14 @@
         }
       },
       "delete": {
-        "description": "",
+        "description": "Delete an announcement",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "integer",
+            "description": "Announcement ID"
           },
           {
             "name": "authorization",
