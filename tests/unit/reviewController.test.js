@@ -93,6 +93,24 @@ describe("reviewController.createReview", () => {
         expect(res.json).toHaveBeenCalledWith({ message: "Review added successfully" });
     });
 
+    it("should return 500 when review creation fails", async () => {
+        reviewModel.createReview.mockResolvedValue(false);
+
+        const req = {
+            body: { facilityId: 1, rating: 5, comment: "Great!" },
+            user: { id: 1 }
+        };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+
+        await reviewController.createReview(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith({ error: "Failed to add review" });
+    });
+
     it("should handle errors and return a 500 status with error message", async () => {
         reviewModel.createReview.mockRejectedValue(new Error("Database error"));
 
@@ -150,6 +168,25 @@ describe("reviewController.updateReview", () => {
         expect(res.json).toHaveBeenCalledWith({ message: "Review updated successfully" });
     });
 
+    it("should return 404 when review not found", async () => {
+        reviewModel.updateReview.mockResolvedValue(false);
+
+        const req = {
+            params: { id: 999 },
+            body: { rating: 4, comment: "Updated" },
+            user: { id: 1 }
+        };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+
+        await reviewController.updateReview(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(404);
+        expect(res.json).toHaveBeenCalledWith({ error: "Review not found" });
+    });
+
     it("should handle errors and return a 500 status with error message", async () => {
         reviewModel.updateReview.mockRejectedValue(new Error("Database error"));
 
@@ -195,6 +232,24 @@ describe("reviewController.deleteReview", () => {
         expect(reviewModel.deleteReview).toHaveBeenCalledWith(1, 1);
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({ message: "Review deleted successfully" });
+    });
+
+    it("should return 404 when review not found", async () => {
+        reviewModel.deleteReview.mockResolvedValue(false);
+
+        const req = {
+            params: { id: 999 },
+            user: { id: 1 }
+        };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+
+        await reviewController.deleteReview(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(404);
+        expect(res.json).toHaveBeenCalledWith({ error: "Review not found" });
     });
 
     it("should handle errors and return a 500 status with error message", async () => {

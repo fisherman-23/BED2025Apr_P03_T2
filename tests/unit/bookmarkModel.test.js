@@ -118,6 +118,13 @@ describe("bookmarkModel.updateBookmark", () => {
         expect(mockRequest.query).toHaveBeenCalledWith(expect.stringContaining("UPDATE Bookmarks"));
         expect(result).toBe(true);
     });
+
+    it("should throw an error if the database connection fails", async () => {
+        const mockError = new Error("Database connection failed");
+        sql.connect.mockRejectedValue(mockError);
+
+        await expect(bookmarkModel.updateBookmark(1, { note: "test" })).rejects.toThrow("Database connection failed");
+    });
 });
 
 describe("bookmarkModel.deleteBookmark", () => {
@@ -202,5 +209,12 @@ describe("bookmarkModel.checkIfBookmarked", () => {
         expect(mockRequest.input).toHaveBeenCalledWith("facilityId", sql.Int, 101);
         expect(mockRequest.query).toHaveBeenCalledWith(expect.stringContaining("SELECT bookmarkId, note"));
         expect(result).toStrictEqual({ isBookmarked: false, bookmarkId: null, notes: null });
+    });
+
+    it("should throw an error if the database connection fails", async () => {
+        const mockError = new Error("Database connection failed");
+        sql.connect.mockRejectedValue(mockError);
+
+        await expect(bookmarkModel.checkIfBookmarked(1, 101)).rejects.toThrow("Database connection failed");
     });
 });

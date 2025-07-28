@@ -29,6 +29,22 @@ describe("bookmarkController.getBookmarkedFacilities", () => {
         expect(res.json).toHaveBeenCalledWith(mockBookmarks);
     });
 
+    it("should return 404 when no bookmarks found", async () => {
+        bookmarkModel.getBookmarkedFacilities.mockResolvedValue(null);
+
+        const req = { user: { id: 1 } };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+
+        await bookmarkController.getBookmarkedFacilities(req, res);
+
+        expect(bookmarkModel.getBookmarkedFacilities).toHaveBeenCalledWith(1);
+        expect(res.status).toHaveBeenCalledWith(404);
+        expect(res.json).toHaveBeenCalledWith({ error: "No bookmarks found for this user" });
+    });
+
     it("should handle errors and return a 500 status with error message", async () => {
         bookmarkModel.getBookmarkedFacilities.mockRejectedValue(new Error("Database error"));
 
@@ -127,6 +143,24 @@ describe("bookmarkController.updateBookmark", () => {
         expect(bookmarkModel.updateBookmark).toHaveBeenCalledWith(mockBookmark.bookmarkId, mockBookmark);
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({ message: "Bookmark updated successfully" });
+    });
+
+    it("should return 404 when bookmark not found", async () => {
+        bookmarkModel.updateBookmark.mockResolvedValue(false);
+
+        const req = {
+            params: { bookmarkId: 999 },
+            body: { note: "test" }
+        };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+
+        await bookmarkController.updateBookmark(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(404);
+        expect(res.json).toHaveBeenCalledWith({ error: "Bookmark not found" });
     });
 
     it("should handle errors and return a 500 status with error message", async () => {
