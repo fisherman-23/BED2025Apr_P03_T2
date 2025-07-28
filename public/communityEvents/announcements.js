@@ -4,6 +4,7 @@ const groupId = params.get('groupId');
 const groupName = params.get('groupName');
 
 const groupTitle = document.getElementById("group-title");
+let currentUserId = null;
 
 if (groupTitle && groupName) {
   const decodedGroupName = decodeURIComponent(groupName);
@@ -34,12 +35,13 @@ async function loadAnnouncements() {
       card.className = 'announcement-card bg-white border-2 border-dashed border-blue-200 rounded-2xl overflow-hidden';
       card.innerHTML = `
         <div class="relative">
-          ${a.ImageURL ? `<img src="${a.ImageURL}" alt="${a.Title}" class="w-full h-60 object-cover">` : ''}
+          ${a.ImageURL ? `<img src="${a.ImageURL}" alt="${a.Title}" class="w-full h-60 md:h-[28rem] object-cover">` : ''}
         </div>
         <div class="p-6">
           <h3 class="font-bold text-xl mb-2">${a.Title}</h3>
           <p class="text-gray-600 text-sm mb-3">${formatDate(a.CreatedAt)}</p>
           <p class="text-gray-800 mb-6">${a.Content}</p>
+          ${a.GroupCreatorID === currentUserId ? `<button class="edit-announcement-btn text-blue-500 hover:underline text-sm">Edit</button>` : ''}
           <div class="border-t border-gray-200 pt-4" data-ann-id="${a.ID}">
             <h4 class="font-semibold text-lg mb-4">Comments</h4>
             <div class="comments-list space-y-4 mb-4"></div>
@@ -54,9 +56,16 @@ async function loadAnnouncements() {
         </div>
       `;
       container.appendChild(card);
-      bindComments(a.ID);
+      const editBtn = card.querySelector('.edit-announcement-btn');
+      if (editBtn) {
+        editBtn.addEventListener('click', () => {
+          openEditModal(a);
+        });
+      }
     });
-  } catch (err) {
+    // Bind comments for all announcements after cards are appended
+    list.forEach(a => bindComments(a.ID));
+  } catch (err) { 
     console.error(err);
     toastError('Unable to load announcements');
   }
@@ -64,8 +73,17 @@ async function loadAnnouncements() {
 
 //render comments for 1 announcement
 async function bindComments(annId) {
+
   const section = container.querySelector(`[data-ann-id="${annId}"]`);
+  if (!section) {
+    console.error(`Section with ann-id="${annId}" not found`);
+    return;
+  }
   const listDiv = section.querySelector('.comments-list');
+  if (!listDiv) {
+    console.error(`Comments list not found for announcement ${annId}`);
+    return;
+  }
   listDiv.innerHTML = '';
 
   try {
@@ -130,10 +148,20 @@ async function bindComments(annId) {
       listDiv.appendChild(wrapper);
     });
 
-    // now bind the global "post comment" button once
+
     const postBtn = section.querySelector('.post-comment-btn');
+    if (!postBtn) {
+      console.error(`Post comment button not found for announcement ${annId}`);
+      return;
+    }
+    
     postBtn.onclick = async () => {
       const field = section.querySelector('.comment-field');
+      if (!field) {
+        console.error(`Comment field not found for announcement ${annId}`);
+        return;
+      }
+      
       const content = field.value.trim();
       if (!content) return;
       try {
@@ -186,7 +214,27 @@ async function postNewAnnouncement({ groupId, title, content, imageUrl }) {
   return id;
 }
 
+async function getCurrentUserId() {
+  try {
+    const res = await fetch('/me', { credentials: 'include' });
+    if (!res.ok) throw new Error('Failed to fetch user info');
+    const user = await res.json();
+    return user.id;
+  } catch (err) {
+    console.error(err);
+    toastError('Failed to get user info');
+    return null;
+  }
+}
 
+async function initialize() {
+  currentUserId = await getCurrentUserId();
+  if (!groupId) {
+    toastError('No group specified');
+    return;
+  }
+  await loadAnnouncements();
+}
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -194,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
     toastError('No group specified');
     return;
   }
-  loadAnnouncements();
+  initialize();
 });
 
 
@@ -341,3 +389,216 @@ function newConfirm(message) {
   });
 }
 
+
+
+
+
+
+const shareGroupBtn = document.getElementById('shareGroupBtn');
+const shareGroupBtnMobile = document.getElementById('shareGroupBtnMobile');
+const shareGroupModal = document.getElementById('shareGroupModal');
+const closeShareGroupModal = document.getElementById('closeShareGroupModal');
+const inviteTokenInput = document.getElementById('inviteTokenInput');
+const inviteActionBtn = document.getElementById('inviteActionBtn');
+const tokenMessage = document.getElementById('tokenMessage');
+
+let foundGroup = null; // will hold the found group data after search
+
+function openShareGroupModal() {
+  shareGroupModal.classList.remove('opacity-0', 'pointer-events-none');
+  shareGroupModal.classList.add('opacity-100');
+  resetModal();
+}
+
+function closeShareGroup() {
+  shareGroupModal.classList.add('opacity-0', 'pointer-events-none');
+  shareGroupModal.classList.remove('opacity-100');
+  resetModal();
+}
+
+function resetModal() {
+  inviteTokenInput.value = '';
+  tokenMessage.textContent = '';
+  inviteActionBtn.textContent = 'Search';
+  inviteActionBtn.disabled = true;
+  foundGroup = null;
+}
+
+shareGroupBtn?.addEventListener('click', openShareGroupModal);
+shareGroupBtnMobile?.addEventListener('click', openShareGroupModal);
+closeShareGroupModal.addEventListener('click', closeShareGroup);
+
+// Enable button only if input has some value
+inviteTokenInput.addEventListener('input', () => {
+  inviteActionBtn.disabled = inviteTokenInput.value.trim().length === 0;
+  tokenMessage.textContent = '';
+  if (foundGroup) {
+    // reset if token changed after finding group
+    inviteActionBtn.textContent = 'Search';
+    foundGroup = null;
+  }
+});
+
+inviteActionBtn.addEventListener('click', async () => {
+  const token = inviteTokenInput.value.trim();
+  if (!token) return;
+
+  if (!foundGroup) {
+    // Search group by invite token
+    inviteActionBtn.disabled = true;
+    tokenMessage.textContent = '';
+    try {
+      // Call backend API - adjust URL & method as needed
+      const res = await fetch(`/groups/invite/${encodeURIComponent(token)}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        if (res.status === 404) {
+          tokenMessage.textContent = 'Group not found';
+        } else {
+          tokenMessage.textContent = 'Error searching group';
+        }
+        inviteActionBtn.disabled = false;
+        return;
+      }
+      foundGroup = await res.json();
+      tokenMessage.textContent = `Group found: ${foundGroup.Name || foundGroup.GroupName || 'Unnamed'}`;
+      inviteActionBtn.textContent = 'Join';
+      inviteActionBtn.disabled = false;
+    } catch (err) {
+      console.error(err);
+      tokenMessage.textContent = 'Error searching group';
+      inviteActionBtn.disabled = false;
+    }
+  } else {
+    // Join group
+    inviteActionBtn.disabled = true;
+    tokenMessage.textContent = '';
+    try {
+      const res = await fetch(`/groups/${foundGroup.ID}/join`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        tokenMessage.textContent = err.error || 'Failed to join group';
+        inviteActionBtn.disabled = false;
+        return;
+      }
+      tokenMessage.textContent = '';
+      closeShareGroup();
+      toastSuccess(`Joined group: ${foundGroup.Name || foundGroup.GroupName}`);
+      // Optionally reload or update group list here
+    } catch (err) {
+      console.error(err);
+      tokenMessage.textContent = 'Error joining group';
+      inviteActionBtn.disabled = false;
+    }
+  }
+});
+
+// Edit Announcement Modal
+const editModal = document.getElementById('editAnnouncementModal');
+const closeEditModalBtn = document.getElementById('closeEditModal');
+const editForm = document.getElementById('editAnnouncementForm');
+const editTitleInput = document.getElementById('editTitle');
+const editContentInput = document.getElementById('editContent');
+const editImageInput = document.getElementById('editImageURL');
+const deleteAnnouncementBtn = document.getElementById('deleteAnnouncementBtn');
+
+let currentEditAnnId = null;
+function openEditModal(announcement) {
+  currentEditAnnId = announcement.ID;
+  editTitleInput.value = announcement.Title;
+  editContentInput.value = announcement.Content;
+  editImageInput.value = announcement.ImageURL || '';
+  editModal.classList.remove("hidden");
+}
+
+closeEditModalBtn.addEventListener("click", () => {
+  currentEditAnnId = null;
+  editForm.reset();
+  editModal.classList.add("hidden");
+});
+
+editForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!currentEditAnnId) return;
+
+  const updatedTitle = editTitleInput.value.trim();
+  const updatedContent = editContentInput.value.trim();
+  const updatedImageURL = editImageInput.value.trim() || null;
+
+  try {
+    const res = await fetch(`/announcements/${currentEditAnnId}`, {
+      method: "PUT",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        Title: updatedTitle,
+        Content: updatedContent,
+        ImageURL: updatedImageURL
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to update announcement");
+    }
+
+    toastSuccess("Announcement updated!");
+    editModal.classList.add("hidden");
+    currentEditAnnId = null;
+    loadAnnouncements();
+  } catch (err) {
+    console.error(err);
+    toastError(err.message || "Unable to update announcement");
+  }
+});
+
+deleteAnnouncementBtn.addEventListener("click", async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  
+  if (!currentEditAnnId) {
+    console.error("No currentEditAnnId set");
+    return;
+  }
+  
+  // Store the ID before showing confirmation to prevent it from being cleared
+  const announcementIdToDelete = currentEditAnnId;
+  
+  // Hide edit modal while showing confirmation
+  editModal.classList.add("hidden");
+  
+  const confirmed = await newConfirm('Are you sure you want to delete this announcement?');
+  
+  if (!confirmed) {
+    // If cancelled, show edit modal again
+    editModal.classList.remove("hidden");
+    return;
+  }
+
+  try {
+    const res = await fetch(`/announcements/${announcementIdToDelete}`, {
+      method: "DELETE",
+      credentials: "include"
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to delete announcement");
+    }
+
+    toastSuccess("Announcement deleted!");
+    currentEditAnnId = null;
+    loadAnnouncements();
+  } catch (err) {
+    console.error("Delete announcement error:", err);
+    toastError(err.message || "Unable to delete announcement");
+    // Show edit modal again if there was an error
+    editModal.classList.remove("hidden");
+  }
+});

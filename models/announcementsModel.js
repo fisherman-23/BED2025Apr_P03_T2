@@ -6,9 +6,10 @@ async function getAnnouncementsByGroup(groupId) {
   try {
     connection = await sql.connect(dbConfig);
     const query = `
-      SELECT a.ID, a.Title, a.Content, a.ImageURL, a.CreatedAt, u.Name AS CreatedByName
+      SELECT a.ID, a.Title, a.Content, a.ImageURL, a.CreatedAt, u.Name AS CreatedByName, g.CreatedBy AS GroupCreatorID
       FROM Announcements a
       JOIN Users u ON a.CreatedBy = u.ID
+      JOIN Groups g ON a.GroupID = g.ID
       WHERE a.GroupID = @GroupID
       ORDER BY a.CreatedAt DESC
     `;
@@ -182,6 +183,111 @@ async function getGroupById(groupId) {
 }
 
 
+async function editAnnouncement({ announcementId, title, content, imageUrl, userId }) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+
+    // Check if the user is the owner of the group related to this announcement
+    const checkRequest = connection.request();
+    checkRequest.input("AnnouncementID", sql.Int, announcementId);
+    checkRequest.input("UserID", sql.Int, userId);
+
+    const checkResult = await checkRequest.query(`
+      SELECT g.CreatedBy
+      FROM Announcements a
+      JOIN Groups g ON a.GroupID = g.ID
+      WHERE a.ID = @AnnouncementID
+    `);
+
+    if (checkResult.recordset.length === 0) {
+      const err = new Error("Announcement not found");
+      err.code = "NOT_FOUND";
+      throw err;
+    }
+
+    const createdBy = checkResult.recordset[0].CreatedBy;
+    if (createdBy !== userId) {
+      const err = new Error("Only the group owner can edit this announcement");
+      err.code = "FORBIDDEN";
+      throw err;
+    }
+
+    const updateRequest = connection.request();
+    updateRequest.input("AnnouncementID", sql.Int, announcementId);
+    updateRequest.input("Title", sql.VarChar(100), title);
+    updateRequest.input("Content", sql.VarChar(2000), content);
+    updateRequest.input("ImageURL", sql.VarChar(1000), imageUrl || null);
+
+    await updateRequest.query(`
+      UPDATE Announcements
+      SET Title = @Title, Content = @Content, ImageURL = @ImageURL
+      WHERE ID = @AnnouncementID
+    `);
+
+    return true;
+  } catch (err) {
+    console.error("Database error in editAnnouncement:", err);
+    throw err;
+  } finally {
+    if (connection) await connection.close();
+  }
+}
+
+async function deleteAnnouncement(announcementId, userId) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+
+    const checkRequest = connection.request();
+    checkRequest.input("AnnouncementID", sql.Int, announcementId);
+    checkRequest.input("UserID", sql.Int, userId);
+
+    const checkResult = await checkRequest.query(`
+      SELECT g.CreatedBy, a.CreatedBy as AnnouncementCreatedBy
+      FROM Announcements a
+      JOIN Groups g ON a.GroupID = g.ID
+      WHERE a.ID = @AnnouncementID
+    `);
+
+    if (checkResult.recordset.length === 0) {
+      const err = new Error("Announcement not found");
+      err.code = "NOT_FOUND";
+      throw err;
+    }
+
+    const groupCreatedBy = checkResult.recordset[0].CreatedBy;
+    const announcementCreatedBy = checkResult.recordset[0].AnnouncementCreatedBy;
+    
+    if (groupCreatedBy !== userId && announcementCreatedBy !== userId) {
+      const err = new Error("Only the group owner or announcement creator can delete this announcement");
+      err.code = "FORBIDDEN";
+      throw err;
+    }
+
+    const deleteCommentsRequest = connection.request();
+    deleteCommentsRequest.input("AnnouncementID", sql.Int, announcementId);
+    await deleteCommentsRequest.query(`
+      DELETE FROM Comments WHERE AnnouncementID = @AnnouncementID
+    `);
+
+    const deleteRequest = connection.request();
+    deleteRequest.input("AnnouncementID", sql.Int, announcementId);
+    await deleteRequest.query(`
+      DELETE FROM Announcements WHERE ID = @AnnouncementID
+    `);
+
+    return true;
+  } catch (err) {
+    console.error("Database error in deleteAnnouncement:", err);
+    throw err;
+  } finally {
+    if (connection) await connection.close();
+  }
+}
+
+
+
 
 module.exports = {
   getAnnouncementsByGroup,
@@ -189,5 +295,7 @@ module.exports = {
   getCommentsForAnnouncement,
   postComment,
   deleteComment,
-  getGroupById
+  getGroupById,
+  editAnnouncement,
+  deleteAnnouncement
 };
