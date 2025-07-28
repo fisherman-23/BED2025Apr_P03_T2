@@ -420,8 +420,11 @@ CREATE TABLE Announcements (
     Title VARCHAR(100) NOT NULL,
     Content VARCHAR(1000) NOT NULL,
     ImageUrl VARCHAR(500),
-    PostedAt DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (GroupID) REFERENCES Groups(ID)
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    CreatedBy INT NOT NULL,
+    
+    FOREIGN KEY (GroupID) REFERENCES Groups(ID),
+    FOREIGN KEY (CreatedBy) REFERENCES Users(ID)
 );
 
 CREATE TABLE Comments (

@@ -87,6 +87,51 @@ async function deleteComment(req, res) {
   }
 }
 
+async function editAnnouncement(req, res) {
+  const userId = req.user.id;
+  const announcementId = Number(req.params.id);
+  const { Title, Content, ImageURL } = req.body;
+
+  try {
+    await announcementsModel.editAnnouncement({
+      announcementId,
+      title: Title,
+      content: Content,
+      imageUrl: ImageURL,
+      userId
+    });
+
+    return res.status(200).json({ message: "Announcement updated" });
+  } catch (err) {
+    if (err.code === "FORBIDDEN") {
+      return res.status(403).json({ error: err.message });
+    }
+    if (err.code === "NOT_FOUND") {
+      return res.status(404).json({ error: err.message });
+    }
+    console.error("Controller error in editAnnouncement:", err);
+    return res.status(500).json({ error: "Error editing announcement" });
+  }
+}
+
+async function deleteAnnouncement(req, res) {
+  const userId = req.user.id;
+  const announcementId = Number(req.params.id);
+
+  try {
+    await announcementsModel.deleteAnnouncement(announcementId, userId);
+    return res.status(200).json({ message: "Announcement deleted" });
+  } catch (err) {
+    if (err.code === "FORBIDDEN") {
+      return res.status(403).json({ error: err.message });
+    }
+    if (err.code === "NOT_FOUND") {
+      return res.status(404).json({ error: err.message });
+    }
+    console.error("Controller error in deleteAnnouncement:", err);
+    return res.status(500).json({ error: "Error deleting announcement" });
+  }
+}
 
 
 
@@ -95,5 +140,7 @@ module.exports = {
   createAnnouncement,
   getComments,
   postComment,
-  deleteComment
+  deleteComment,
+  editAnnouncement,
+  deleteAnnouncement
 };

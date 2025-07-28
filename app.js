@@ -40,6 +40,7 @@ const {
   validateCreateAnnouncement,
   validatePostComment,
   validateDeleteComment,
+  validateEditAnnouncement,
 } = require("./middlewares/announcementsValidation.js");
 
 const {
@@ -288,7 +289,18 @@ app.get(
   meetingsController.joinByName
 );
 
+app.put(
+  "/announcements/:id",
+  authenticateJWT,
+  validateEditAnnouncement,
+  announcementsController.editAnnouncement
+);
 
+app.delete(
+  "/announcements/:id",
+  authenticateJWT,
+  announcementsController.deleteAnnouncement
+);
 
 // Module 3: Transport Navigator
 app.get(
