@@ -27,7 +27,7 @@ async function handleLocationAccess(latitude, longitude) {
         }
     } catch (error) {
         console.error("Error in handleLocationAccess:", error);
-        throw error;
+        throw new Error("Failed to access location data.");
     }
 }
 

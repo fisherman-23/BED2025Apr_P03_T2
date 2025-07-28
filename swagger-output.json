@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "My API",
-    "description": "Description of your API",
+    "title": "CircleAge API",
+    "description": "API documentation for CircleAge application, providing a range of features designed to promote healthy, independent, and socially connected aging among seniors. This API supports user account management, health appointments, transportation management, event management, fitness management, and social engagement features.",
     "version": "1.0.0"
   },
   "host": "localhost:3000",
@@ -10,10 +10,18 @@
   "schemes": [
     "http"
   ],
+  "securityDefinitions": {
+    "bearerAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
+    }
+  },
   "paths": {
     "/me": {
       "get": {
-        "description": "",
+        "description": "Get the authenticated user\\'s basic profile information",
         "parameters": [
           {
             "name": "authorization",
@@ -230,13 +238,14 @@
     },
     "/users/uuid/{uuid}": {
       "get": {
-        "description": "",
+        "description": "Get a user by UUID",
         "parameters": [
           {
             "name": "uuid",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "UUID of the user"
           },
           {
             "name": "authorization",
@@ -268,13 +277,14 @@
     },
     "/friend-invite/{uuid}": {
       "post": {
-        "description": "",
+        "description": "Send a friend request to the user identified by UUID",
         "parameters": [
           {
             "name": "uuid",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "UUID of the user to send friend request to"
           },
           {
             "name": "authorization",
@@ -306,7 +316,7 @@
     },
     "/friend-requests": {
       "get": {
-        "description": "",
+        "description": "List all pending friend requests for the authenticated user",
         "parameters": [
           {
             "name": "authorization",
@@ -332,7 +342,7 @@
     },
     "/friends": {
       "get": {
-        "description": "",
+        "description": "List all friends of the authenticated user",
         "parameters": [
           {
             "name": "authorization",
@@ -358,13 +368,14 @@
     },
     "/friend-requests/{id}/accept": {
       "patch": {
-        "description": "",
+        "description": "Accept a friend request identified by its ID",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "ID of the friend request to accept"
           },
           {
             "name": "authorization",
@@ -428,13 +439,14 @@
     },
     "/friend-requests/{id}/reject": {
       "patch": {
-        "description": "",
+        "description": "Reject a friend request by its ID",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "ID of the friend request to reject"
           },
           {
             "name": "authorization",
@@ -463,13 +475,14 @@
     },
     "/friends/{friendId}": {
       "delete": {
-        "description": "",
+        "description": "Remove a friend by their friend ID",
         "parameters": [
           {
             "name": "friendId",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "ID of the friend to remove"
           },
           {
             "name": "authorization",
@@ -501,13 +514,14 @@
     },
     "/friend-requests/{id}/withdraw": {
       "delete": {
-        "description": "",
+        "description": "Withdraw a previously sent friend request by its ID",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "ID of the friend request to withdraw"
           },
           {
             "name": "authorization",
@@ -536,7 +550,7 @@
     },
     "/match/profile/check": {
       "get": {
-        "description": "",
+        "description": "Check if the authenticated user has a match profile",
         "parameters": [
           {
             "name": "authorization",
@@ -559,7 +573,7 @@
     },
     "/match/profile": {
       "get": {
-        "description": "",
+        "description": "Get the authenticated user\\'s match profile",
         "parameters": [
           {
             "name": "authorization",
@@ -586,7 +600,7 @@
         }
       },
       "put": {
-        "description": "",
+        "description": "Update the authenticated user\\'s match profile",
         "parameters": [
           {
             "name": "authorization",
@@ -616,7 +630,7 @@
         }
       },
       "post": {
-        "description": "",
+        "description": "Create a new match profile for the authenticated user",
         "parameters": [
           {
             "name": "authorization",
@@ -651,7 +665,7 @@
     },
     "/match/potential": {
       "get": {
-        "description": "",
+        "description": "Get potential matches for the authenticated user",
         "parameters": [
           {
             "name": "authorization",
@@ -677,13 +691,14 @@
     },
     "/match/like/{targetUserId}": {
       "post": {
-        "description": "",
+        "description": "Like a user by their targetUserId",
         "parameters": [
           {
             "name": "targetUserId",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "ID of the user to like"
           },
           {
             "name": "authorization",
@@ -712,13 +727,14 @@
     },
     "/match/skip/{targetUserId}": {
       "post": {
-        "description": "",
+        "description": "Skip a user by their targetUserId",
         "parameters": [
           {
             "name": "targetUserId",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "ID of the user to skip"
           },
           {
             "name": "authorization",
@@ -1126,6 +1142,193 @@
         }
       }
     },
+    "/meetings": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/meetings/{meetingId}/data": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "meetingId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/meetings/join": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/announcements/{id}": {
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "Title": {
+                  "example": "any"
+                },
+                "Content": {
+                  "example": "any"
+                },
+                "ImageURL": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/facilities/nearby": {
       "get": {
         "description": "",
@@ -1287,6 +1490,45 @@
             "name": "lng",
             "in": "query",
             "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "address": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -1591,6 +1833,56 @@
         }
       }
     },
+    "/reviews": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "facilityId": {
+                  "example": "any"
+                },
+                "rating": {
+                  "example": "any"
+                },
+                "comment": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/reports": {
       "post": {
         "description": "",
@@ -1628,6 +1920,90 @@
           },
           "403": {
             "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/google-maps-config": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/directions/{facilityId}": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "facilityId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "cookie",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "origin": {
+                  "example": "any"
+                },
+                "travelMode": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
           },
           "500": {
             "description": "Internal Server Error"
@@ -1729,6 +2105,32 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/exercise/stats": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           },
           "401": {
             "description": "Unauthorized"
@@ -1998,6 +2400,123 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/exercise/weather": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "lat": {
+                  "example": "any"
+                },
+                "lon": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/exercise/logExercise/{exerciseID}": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "exerciseID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/exercise/logGoals": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "goalIds": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "201": {
+            "description": "Created"
           },
           "401": {
             "description": "Unauthorized"
@@ -2609,7 +3128,7 @@
     },
     "/invite": {
       "get": {
-        "description": "",
+        "description": "Serve the invite HTML page",
         "responses": {
           "200": {
             "description": "OK"
@@ -2619,7 +3138,7 @@
     },
     "/conversations": {
       "post": {
-        "description": "",
+        "description": "Start a new conversation",
         "parameters": [
           {
             "name": "authorization",
@@ -2655,7 +3174,7 @@
         }
       },
       "get": {
-        "description": "",
+        "description": "Get all conversations for the authenticated user",
         "parameters": [
           {
             "name": "authorization",
@@ -2681,13 +3200,14 @@
     },
     "/conversations/{conversationId}/messages": {
       "get": {
-        "description": "",
+        "description": "Get messages for a specific conversation by conversationId",
         "parameters": [
           {
             "name": "conversationId",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "ID of the conversation"
           },
           {
             "name": "authorization",
@@ -2714,13 +3234,14 @@
         }
       },
       "post": {
-        "description": "",
+        "description": "Send a message in a specific conversation",
         "parameters": [
           {
             "name": "conversationId",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "ID of the conversation"
           },
           {
             "name": "authorization",
@@ -2764,13 +3285,14 @@
     },
     "/messages/{messageId}": {
       "delete": {
-        "description": "",
+        "description": "Delete a message by its ID",
         "parameters": [
           {
             "name": "messageId",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "ID of the message to delete"
           },
           {
             "name": "authorization",
@@ -2805,7 +3327,7 @@
     },
     "/smart-reply": {
       "post": {
-        "description": "",
+        "description": "Get smart reply suggestions based on the input message",
         "parameters": [
           {
             "name": "authorization",
@@ -2844,5 +3366,10 @@
         }
       }
     }
-  }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
 }

@@ -7,16 +7,16 @@ async function createReport(reportData) {
     try {
         connection = await sql.connect(dbConfig);
         const query = `
-            INSERT INTO Reports (ReviewId, UserId, CreatedAt, Reason)
-            VALUES (@ReviewId, @UserId, GETDATE(), @Reason)
+            INSERT INTO Reports (reviewId, userId, createdAt, reason)
+            VALUES (@reviewId, @userId, GETDATE(), @reason)
             UPDATE Reviews
             SET isActive = 0
-            WHERE ReviewId = @ReviewId
+            WHERE reviewId = @reviewId
         `;
         const request = connection.request();
-        request.input("ReviewId", sql.Int, reportData.reviewId);
-        request.input("UserId", sql.Int, reportData.userId);
-        request.input("Reason", sql.NVarChar, reportData.reason);
+        request.input("reviewId", sql.Int, reportData.reviewId);
+        request.input("userId", sql.Int, reportData.userId);
+        request.input("reason", sql.NVarChar, reportData.reason);
         const result = await request.query(query);
         return result.rowsAffected[0] > 0;
     } catch (error) {

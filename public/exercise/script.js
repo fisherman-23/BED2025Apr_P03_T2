@@ -375,10 +375,31 @@ async function resetGoals() {
   }
 }
 
+async function getStatistic(){
+  try{
+    stats = await fetch("/exercise/stats",{
+      method: "GET",
+      credentials: "include"
+    });
+    if(!stats.ok){
+      throw new Error(`Server error: ${stats.status} ${stats.statusText}`);
+    }
+    const stat = await stats.json()
+    document.getElementById("exerciseNum").innerHTML = stat.exercise_completed
+    document.getElementById("goalNum").innerHTML = stat.goal_completed
+  }catch(error){
+    console.error("Error getting user statistics", error);
+    alert("Failed to get user statistics");
+  }
+}
+
+
+
 (async () =>{
   await resetGoals();
   await fetchGoals();
   await fetchExercise();
+  await getStatistic();
 })();
 
 viewMoreBtn.addEventListener("click", () => {
