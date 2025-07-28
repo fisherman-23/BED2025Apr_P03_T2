@@ -238,6 +238,25 @@ app.delete(
   eventsController.leaveGroup
 );
 
+// New invite token routes
+app.get(
+  "/groups/:groupId/invite-token",
+  authenticateJWT,
+  eventsController.getGroupInviteToken
+);
+
+app.get(
+  "/groups/token/:token",
+  authenticateJWT,
+  eventsController.findGroupByToken
+);
+
+app.post(
+  "/groups/join-by-token",
+  authenticateJWT,
+  eventsController.joinGroupByToken
+);
+
 app.get(
   "/announcements",
   authenticateJWT,

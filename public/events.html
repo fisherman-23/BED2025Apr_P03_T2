@@ -74,10 +74,14 @@
     </div>
   </div>
 
-  <div class="flex w-screen justify-center items-center md:mt-8 mt-4 select-none mb-10 md:mb-16">
-    <div class="create-group-button flex flex-row justify-center items-center gap-2 bg-[#d7e961] py-4 px-8 rounded-xl w-[70vw] md:w-[50vw]">
+  <div class="flex w-screen justify-center items-center md:mt-8 mt-4 select-none mb-10 md:mb-16 gap-4">
+    <div class="create-group-button flex flex-row justify-center items-center gap-2 bg-[#d7e961] py-4 px-8 rounded-xl w-[35vw] md:w-[25vw]">
       <h3>Create Group</h3>
       <img src="communityEvents/assets/plus-icon.svg" alt="Add icon" class="w-4 h-auto">
+    </div>
+    <div class="join-group-button flex flex-row justify-center items-center gap-2 bg-[#34d399] py-4 px-8 rounded-xl w-[35vw] md:w-[25vw] cursor-pointer hover:bg-[#10b981]">
+      <h3>Join Group</h3>
+      <img src="communityEvents/assets/plus-icon.svg" alt="Join icon" class="w-4 h-auto">
     </div>
   </div>
 
@@ -137,6 +141,24 @@
         <button id="cancelJoinBtn" class="px-4 py-2 rounded bg-gray-200">Cancel</button>
         <button id="confirmJoinBtn" class="px-4 py-2 rounded bg-blue-500 text-white">Join</button>
       </div>
+    </div>
+  </div>
+
+  <div id="joinGroupModal" class="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+    <div class="bg-white rounded-2xl w-[90vw] md:w-[40vw] p-8 flex flex-col gap-4 relative">
+      <button id="closeJoinGroupModal" class="absolute top-4 right-4 text-gray-500 hover:text-black text-xl font-bold">&times;</button>
+      <h3 class="text-lg font-semibold mb-4">Join Group by Invite Token</h3>
+      
+      <input id="joinTokenInput" type="text" placeholder="Enter invite token"
+             class="border border-gray-300 rounded-lg p-3 w-full text-center text-lg" />
+      
+      <p id="joinTokenMessage" class="text-center text-red-500 min-h-[1.5rem]"></p>
+      
+      <button id="joinGroupByTokenBtn"
+              class="bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 disabled:opacity-50"
+              disabled>
+        Join Group
+      </button>
     </div>
   </div>
   

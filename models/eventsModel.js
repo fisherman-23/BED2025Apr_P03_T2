@@ -158,11 +158,104 @@ async function leaveGroup(userId, groupId) {
   }
 }
 
+async function getGroupInviteToken(userId, groupId) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const query = `SELECT InviteToken 
+      FROM Groups 
+      WHERE ID = @GroupID AND CreatedBy = @UserID`;
+    const request = connection.request();
+    request.input("GroupID", groupId);
+    request.input("UserID", userId);
+    const result = await request.query(query);
+    return result.recordset.length > 0 ? result.recordset[0].InviteToken : null;
+  } catch (error) {
+    console.error("Database error in getGroupInviteToken:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try { await connection.close(); }
+      catch (err) { console.error("Error closing connection in getGroupInviteToken:", err); }
+    }
+  }
+}
+
+async function findGroupByInviteToken(token) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const query = `SELECT ID, Name, Description, IsPrivate 
+      FROM Groups 
+      WHERE InviteToken = @Token`;
+    const request = connection.request();
+    request.input("Token", token);
+    const result = await request.query(query);
+    return result.recordset.length > 0 ? result.recordset[0] : null;
+  } catch (error) {
+    console.error("Database error in findGroupByInviteToken:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try { await connection.close(); }
+      catch (err) { console.error("Error closing connection in findGroupByInviteToken:", err); }
+    }
+  }
+}
+
+async function joinGroupByInviteToken(userId, token) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    
+    const groupQuery = `SELECT ID, Name FROM Groups WHERE InviteToken = @Token`;
+    const groupRequest = connection.request();
+    groupRequest.input("Token", token);
+    const groupResult = await groupRequest.query(groupQuery);
+    
+    if (groupResult.recordset.length === 0) {
+      return { success: false, message: "Invalid invite token" };
+    }
+    
+    const group = groupResult.recordset[0];
+    
+    // Check if user is already a member
+    const memberQuery = `SELECT COUNT(*) as count FROM GroupMembers WHERE UserID = @UserID AND GroupID = @GroupID`;
+    const memberRequest = connection.request();
+    memberRequest.input("UserID", userId);
+    memberRequest.input("GroupID", group.ID);
+    const memberResult = await memberRequest.query(memberQuery);
+    
+    if (memberResult.recordset[0].count > 0) {
+      return { success: false, message: "You are already a member of this group" };
+    }
+    
+    const insertQuery = `INSERT INTO GroupMembers (UserID, GroupID) VALUES (@UserID, @GroupID)`;
+    const insertRequest = connection.request();
+    insertRequest.input("UserID", userId);
+    insertRequest.input("GroupID", group.ID);
+    await insertRequest.query(insertQuery);
+    
+    return { success: true, message: "Successfully joined the group", groupName: group.Name };
+  } catch (error) {
+    console.error("Database error in joinGroupByInviteToken:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try { await connection.close(); }
+      catch (err) { console.error("Error closing connection in joinGroupByInviteToken:", err); }
+    }
+  }
+}
+
 
 module.exports = {
   getJoinedGroups,
   getAvailableGroups,
   createGroup,
   joinGroup,
-  leaveGroup
+  leaveGroup,
+  getGroupInviteToken,
+  findGroupByInviteToken,
+  joinGroupByInviteToken
 };
