@@ -13,10 +13,10 @@ async function getReviewsByFacilityId(req, res) {
 async function createReview(req, res) {
     try {
         const reviewData = {
-            FacilityId: req.body.facilityId,
-            UserId: req.user.id,
-            Rating: req.body.rating,
-            Comment: req.body.comment
+            facilityId: req.body.facilityId,
+            userId: req.user.id,
+            rating: req.body.rating,
+            comment: req.body.comment
         };
 
         const success = await reviewModel.createReview(reviewData);
@@ -34,9 +34,9 @@ async function createReview(req, res) {
 async function updateReview(req, res) {
     try {
         const reviewData = {
-            UserId: req.user.id,
-            Rating: req.body.rating,
-            Comment: req.body.comment
+            userId: req.user.id,
+            rating: req.body.rating,
+            comment: req.body.comment
         };
 
         const success = await reviewModel.updateReview(req.params.id, reviewData);
