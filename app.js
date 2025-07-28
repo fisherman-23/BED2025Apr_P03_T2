@@ -19,6 +19,8 @@ const meetingsController = require("./controllers/meetingsController.js");
 const facilitiesController = require("./controllers/facilitiesController.js");
 const bookmarkController = require("./controllers/bookmarkController.js");
 const reviewController = require("./controllers/reviewController.js");
+const navigationController = require("./controllers/navigationController.js");
+const reportController = require("./controllers/reportController.js");
 
 const exerciseController = require("./controllers/exerciseController.js");
 const medicationController = require("./controllers/medicationController.js");
@@ -61,16 +63,20 @@ const {
 } = require("./middlewares/facilitiesValidation.js");
 const {
   validateBookmarkId,
-  validateFacilityIdParam,
   validateBookmarkData,
 } = require("./middlewares/bookmarkValidation.js");
 const {
   validateReviewIdParam,
   validateReviewData,
   validateUpdateReviewData,
-  validateReportData,
 } = require("./middlewares/reviewValidation.js");
+
+const {
+    validateReportData,
+} = require("./middlewares/reportValidation.js"); 
+
 const { validateMessage } = require("./middlewares/chatValidation.js");
+
 const { compareSync } = require("bcrypt");
 const app = express();
 const port = process.env.PORT || 3000;
@@ -361,6 +367,13 @@ app.put(
   reviewController.updateReview
 );
 
+app.post(
+  "/reviews",
+  authenticateJWT,
+  validateReviewData,
+  reviewController.createReview
+);
+
 app.delete(
   "/reviews/:id",
   authenticateJWT,
@@ -372,7 +385,26 @@ app.post(
   "/reports",
   authenticateJWT,
   validateReportData,
-  reviewController.createReport
+  reportController.createReport
+);
+
+// endpoints for Google Maps API integration
+app.get(
+  "/api/google-maps-config",
+  authenticateJWT,
+  navigationController.getGoogleMapsConfig
+);
+
+app.post(
+  "/api/directions/:facilityId",
+  authenticateJWT,
+  navigationController.getFacilityDirections
+);
+
+app.post(
+  "/api/geocode",
+  authenticateJWT,
+  navigationController.geocodeAddress
 );
 
 // Module 4: Senior fitness coach

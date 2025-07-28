@@ -82,7 +82,7 @@ class ReviewManager {
             <div class="modal-content">
                 <h3>Edit Review</h3>
                 <div class="rating-input">
-                    <h4>Rating:</h4>
+                    <h4>Accessibility Rating:</h4>
                     <div class="number-rating" id="editRating">
                         ${[1, 2, 3, 4, 5].map(num => `
                             <button class="rating-number" data-value="${num}">${num}</button>
@@ -217,7 +217,6 @@ class ReviewManager {
                 <img src="${review.ProfilePicture}" alt="User Profile Picture" class="user-profile-pic">
                 <span class="user-name">${review.UserName}</span>
                 <span class="review-date">${date}</span>
-                <div class="review-rating">Rating: ${review.rating}/5</div>
             </div>
             <div class="review-actions">
                 <button class="button-icon review-menu-button">
@@ -233,6 +232,7 @@ class ReviewManager {
                 </div>
             </div>
         </div>
+        <div class="review-rating">Accessibility Rating: ${review.rating}/5</div>
         <div class="review-content">${review.comment}</div>
         `;
 
@@ -340,6 +340,7 @@ class ReviewManager {
             if (!res.ok) {
             throw new Error("Failed to report review");
             }
+            await this.loadReviews();
             alert("Review reported successfully.");
         } catch (error) {
             console.error("Error reporting review:", error);

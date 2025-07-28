@@ -542,15 +542,14 @@
 }
 
 .review-rating {
-    margin-left: 0.5rem;
     font-weight: 500;
-    color: #333;
+    margin-top: 2rem;
 }
 
 .review-content {
     color: #333;
     line-height: 1.5;
-    margin-top: 0.5rem;
+    margin-top: 2rem;
 }
 
 .review-actions {
@@ -647,6 +646,7 @@
 .number-rating {
     display: flex;
     gap: 0.5rem;
+    margin-top: 1rem;
 }
 
 .rating-number {

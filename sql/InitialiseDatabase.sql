@@ -454,13 +454,13 @@ CREATE TABLE Facilities (
     name VARCHAR(100) NOT NULL,
     address TEXT NOT NULL,
     facilityType VARCHAR(50) NOT NULL CHECK (facilityType IN ('Polyclinic', 'Hospital', 'Park', 'Community Center')),
-    phoneNo VARCHAR(20) NULL,
-    hours NVARCHAR(1000) NULL,
-    image_url NVARCHAR(1000) NULL,
-    static_map_url VARCHAR(500) NULL,
+    phoneNo VARCHAR(20) NOT NULL,
+    hours NVARCHAR(1000) NOT NULL,
+    image_url NVARCHAR(1000) NOT NULL,
+    static_map_url VARCHAR(500) NOT NULL,
     latitude FLOAT,
     longitude FLOAT,
-    google_place_id VARCHAR(100) NULL,
+    google_place_id VARCHAR(100) NOT NULL,
     lastVerified DATE DEFAULT GETDATE()
 );
 

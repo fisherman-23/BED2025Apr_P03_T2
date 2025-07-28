@@ -31,7 +31,7 @@ async function handleLocationAccess(latitude, longitude) {
     }
 }
 
-async function getNearbyFacilities(latitude, longitude, radius = 5000) {
+async function getNearbyFacilities(latitude, longitude, radius = 2000) {
     let connection;
     try {
         connection = await sql.connect(dbConfig);
@@ -132,10 +132,70 @@ async function getFacilitiesByType(facilityType) {
     }
 }
 
+// Function to save a new facility to the database
+async function saveFacility(facilityData) {
+    let connection;
+    try {
+        connection = await sql.connect(dbConfig);
+        
+        // Check if facility already exists by google_place_id to avoid duplicates
+        const checkQuery = `SELECT FacilityId FROM Facilities WHERE google_place_id = @google_place_id`;
+        const checkRequest = connection.request();
+        checkRequest.input("google_place_id", sql.VarChar, facilityData.google_place_id);
+        const existingResult = await checkRequest.query(checkQuery);
+        
+        if (existingResult.recordset.length > 0) {
+            console.log(`Facility ${facilityData.name} already exists, skipping...`);
+            return existingResult.recordset[0];
+        }
+        
+        // Insert new facility
+        const insertQuery = `
+            INSERT INTO Facilities (
+                name, address, latitude, longitude, facilityType, 
+                phoneNo, hours, image_url, static_map_url, google_place_id
+            ) 
+            OUTPUT INSERTED.FacilityId
+            VALUES (
+                @name, @address, @latitude, @longitude, @facilityType,
+                @phoneNo, @hours, @image_url, @static_map_url, @google_place_id
+            )
+        `;
+        
+        const insertRequest = connection.request();
+        insertRequest.input("name", sql.VarChar, facilityData.name);
+        insertRequest.input("address", sql.VarChar, facilityData.address);
+        insertRequest.input("latitude", sql.Float, facilityData.latitude);
+        insertRequest.input("longitude", sql.Float, facilityData.longitude);
+        insertRequest.input("facilityType", sql.VarChar, facilityData.facilityType);
+        insertRequest.input("phoneNo", sql.VarChar, facilityData.phoneNo);
+        insertRequest.input("hours", sql.VarChar, facilityData.hours);
+        insertRequest.input("image_url", sql.VarChar, facilityData.image_url);
+        insertRequest.input("static_map_url", sql.VarChar, facilityData.static_map_url);
+        insertRequest.input("google_place_id", sql.VarChar, facilityData.google_place_id);
+        
+        const result = await insertRequest.query(insertQuery);
+        return result.recordset[0];
+        
+    } catch (error) {
+        console.error("Error saving facility:", error);
+        throw error;
+    } finally {
+        if (connection) {
+            try {
+                await connection.close();
+            } catch (err) {
+                console.error("Error closing database connection:", err);
+            }
+        }
+    }
+}
+
 module.exports = {
     handleLocationAccess,
     getNearbyFacilities,
     getFacilities,
     getFacilityById,
     getFacilitiesByType,
+    saveFacility,
 };
