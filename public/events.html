@@ -11,6 +11,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   <script src="./toastify.js" defer></script>
+
+  <script src="https://unpkg.com/@daily-co/daily-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
 <body class="w-screen overflow-x-hidden">
   <nav class="navbar">
@@ -50,11 +53,11 @@
   </div>
 
   <div class="flex w-screen justify-center items-center md:gap-8 gap-4 my-12 md:flex-row flex-col">
-    <div class="flex justify-center items-center gap-8 bg-[#3b82f6] rounded-xl md:w-56 h-14 w-[80vw]">
+    <div class="flex justify-center items-center gap-8 bg-[#3b82f6] rounded-xl md:w-56 h-14 w-[80vw] create-meeting-button cursor-pointer hover:bg-[#2563eb]">
       <img src="communityEvents/assets/camera-icon.svg" alt="">
       <h3 class="text-white">Create Meeting</h3>
     </div>
-    <div class="flex justify-center items-center gap-8 bg-[#22c55e] rounded-xl md:w-56 h-14 w-[80vw]">
+    <div class="flex justify-center items-center gap-8 bg-[#22c55e] rounded-xl md:w-56 h-14 w-[80vw] join-meeting-button cursor-pointer hover:bg-[#16a34a]">
       <img src="communityEvents/assets/people-icon.svg" alt="">
       <h3 class="text-white">Join Meeting</h3>
     </div>
@@ -121,6 +124,19 @@
         <button class="create-group bg-blue-500 text-white px-6 rounded-lg hover:bg-blue-600 w-[40%] text-sm h-full">Create Group</button>
       </div>
 
+    </div>
+  </div>
+
+  <div id="meetingPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center pointer-events-none opacity-0 transition-opacity">
+    <div class="bg-white p-6 rounded-lg w-80">
+      <h3 class="text-lg font-semibold mb-4">Enter Room Name</h3>
+      <input id="roomName" type="text" 
+            class="w-full border rounded p-2 mb-4" 
+            placeholder="Meeting room name" />
+      <div class="flex justify-end gap-2">
+        <button id="cancelJoinBtn" class="px-4 py-2 rounded bg-gray-200">Cancel</button>
+        <button id="confirmJoinBtn" class="px-4 py-2 rounded bg-blue-500 text-white">Join</button>
+      </div>
     </div>
   </div>
   

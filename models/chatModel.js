@@ -1,5 +1,26 @@
 const sql = require("mssql");
 const config = require("../dbConfig");
+const { callGemini } = require("../utils/geminiApi");
+
+async function isUserInConversation(userId, conversationId) {
+  let connection;
+
+  try {
+    connection = await sql.connect(config);
+    const result = await connection
+      .request()
+      .input("id", sql.Int, conversationId)
+      .query("SELECT User1ID, User2ID FROM Conversations WHERE ID = @id");
+
+    const convo = result.recordset[0];
+    return convo && (convo.User1ID === userId || convo.User2ID === userId);
+  } catch (err) {
+    console.error("Error in isUserInConversation:", err);
+    throw err;
+  } finally {
+    if (connection) await connection.close();
+  }
+}
 
 async function getOrCreateConversation(user1Id, user2Id) {
   const [userA, userB] =
@@ -120,10 +141,38 @@ async function deleteMessage(messageId, userId) {
   }
 }
 
+async function generateSmartReplies(message) {
+  const prompt = `Suggest 1 short, friendly reply to these messages from the perspective of the user. Do not include emojis. Messages from the user will be marked with (You:). Messages: "${message}"`;
+
+  const geminiResponse = await callGemini(prompt);
+  return geminiResponse.candidates[0].content.parts[0].text;
+}
+
+async function getMessageById(messageId) {
+  let connection;
+
+  try {
+    connection = await sql.connect(config);
+    const result = await connection
+      .request()
+      .input("messageId", sql.Int, messageId)
+      .query("SELECT * FROM Messages WHERE ID = @messageId");
+
+    return result.recordset[0]; // returns the message object or undefined
+  } catch (err) {
+    console.error("Error in getMessageById:", err);
+    throw err;
+  } finally {
+    if (connection) await connection.close();
+  }
+}
 module.exports = {
   getOrCreateConversation,
   getUserConversations,
   getMessages,
   sendMessage,
   deleteMessage,
+  generateSmartReplies,
+  isUserInConversation,
+  getMessageById,
 };

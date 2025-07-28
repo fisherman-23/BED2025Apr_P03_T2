@@ -11,9 +11,10 @@ const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
 const chatController = require("./controllers/chatController.js");
+
 const eventsController = require("./controllers/eventsController.js");
 const announcementsController = require("./controllers/announcementsController.js");
-
+const meetingsController = require("./controllers/meetingsController.js");
 
 const facilitiesController = require("./controllers/facilitiesController.js");
 const bookmarkController = require("./controllers/bookmarkController.js");
@@ -25,6 +26,10 @@ const exerciseController = require("./controllers/exerciseController.js");
 const medicationController = require("./controllers/medicationController.js");
 const appointmentController = require("./controllers/appointmentController.js");
 const goalController = require("./controllers/goalController.js");
+
+const swaggerJsdoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
+const swaggerFile = require("./swagger-output.json");
 
 const {
   validateCreateGroup,
@@ -40,22 +45,13 @@ const {
   validateUserId,
   validateLoginUser,
   validateCreateUser,
-  validateUpdateUser, 
+  validateUpdateUser,
   authenticateJWT,
 } = require("./middlewares/userValidation");
 const {
   protectSpecificRoutes,
   redirectIfAuthenticated,
 } = require("./middlewares/protectRoute");
-
-
-
-
-
-
-
-
-
 
 const validateMatchProfile = require("./middlewares/validateMatchProfile.js");
 const validateGoal = require("./middlewares/goalValidation.js");
@@ -74,9 +70,12 @@ const {
   validateReviewData,
   validateUpdateReviewData,
 } = require("./middlewares/reviewValidation.js");
+
 const {
     validateReportData,
 } = require("./middlewares/reportValidation.js"); 
+
+const { validateMessage } = require("./middlewares/chatValidation.js");
 
 const { compareSync } = require("bcrypt");
 const app = express();
@@ -91,6 +90,8 @@ app.use(redirectIfAuthenticated);
 app.get("/me", authenticateJWT, (req, res) => {
   res.json({ username: req.user.email, id: req.user.id, uuid: req.user.uuid });
 });
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -140,14 +141,12 @@ app.patch(
   friendController.acceptFriendRequest
 );
 
-
 app.post(
   "/api/upload/:folder",
-  authenticateJWT, upload.single("file"),
+  authenticateJWT,
+  upload.single("file"),
   handleUpload
 );
-
-
 
 app.patch(
   "/friend-requests/:id/reject",
@@ -206,14 +205,9 @@ app.post(
   matchController.skipUser
 );
 
-
 // Module 2: Community Events
 
-app.get(
-  "/groups/joined",
-  authenticateJWT,
-  eventsController.getJoinedGroups
-);
+app.get("/groups/joined", authenticateJWT, eventsController.getJoinedGroups);
 
 app.get(
   "/groups/available",
@@ -226,23 +220,21 @@ app.post(
   authenticateJWT,
   validateCreateGroup,
   eventsController.createGroup
-)
+);
 
 app.post(
   "/groups/join",
-  authenticateJWT, 
-  validateGroupId, 
+  authenticateJWT,
+  validateGroupId,
   eventsController.joinGroup
 );
 
 app.delete(
-  "/groups/leave", 
-  authenticateJWT, 
-  validateGroupId, 
+  "/groups/leave",
+  authenticateJWT,
+  validateGroupId,
   eventsController.leaveGroup
 );
-
-
 
 app.get(
   "/announcements",
@@ -277,6 +269,23 @@ app.delete(
   announcementsController.deleteComment
 );
 
+app.post(
+  "/meetings",
+  authenticateJWT,
+  meetingsController.createMeeting
+);
+
+app.get(
+  "/meetings/:meetingId/data",
+  authenticateJWT,
+  meetingsController.getMeetingData
+);
+
+app.get(
+  "/meetings/join",
+  authenticateJWT,
+  meetingsController.joinByName
+);
 
 
 
@@ -288,7 +297,8 @@ app.get(
   facilitiesController.getNearbyFacilities
 );
 
-app.get("/facilities/id/:id",
+app.get(
+  "/facilities/id/:id",
   authenticateJWT,
   validateFacilityId,
   facilitiesController.getFacilityById
@@ -301,11 +311,7 @@ app.get(
   facilitiesController.getFacilitiesByType
 );
 
-app.get(
-  "/facilities",
-  authenticateJWT,
-  facilitiesController.getFacilities
-);
+app.get("/facilities", authenticateJWT, facilitiesController.getFacilities);
 
 app.get(
   "/api/geocode",
@@ -403,11 +409,7 @@ app.post(
 
 // Module 4: Senior fitness coach
 
-app.get(
-  "/exercises/goals",
-  authenticateJWT,
-  goalController.getGoals
-);
+app.get("/exercises/goals", authenticateJWT, goalController.getGoals);
 
 app.get(
   "/exercises/incompleted-goals",
@@ -415,11 +417,7 @@ app.get(
   goalController.getIncompletedGoals
 );
 
-app.get(
-  "/exercises",
-  authenticateJWT,
-  exerciseController.getExercises
-);
+app.get("/exercises", authenticateJWT, exerciseController.getExercises);
 
 app.get(
   "/exercises/steps/:exerciseId",
@@ -439,11 +437,7 @@ app.put(
   exerciseController.updateExercisePreferences
 );
 
-app.put(
-  "/exercises/reset",
-  authenticateJWT,
-  goalController.resetGoal
-);
+app.put("/exercises/reset", authenticateJWT, goalController.resetGoal);
 
 app.post(
   "/exercises/personalisation",
@@ -451,15 +445,11 @@ app.post(
   exerciseController.personalisation
 );
 
-app.put(
-  "/exercises/goals",
-  authenticateJWT,
-  goalController.updateGoal
-)
+app.put("/exercises/goals", authenticateJWT, goalController.updateGoal);
 
 app.post(
   "/exercises/goals",
-  authenticateJWT, 
+  authenticateJWT,
   validateGoal,
   goalController.createGoal
 );
@@ -478,38 +468,101 @@ app.delete(
 
 // Module 1: Medication & Appointment Manager
 // Medication routes
-app.post("/api/medications", authenticateJWT, medicationController.createMedication);
-app.get("/api/medications", authenticateJWT, medicationController.getUserMedications);
-app.get("/api/medications/:id", authenticateJWT, medicationController.getMedicationById);
-app.put("/api/medications/:id", authenticateJWT, medicationController.updateMedication);
-app.delete("/api/medications/:id", authenticateJWT, medicationController.deleteMedication);
-app.post("/api/medications/:id/taken", authenticateJWT, medicationController.markMedicationTaken);
-app.get("/api/medications/reminders/upcoming", authenticateJWT, medicationController.getUpcomingReminders);
+app.post(
+  "/api/medications",
+  authenticateJWT,
+  medicationController.createMedication
+);
+app.get(
+  "/api/medications",
+  authenticateJWT,
+  medicationController.getUserMedications
+);
+app.get(
+  "/api/medications/:id",
+  authenticateJWT,
+  medicationController.getMedicationById
+);
+app.put(
+  "/api/medications/:id",
+  authenticateJWT,
+  medicationController.updateMedication
+);
+app.delete(
+  "/api/medications/:id",
+  authenticateJWT,
+  medicationController.deleteMedication
+);
+app.post(
+  "/api/medications/:id/taken",
+  authenticateJWT,
+  medicationController.markMedicationTaken
+);
+app.get(
+  "/api/medications/reminders/upcoming",
+  authenticateJWT,
+  medicationController.getUpcomingReminders
+);
 
 // Appointment routes
-app.post("/api/appointments", authenticateJWT, appointmentController.createAppointment);
-app.get("/api/appointments", authenticateJWT, appointmentController.getUserAppointments);
-app.get("/api/appointments/:id", authenticateJWT, appointmentController.getAppointmentById);
-app.put("/api/appointments/:id", authenticateJWT, appointmentController.updateAppointment);
-app.delete("/api/appointments/:id", authenticateJWT, appointmentController.deleteAppointment);
+app.post(
+  "/api/appointments",
+  authenticateJWT,
+  appointmentController.createAppointment
+);
+app.get(
+  "/api/appointments",
+  authenticateJWT,
+  appointmentController.getUserAppointments
+);
+app.get(
+  "/api/appointments/:id",
+  authenticateJWT,
+  appointmentController.getAppointmentById
+);
+app.put(
+  "/api/appointments/:id",
+  authenticateJWT,
+  appointmentController.updateAppointment
+);
+app.delete(
+  "/api/appointments/:id",
+  authenticateJWT,
+  appointmentController.deleteAppointment
+);
 
 // Doctor routes
 app.get("/api/doctors", authenticateJWT, appointmentController.getAllDoctors);
-app.get("/api/doctors/search", authenticateJWT, appointmentController.searchDoctors);
-app.get("/api/doctors/:doctorId/availability", authenticateJWT, appointmentController.getDoctorAvailability);
+app.get(
+  "/api/doctors/search",
+  authenticateJWT,
+  appointmentController.searchDoctors
+);
+app.get(
+  "/api/doctors/:doctorId/availability",
+  authenticateJWT,
+  appointmentController.getDoctorAvailability
+);
 
 // Appointment helper routes
-app.post("/api/appointments/:id/reminder", authenticateJWT, appointmentController.sendAppointmentReminder);
-app.post("/api/appointments/:id/directions", authenticateJWT, appointmentController.getDirections);
+app.post(
+  "/api/appointments/:id/reminder",
+  authenticateJWT,
+  appointmentController.sendAppointmentReminder
+);
+app.post(
+  "/api/appointments/:id/directions",
+  authenticateJWT,
+  appointmentController.getDirections
+);
 
 app.get("/medicationManager", (req, res) => {
   res.sendFile(path.join(__dirname, "public/medicationManager.html"));
 });
 
-
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
-});  
+});
 
 if (require.main === module) {
   app.listen(port, () => {
@@ -534,6 +587,7 @@ app.get(
 app.post(
   "/conversations/:conversationId/messages",
   authenticateJWT,
+  validateMessage,
   chatController.sendMessage
 );
 
@@ -542,6 +596,8 @@ app.delete(
   authenticateJWT,
   chatController.deleteMessage
 );
+
+app.post("/smart-reply", authenticateJWT, chatController.getSmartReplies);
 
 process.on("SIGINT", async () => {
   console.log("Server is gracefully shutting down");
