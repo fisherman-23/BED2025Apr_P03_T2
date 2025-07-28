@@ -3,10 +3,13 @@ class FacilityManager {
     this.currentLocation = null;
     this.filtered = [];
     this.facilities = [];
+    this.baseDataset = []; // Current base dataset (nearby or all facilities)
+    this.isNearbyMode = false;
     this.selectedFilter = null;
     this.currentFacility = null;
     this.currentNotes = null;
     this.isEditing = false;
+    this.isSharing = false;
   }
 
   async initializeElements() {
@@ -20,6 +23,10 @@ class FacilityManager {
     this.bookmarkPopup = document.getElementById('bookmarkPopup');
     this.locationNameInput = document.getElementById('locationName');
     this.locationNotesInput = document.getElementById('locationNotes');
+
+    this.startNavigation.addEventListener('click', () => {
+      this.handleStartNavigation();
+    });
   }
 
   async init() {
@@ -113,7 +120,11 @@ class FacilityManager {
         await new Promise(resolve => setTimeout(resolve, 2000));
         await this.fetchFacilities();
       } else {
+        this.baseDataset = facilities; // Set nearby facilities as base
+        this.facilities = facilities; // Also update facilities for compatibility
         this.filtered = facilities;
+        this.isNearbyMode = true;
+        this.hideFilterButtons(); // Hide type filters in nearby mode
         this.renderList();
       }
     } catch (error) {
@@ -133,9 +144,12 @@ class FacilityManager {
       }
       const facilities = await res.json();
       this.facilities = facilities;
+      this.baseDataset = facilities; // Set base dataset
       this.filtered = this.facilities;
+      this.isNearbyMode = false; // Track mode
       this.selectedFilter = null;
       this.activeFiltersContainer.innerHTML = '';
+      this.showFilterButtons(); // Show type filters in all mode
       this.renderList();
     } catch (error) {
       console.error("Error fetching facilities:", error);
@@ -231,6 +245,36 @@ class FacilityManager {
     });
   }
 
+  // Hide type filter buttons (for nearby mode)
+  hideFilterButtons() {
+    const typeFilters = [
+      'filterByPolyclinics',
+      'filterByCommunityCentres', 
+      'filterByParks',
+      'filterByHospitals'
+    ];
+    
+    typeFilters.forEach(id => {
+      const button = document.getElementById(id);
+      if (button) button.style.display = 'none';
+    });
+  }
+
+  // Show type filter buttons (for all facilities mode)
+  showFilterButtons() {
+    const typeFilters = [
+      'filterByPolyclinics',
+      'filterByCommunityCentres',
+      'filterByParks', 
+      'filterByHospitals'
+    ];
+    
+    typeFilters.forEach(id => {
+      const button = document.getElementById(id);
+      if (button) button.style.display = '';
+    });
+  }
+
   // Updates the active filters display
   updateActiveFilters(facilityType) {
     this.activeFiltersContainer.innerHTML = '<h3>Active Filters:</h3>';
@@ -289,6 +333,7 @@ class FacilityManager {
     this.initBookmarkButton(facility).then(() => {
       this.showBookmarkNotes(facility);
     });
+    this.initShareButton(facility);
   }
 
   // Renders the list of facilities based on the current filter
@@ -371,6 +416,37 @@ class FacilityManager {
         }
       }
     };
+  }
+
+  initShareButton(facility) {
+    const shareButton = document.getElementById('shareButton');
+    
+    shareButton.onclick = async () => {
+      await this.shareFacility(facility);
+    };
+  }
+
+  async shareFacility(facility) {
+    if (!navigator.share) {
+      alert("Sharing is not supported in this browser.");
+      return;
+    }
+    if (this.isSharing) {
+      console.warn("Share operation already in progress.");
+      return;
+    }
+    this.isSharing = true;
+    try {
+      await navigator.share({
+        title: facility.name,
+        text: `Check out this facility: ${facility.name}`,
+        url: `${window.location.origin}/facility.html?facilityId=${facility.facilityId}`
+      });
+      console.log('Facility shared successfully');
+    } catch (err) {
+      console.error('Error sharing:', err);
+    }
+    this.isSharing = false;
   }
 
   async checkIfBookmarked(facilityId) {
@@ -468,6 +544,7 @@ class FacilityManager {
       this.currentNotes = this.locationNotesInput.value;
 
       await this.initBookmarkButton(this.currentFacility);
+      this.initShareButton(this.currentFacility);
       await this.showBookmarkNotes(this.currentFacility);
 
       alert("Bookmark saved successfully!");
@@ -506,6 +583,7 @@ class FacilityManager {
       this.currentNotes = this.locationNotesInput.value;
 
       await this.initBookmarkButton(this.currentFacility);
+      this.initShareButton(this.currentFacility);
       await this.showBookmarkNotes(this.currentFacility);
 
       alert("Bookmark updated successfully!");
@@ -532,12 +610,22 @@ class FacilityManager {
 
       if (this.currentFacility) {
         await this.initBookmarkButton(this.currentFacility);
+        this.initShareButton(this.currentFacility);
         await this.showBookmarkNotes(this.currentFacility);
       }
     } catch (error) {
       console.error("Error removing bookmark:", error);
       alert("Failed to remove bookmark. Please try again later.");
     }
+  }
+
+  // Handles the start navigation button click
+  async handleStartNavigation() {
+    if (!this.currentFacility || !this.currentFacility.static_map_url) {
+      alert("No facility selected for navigation.");
+      return;
+    }
+    window.location.href = `/navigation.html?facilityId=${this.currentFacility.facilityId}`;
   }
 }
 

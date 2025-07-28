@@ -31,7 +31,7 @@ async function getReviewsByFacilityId(facilityId) {
     }
 }
 
-async function addReview(reviewData) {
+async function createReview(reviewData) {
     let connection;
     try {
         connection = await sql.connect(dbConfig);
@@ -95,8 +95,7 @@ async function deleteReview(reviewId, userId) {
     try {
         connection = await sql.connect(dbConfig);
         const query = `
-            UPDATE Reviews
-            SET IsActive = 0, lastModified = GETDATE()
+            DELETE FROM Reviews
             WHERE ReviewId = @ReviewId AND UserId = @UserId
         `;
         const request = connection.request();
@@ -118,38 +117,9 @@ async function deleteReview(reviewId, userId) {
     }
 }
 
-async function createReport(reportData) {
-    let connection;
-    try {
-        connection = await sql.connect(dbConfig);
-        const query = `
-            INSERT INTO Reports (ReviewId, UserId, CreatedAt, Reason)
-            VALUES (@ReviewId, @UserId, GETDATE(), @Reason)
-        `;
-        const request = connection.request();
-        request.input("ReviewId", sql.Int, reportData.reviewId);
-        request.input("UserId", sql.Int, reportData.userId);
-        request.input("Reason", sql.NVarChar, reportData.reason);
-        const result = await request.query(query);
-        return result.rowsAffected[0] > 0;
-    } catch (error) {
-        console.error("Error reporting review:", error);
-        throw error;
-    } finally {
-        if (connection) {
-            try {
-                await connection.close();
-            } catch (err) {
-                console.error("Error closing database connection:", err);
-            }
-        }
-    }
-}
-
 module.exports = {
     getReviewsByFacilityId,
-    addReview,
+    createReview,
     updateReview,
     deleteReview,
-    createReport
 }

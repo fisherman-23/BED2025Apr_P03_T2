@@ -261,3 +261,31 @@ main {
     display: flex;
     gap: 1rem;
 }
+.weather-popup {
+    position: fixed;
+    top: 30px;
+    right: 20px;
+    background: #F6F5F8;
+    border-left: #D7E961 solid 5px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    border-radius: 10px;
+    max-width: 25%;
+    padding: 0.5rem 1rem;
+    display: none;
+}
+
+.weather-close {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.5rem;
+    font-size: 1.4rem;
+    background: transparent;
+    border: none;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+}
+
+.weather-content p {
+    font-size: 1.2rem;
+    margin: 0.3rem 0;
+}
