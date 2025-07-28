@@ -27,6 +27,44 @@ if (list) {
   console.error("Exercise list not found in cache.");
 }
 
+// External API
+navigator.geolocation.getCurrentPosition(
+  async (position) => {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+
+    try {
+      const res = await fetch("/exercise/weather", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify({ lat, lon })
+      });
+      const data = await res.json();
+
+      const message = `
+        <p><strong>Weather in ${data.location}</strong></p>
+        <p>${data.description.charAt(0).toUpperCase() + data.description.slice(1)}</p>
+        <p>Temp: ${data.temp}°C (Feels like: ${data.feelsLike}°C)</p>
+        <p>${data.message}</p>
+      `;
+      document.getElementById("weather-message").innerHTML = message;
+      document.getElementById("weather-notification").style.display = "block";
+    } catch (error) {
+      console.error("Weather fetch error:", error);
+    }
+  },
+  (error) => {
+    console.error("Geolocation error:", error.message);
+  }
+);
+
+document.getElementById('weather-close').addEventListener('click', ()=>{
+  document.getElementById("weather-notification").style.display = "none";
+});
+
 const button = document.querySelector(".startButton");
 let hasStarted = false;
 
