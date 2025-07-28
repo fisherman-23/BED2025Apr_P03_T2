@@ -69,6 +69,5 @@ module.exports = {
     getReviewsByFacilityId,
     createReview,
     updateReview,
-    createReview,
     deleteReview
 };

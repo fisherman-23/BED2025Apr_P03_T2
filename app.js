@@ -67,7 +67,6 @@ const {
 } = require("./middlewares/facilitiesValidation.js");
 const {
   validateBookmarkId,
-  validateFacilityIdParam,
   validateBookmarkData,
 } = require("./middlewares/bookmarkValidation.js");
 const {
