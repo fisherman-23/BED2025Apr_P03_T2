@@ -24,6 +24,7 @@ const exerciseController = require("./controllers/exerciseController.js");
 const medicationController = require("./controllers/medicationController.js");
 const appointmentController = require("./controllers/appointmentController.js");
 const goalController = require("./controllers/goalController.js");
+const weatherController = require("./controllers/weatherController.js")
 
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
@@ -432,6 +433,12 @@ app.delete(
   "/exercises/preferences",
   authenticateJWT,
   exerciseController.deleteExercisePreference
+);
+
+app.post(
+  '/exercise/weather',
+  authenticateJWT,
+  weatherController.getWeather
 );
 
 // Module 1: Medication & Appointment Manager
