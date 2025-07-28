@@ -420,8 +420,11 @@ CREATE TABLE Announcements (
     Title VARCHAR(100) NOT NULL,
     Content VARCHAR(1000) NOT NULL,
     ImageUrl VARCHAR(500),
-    PostedAt DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (GroupID) REFERENCES Groups(ID)
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    CreatedBy INT NOT NULL,
+    
+    FOREIGN KEY (GroupID) REFERENCES Groups(ID),
+    FOREIGN KEY (CreatedBy) REFERENCES Users(ID)
 );
 
 CREATE TABLE Comments (
@@ -639,4 +642,19 @@ CREATE TABLE goals (
     FOREIGN KEY (userId) REFERENCES Users(ID)
 );
 
+CREATE TABLE exerciseLogs (
+    logId INT PRIMARY KEY IDENTITY(1,1),
+    userID INT NOT NULL,
+    exerciseID INT NOT NULL,
+    completedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+	FOREIGN KEY (userId) REFERENCES Users(ID),
+	FOREIGN KEY (exerciseId) REFERENCES exercises(exerciseId) 
+);
 
+CREATE TABLE goalLogs (
+    logId INT PRIMARY KEY IDENTITY(1,1),
+    userID INT NOT NULL,
+    goalID INT NOT NULL,
+    completedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+	FOREIGN KEY (userId) REFERENCES Users(ID),
+);

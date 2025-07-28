@@ -23,24 +23,25 @@ async function loadJoinedGroups() {
 
       groupDiv.innerHTML = `
       <div class="w-[90vw] md:w-[75vw] h-fit-content rounded-2xl flex justify-between items-center flex-row">
-        <div class="flex bg-[#f9fafb] w-[90vw] md:w-[75vw] h-fit-content p-4 rounded-2xl justify-between items-center md:flex-row flex-col-reverse">
-          <div class="flex flex-col justify-center gap-1">
+        <div class="flex bg-[#f9fafb] w-[90vw] md:w-[75vw] h-fit-content p-4 rounded-2xl justify-between items-center md:flex-row flex-col-reverse relative">
+          <div class="flex flex-col justify-center gap-1 w-full md:w-auto">
             <h2 class="text-gray-800 text-opacity-50 text-xl">${group.IsPrivate ? "Private" : "Public"}</h2>
             <h1 class="font-bold text-[1.4rem]">${group.Name}</h1>
             <h3 class="text-gray-800 text-opacity-70 text-lg leading-snug">${group.Description || ""}</h3>
-            <button data-groupId="${group.ID}" data-groupName="${group.Name}" class="view-announcements-btn bg-[#d7e961] w-fit px-4 py-2 rounded-xl mt-6">View Announcements</button>
+            <div class="flex justify-between items-center mt-6">
+              <button data-groupId="${group.ID}" data-groupName="${group.Name}" class="view-announcements-btn bg-[#d7e961] w-fit px-4 py-2 rounded-xl">View Announcements</button>
+              <div class="w-fit-content flex justify-center items-center md:hidden">
+                <div class="flex flex-row justify-center items-center gap-1 exit-group cursor-pointer leave-group-button" data-group-id="${group.ID}">
+                  <h5>Exit</h5>
+                  <img src="communityEvents/assets/cross.svg" alt="Exit group icon" class="w-8 h-8">
+                </div>
+              </div>
+            </div>
           </div>
           <img src="${group.GroupPicture}"
           onerror="this.onerror=null; this.src='communityEvents/assets/failedImage.jpg';" 
           alt="${group.Name} Group Image" 
-          class="w-96 h-48 rounded-2xl md:ml-4 object-cover">
-
-          <div class="w-fit-content flex justify-center items-center md:hidden flex absolute right-14">
-            <div class="flex flex-row justify-center items-center gap-1 exit-group cursor-pointer leave-group-button" data-group-id="${group.ID}">
-              <h5>Exit</h5>
-              <img src="communityEvents/assets/cross.svg" alt="Exit group icon" class="w-8 h-8">
-            </div>
-          </div>
+          class="w-96 h-48 rounded-2xl md:ml-4 object-cover mb-4 md:mb-0">
         </div>
 
         <div class="w-fit-content ml-4 flex justify-center items-center hidden md:flex">
