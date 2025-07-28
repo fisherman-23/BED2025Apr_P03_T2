@@ -1,4 +1,18 @@
 const chatModel = require("../models/chatModel");
+/**
+ * Starts a new conversation between two users if one doesn't exist,
+ * or retrieves the existing conversation.
+ *
+ * @param {import("express").Request} req - Express request object.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * Request body should contain:
+ * @param {string} req.body.otherUserId - The ID of the other user to start a conversation with.
+ *
+ * Authentication middleware must attach `req.user.id` (current user ID).
+ *
+ * @returns {void} Responds with the conversation object or an error.
+ */
 async function startConversation(req, res) {
   const user1 = req.user.id;
   const { otherUserId } = req.body;
@@ -11,6 +25,14 @@ async function startConversation(req, res) {
   }
 }
 
+/**
+ * Retrieves all conversations that is under the authenticated user.
+ *
+ * @param {import("express").Request} req - Express request object. Requires 'req.user.id' from the middleware.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Returns a JSON array of conversations or an error response.
+ */
 async function getConversations(req, res) {
   const userId = req.user.id;
   try {
@@ -21,6 +43,14 @@ async function getConversations(req, res) {
   }
 }
 
+/**
+ * Retrieves all messages in a conversation if the authenticated user is a participant.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.params.conversationId`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with an array of messages or an appropriate error.
+ */
 async function getMessages(req, res) {
   const userId = parseInt(req.user.id);
   const conversationId = parseInt(req.params.conversationId);
@@ -48,6 +78,14 @@ async function getMessages(req, res) {
   }
 }
 
+/**
+ * Sends a message in a conversation on behalf of the authenticated user.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id`, `req.params.conversationId`, and `req.body.content`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with the created message or an error.
+ */
 async function sendMessage(req, res) {
   const senderId = parseInt(req.user.id);
   const conversationId = parseInt(req.params.conversationId);
@@ -82,6 +120,14 @@ async function sendMessage(req, res) {
   }
 }
 
+/**
+ * Deletes a message if the authenticated user is a participant in the conversation.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.params.messageId`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with 204 on success, or appropriate error codes.
+ */
 async function deleteMessage(req, res) {
   const userId = parseInt(req.user.id);
   const messageId = parseInt(req.params.messageId);
@@ -118,6 +164,14 @@ async function deleteMessage(req, res) {
   }
 }
 
+/**
+ * Generates smart reply suggestions based on the provided message content.
+ *
+ * @param {import("express").Request} req - Express request object. Requires 'req.body.content'.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with an array of smart reply suggestions or an error.
+ */
 async function getSmartReplies(req, res) {
   const { content } = req.body;
 

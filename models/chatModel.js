@@ -2,6 +2,14 @@ const sql = require("mssql");
 const config = require("../dbConfig");
 const { callGemini } = require("../utils/geminiApi");
 
+/**
+ * Checks if a user is a participant in a given conversation.
+ *
+ * @param {number} userId - ID of the user to check.
+ * @param {number} conversationId - ID of the conversation.
+ * @returns {Promise<boolean>} True if the user is in the conversation, false otherwise.
+ * @throws Will throw if the database query fails.
+ */
 async function isUserInConversation(userId, conversationId) {
   let connection;
 
@@ -21,7 +29,14 @@ async function isUserInConversation(userId, conversationId) {
     if (connection) await connection.close();
   }
 }
-
+/**
+ * Retrieves an existing conversation between two users or creates a new one if it doesn't exist.
+ *
+ * @param {number} user1Id - ID of the first user.
+ * @param {number} user2Id - ID of the second user.
+ * @returns {Promise<Object>} The conversation object from the database.
+ * @throws Will throw if the database operation fails.
+ */
 async function getOrCreateConversation(user1Id, user2Id) {
   const [userA, userB] =
     user1Id < user2Id ? [user1Id, user2Id] : [user2Id, user1Id];
@@ -52,7 +67,13 @@ async function getOrCreateConversation(user1Id, user2Id) {
     if (connection) await connection.close();
   }
 }
-
+/**
+ * Fetches all conversations that the specified user is a participant in.
+ *
+ * @param {number} userId - ID of the user.
+ * @returns {Promise<Object[]>} Array of conversation objects with user details.
+ * @throws Will throw if the database operation fails.
+ */
 async function getUserConversations(userId) {
   let connection;
   try {
@@ -85,7 +106,13 @@ async function getUserConversations(userId) {
     }
   }
 }
-
+/**
+ * Retrieves all messages for a specific conversation, ordered by send time.
+ *
+ * @param {number} conversationId - ID of the conversation.
+ * @returns {Promise<Object[]>} Array of message objects.
+ * @throws Will throw if the database operation fails.
+ */
 async function getMessages(conversationId) {
   let connection;
   try {
@@ -102,7 +129,15 @@ async function getMessages(conversationId) {
     if (connection) await connection.close();
   }
 }
-
+/**
+ * Inserts a new message into a conversation and returns the created message.
+ *
+ * @param {number} conversationId - ID of the conversation.
+ * @param {number} senderId - ID of the user sending the message.
+ * @param {string} content - Content of the message.
+ * @returns {Promise<Object>} The inserted message object.
+ * @throws Will throw if the database operation fails.
+ */
 async function sendMessage(conversationId, senderId, content) {
   let connection;
   try {
@@ -123,7 +158,14 @@ async function sendMessage(conversationId, senderId, content) {
     if (connection) await connection.close();
   }
 }
-
+/**
+ * Marks a message as deleted if the requester is the original sender.
+ *
+ * @param {number} messageId - ID of the message to delete.
+ * @param {number} userId - ID of the user attempting to delete the message.
+ * @returns {Promise<void>}
+ * @throws Will throw if the database operation fails.
+ */
 async function deleteMessage(messageId, userId) {
   let connection;
   try {
@@ -140,13 +182,27 @@ async function deleteMessage(messageId, userId) {
     if (connection) await connection.close();
   }
 }
-
+/**
+ * Generates a smart reply suggestion based on the given message content using Gemini API.
+ *
+ * @param {string} message - The message to generate a reply for.
+ * @returns {Promise<string>} A short, friendly reply string.
+ * @throws Will throw if the Gemini API call fails.
+ */
 async function generateSmartReplies(message) {
-  const prompt = `Suggest 1 short, friendly reply to these messages from the perspective of the user. Do not include emojis. Messages from the user will be marked with (You:). Messages: "${message}"`;
+  const prompt = `Suggest 1 short, friendly reply to these messages from the perspective of the user, not the other person. Do not include emojis. Messages: "${message}"`;
 
   const geminiResponse = await callGemini(prompt);
   return geminiResponse.candidates[0].content.parts[0].text;
 }
+
+/**
+ * Retrieves a specific message by its ID.
+ *
+ * @param {number} messageId - ID of the message.
+ * @returns {Promise<Object|undefined>} The message object or undefined if not found.
+ * @throws Will throw an error if the database operation fails.
+ */
 
 async function getMessageById(messageId) {
   let connection;
