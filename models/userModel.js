@@ -2,7 +2,12 @@ const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 const { hash, compare } = require("../utils/hash.js");
 const jwt = require("jsonwebtoken");
-
+/**
+ * Logs in a user using their email or phone number and password.
+ * @param {string} searchTerm - The user's email or phone number.
+ * @param {string} Password - The user's plain text password.
+ * @returns {Promise<Object>} An object containing either `{ user, token, refreshToken }` or `{ error }`.
+ */
 async function loginUser(searchTerm, Password) {
   let connection;
   try {
@@ -51,7 +56,11 @@ async function loginUser(searchTerm, Password) {
     }
   }
 }
-
+/**
+ * Retrieves a user by their database ID.
+ * @param {number} ID - The user's ID.
+ * @returns {Promise<Object|null>} The user object if found, otherwise null.
+ */
 async function getUserById(ID) {
   let connection;
   try {
@@ -84,7 +93,11 @@ async function getUserById(ID) {
     }
   }
 }
-
+/**
+ * Retrieves a user by their public UUID.
+ * @param {string} uuid - The user's public UUID.
+ * @returns {Promise<Object|null>} The user object if found, otherwise null.
+ */
 async function getUserByUUID(uuid) {
   let connection;
   try {
@@ -115,7 +128,17 @@ async function getUserByUUID(uuid) {
     }
   }
 }
-
+/**
+ * Creates a new user account with the provided data.
+ * @param {Object} userData - The user's registration data.
+ * @param {string} userData.Email - The user's email.
+ * @param {string} userData.Password - The user's password (plain text).
+ * @param {string} userData.Name - The user's name.
+ * @param {string} userData.PhoneNumber - The user's phone number.
+ * @param {string} userData.DateOfBirth - The user's birth date (YYYY-MM-DD).
+ * @param {string} [userData.ProfilePicture] - Optional profile picture URL.
+ * @returns {Promise<Object>} The newly created user object, or an error object.
+ */
 async function createUser(userData) {
   let connection;
   try {
@@ -147,7 +170,10 @@ async function createUser(userData) {
     request.input("AboutMe", null);
     request.input("PhoneNumber", userData.PhoneNumber);
     request.input("DateOfBirth", userData.DateOfBirth); //format: YYYY-MM-DD
-    request.input("ProfilePicture", userData.ProfilePicture || '/assets/images/defaultPFP.png');
+    request.input(
+      "ProfilePicture",
+      userData.ProfilePicture || "/assets/images/defaultPFP.png"
+    );
     request.input("IsActive", 1);
 
     const result = await request.query(query);
@@ -166,7 +192,19 @@ async function createUser(userData) {
     }
   }
 }
-
+/**
+ * Updates an existing user's profile information.
+ * @param {number} ID - The ID of the user to update.
+ * @param {Object} userData - The new user data.
+ * @param {string} userData.Email - The new email.
+ * @param {string} userData.Name - The new name.
+ * @param {string} userData.PhoneNumber - The new phone number.
+ * @param {string} [userData.AboutMe] - The user's updated bio/about info.
+ * @param {string} [userData.ProfilePicture] - Optional new profile picture URL.
+ * @param {string} [userData.Password] - The current password, required if changing password.
+ * @param {string} [userData.NewPassword] - The new password to update to.
+ * @returns {Promise<Object|null>} The updated user object, or null if the update failed or password was incorrect.
+ */
 async function updateUser(ID, userData) {
   let connection;
   try {
@@ -244,7 +282,11 @@ async function updateUser(ID, userData) {
     }
   }
 }
-
+/**
+ * Soft deletes (deactivates) a user by setting `IsActive` to 0.
+ * @param {number} ID - The ID of the user to deactivate.
+ * @returns {Promise<Object|null>} The user object before deletion, or null if not found.
+ */
 async function deleteUser(ID) {
   const userToDelete = await getUserById(ID);
   let connection;

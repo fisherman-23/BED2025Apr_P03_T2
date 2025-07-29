@@ -1,6 +1,14 @@
 const { user } = require("../dbConfig");
 const userModel = require("../models/userModel");
-
+/**
+ * Logs in a user using a search term (username/email/etc.) and password.
+ * Sets auth and refresh cookies on success.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `searchTerm` and `Password` in body.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with user data or error.
+ */
 async function loginUser(req, res) {
   const { searchTerm, Password } = req.body;
 
@@ -28,7 +36,14 @@ async function loginUser(req, res) {
     res.status(500).json({ error: "Error logging in user" });
   }
 }
-
+/**
+ * Logs out the user by clearing authentication cookies.
+ *
+ * @param {import("express").Request} req - Express request object.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with logout confirmation.
+ */
 function logoutUser(req, res) {
   try {
     res.clearCookie("token");
@@ -38,7 +53,14 @@ function logoutUser(req, res) {
     res.status(500).json({ error: "Error logging out user" });
   }
 }
-
+/**
+ * Retrieves user data by numeric ID.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `ID` param.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with user data or 404 if not found.
+ */
 async function getUserById(req, res) {
   try {
     const id = parseInt(req.params.ID, 10);
@@ -52,13 +74,25 @@ async function getUserById(req, res) {
     res.status(500).json({ error: "Error retrieving user" });
   }
 }
-
+/**
+ * Validates whether a string is a valid UUID (v1–v5).
+ *
+ * @param {string} uuid - The UUID string to validate.
+ * @returns {boolean} True if valid UUID, false otherwise.
+ */
 function isValidUUID(uuid) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     uuid
   );
 }
-
+/**
+ * Retrieves user data by UUID.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `uuid` param.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with user data or validation/error messages.
+ */
 async function getUserByUUID(req, res) {
   try {
     const uuid = req.params.uuid;
@@ -78,7 +112,14 @@ async function getUserByUUID(req, res) {
     res.status(500).json({ error: "Error retrieving user by UUID" });
   }
 }
-
+/**
+ * Creates a new user from request body data.
+ *
+ * @param {import("express").Request} req - Express request object. Requires user fields in body.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with created user data or validation errors.
+ */
 async function createUser(req, res) {
   try {
     const newUser = await userModel.createUser(req.body);
@@ -91,7 +132,14 @@ async function createUser(req, res) {
     res.status(500).json({ error: "Error creating user" });
   }
 }
-
+/**
+ * Updates an existing user by ID with new data.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `ID` param and body with updated fields.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with updated user or error if not found.
+ */
 async function updateUser(req, res) {
   try {
     const id = parseInt(req.params.ID, 10);
@@ -107,7 +155,14 @@ async function updateUser(req, res) {
     res.status(500).json({ error: "Error updating user" });
   }
 }
-
+/**
+ * Deletes a user by ID.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `ID` param.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with 204 on success, or 404/error.
+ */
 async function deleteUser(req, res) {
   try {
     const id = parseInt(req.params.ID, 10);

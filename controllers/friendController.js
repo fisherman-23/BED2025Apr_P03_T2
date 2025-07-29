@@ -1,5 +1,13 @@
 const friendModel = require("../models/friendModel");
 
+/**
+ * Sends a friend request from the authenticated user to another user by UUID.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.params.uuid`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with a success message or an error status.
+ */
 async function sendFriendRequest(req, res) {
   console.log("Received request to send friend request");
   const senderId = req.user.id; // from JWT middleware
@@ -56,7 +64,14 @@ async function sendFriendRequest(req, res) {
     res.status(500).json({ message: "Server error" });
   }
 }
-
+/**
+ * Lists all incoming and outgoing pending friend requests for the authenticated user.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with incoming and outgoing friend requests.
+ */
 async function listAllPendingRequests(req, res) {
   try {
     const userId = req.user.id;
@@ -70,7 +85,14 @@ async function listAllPendingRequests(req, res) {
     console.error(err);
     res.status(500).json({ message: "Failed to fetch friend requests" });
   }
-}
+} /**
+ * Retrieves the full list of friends for the authenticated user.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with a list of friends or an error.
+ */
 async function listFriends(req, res) {
   try {
     const userId = req.user.id;
@@ -82,7 +104,14 @@ async function listFriends(req, res) {
     res.status(500).json({ message: "Failed to fetch friends list" });
   }
 }
-
+/**
+ * Accepts a pending friend request by request ID for the authenticated user.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.params.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with a confirmation or error status.
+ */
 async function acceptFriendRequest(req, res) {
   const userId = req.user.id;
   console.log("User ID:", userId);
@@ -100,7 +129,14 @@ async function acceptFriendRequest(req, res) {
     res.status(500).json({ message: "Server error" });
   }
 }
-
+/**
+ * Rejects a pending friend request by request ID for the authenticated user.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.params.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with a confirmation or error status.
+ */
 async function rejectFriendRequest(req, res) {
   const userId = req.user.id;
   const requestId = parseInt(req.params.id);
@@ -116,7 +152,14 @@ async function rejectFriendRequest(req, res) {
     res.status(500).json({ message: "Server error" });
   }
 }
-
+/**
+ * Removes an existing friend relationship between the authenticated user and another user.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.params.friendId`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with a success or error message.
+ */
 async function removeFriend(req, res) {
   const userId = req.user.id;
   const friendId = parseInt(req.params.friendId);
@@ -140,6 +183,14 @@ async function removeFriend(req, res) {
     return res.status(500).json({ message: "Internal server error" });
   }
 }
+/**
+ * Withdraws an outgoing pending friend request by ID for the authenticated user.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.params.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with a success message or a 404 if the request is not found.
+ */
 async function withdrawFriendRequest(req, res) {
   const userId = req.user.id;
   const requestId = parseInt(req.params.id);

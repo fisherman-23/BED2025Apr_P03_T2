@@ -3,6 +3,12 @@ const dbConfig = require("../dbConfig");
 const { hash, compare } = require("../utils/hash.js");
 const jwt = require("jsonwebtoken");
 
+/**
+ * Creates a new match profile for a user.
+ * @param {number} userId - The ID of the user.
+ * @param {Object} data - The profile data including bio and hobby preferences.
+ * @returns {Promise<boolean>} True if profile was created successfully.
+ */
 async function createMatchProfile(userId, data) {
   let connection;
   try {
@@ -49,6 +55,11 @@ async function createMatchProfile(userId, data) {
   }
 }
 
+/**
+ * Checks if a user already has a match profile.
+ * @param {number} userId - The ID of the user.
+ * @returns {Promise<boolean>} True if a match profile exists.
+ */
 async function hasMatchProfile(userId) {
   let connection;
   try {
@@ -71,7 +82,12 @@ async function hasMatchProfile(userId) {
     }
   }
 }
-
+/**
+ * Updates the match profile for a given user.
+ * @param {number} userId - The ID of the user.
+ * @param {Object} data - The updated profile data including bio and hobbies.
+ * @returns {Promise<boolean>} True if profile was updated successfully.
+ */
 async function updateMatchProfile(userId, data) {
   let connection;
   try {
@@ -118,7 +134,11 @@ async function updateMatchProfile(userId, data) {
     }
   }
 }
-
+/**
+ * Retrieves the match profile of a user by their ID.
+ * @param {number} userId - The ID of the user.
+ * @returns {Promise<Object|null>} The user's match profile or null if not found.
+ */
 async function getMatchProfileByUserId(userId) {
   let connection;
   try {
@@ -145,6 +165,11 @@ async function getMatchProfileByUserId(userId) {
   }
 }
 
+/**
+ * Finds potential matches for a user based on hobby similarity.
+ * @param {number} userId - The ID of the user to match against others.
+ * @returns {Promise<Object[]>} An array of potential match profiles.
+ */
 async function getPotentialMatches(userId) {
   let connection;
   try {
@@ -217,7 +242,12 @@ async function getPotentialMatches(userId) {
     }
   }
 }
-
+/**
+ * Likes a target user and creates a match if both users like each other.
+ * @param {number} userId - The ID of the user performing the like action.
+ * @param {number} targetUserId - The ID of the user being liked.
+ * @returns {Promise<{ matched: boolean }>} Whether the like resulted in a match.
+ */
 async function likeUser(userId, targetUserId) {
   let connection;
   try {
@@ -296,7 +326,12 @@ async function likeUser(userId, targetUserId) {
     }
   }
 }
-
+/**
+ * Skips a target user (records that the user is not interested).
+ * @param {number} userId - The ID of the user performing the skip action.
+ * @param {number} targetUserId - The ID of the user being skipped.
+ * @returns {Promise<void>}
+ */
 async function skipUser(userId, targetUserId) {
   let connection;
   try {

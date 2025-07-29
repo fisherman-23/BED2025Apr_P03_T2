@@ -35,7 +35,7 @@ const renderFriendsAndRequests = () => {
           const data = await response.json();
           if (response.ok) {
             alert(`Removed ${friend.Name} successfully.`);
-            testAll(); // Refresh both lists
+            loadFriendsAndRequests(); // Refresh both lists
           } else {
             alert(`Error: ${data.message || "Something went wrong"}`);
           }
@@ -81,7 +81,7 @@ const renderFriendsAndRequests = () => {
           const data = await res.json();
           if (res.ok) {
             alert(`Accepted ${request.Name}`);
-            testAll();
+            loadFriendsAndRequests();
           } else {
             alert(`Error: ${data.message}`);
           }
@@ -102,7 +102,7 @@ const renderFriendsAndRequests = () => {
           const data = await res.json();
           if (res.ok) {
             alert(`Rejected ${request.Name}`);
-            testAll();
+            loadFriendsAndRequests();
           } else {
             alert(`Error: ${data.message}`);
           }
@@ -145,7 +145,7 @@ const renderFriendsAndRequests = () => {
           const data = await response.json();
           if (response.ok) {
             alert(`Cancelled request to ${request.Name}`);
-            testAll(); // Refresh both lists
+            loadFriendsAndRequests(); // Refresh both lists
           } else {
             alert(`Error: ${data.message || "Something went wrong"}`);
           }
@@ -161,7 +161,7 @@ const renderFriendsAndRequests = () => {
 };
 
 // --- Fetch both friends and requests ---
-const testAll = async () => {
+const loadFriendsAndRequests = async () => {
   try {
     const friendsRes = await fetch("/friends", {
       method: "GET",
@@ -241,7 +241,7 @@ async function getMatchProfile() {
 
 // --- Run on page load ---
 window.addEventListener("DOMContentLoaded", () => {
-  testAll();
+  loadFriendsAndRequests();
 
   document.querySelectorAll(".filter-chip").forEach((chip) => {
     chip.addEventListener("click", () => {
