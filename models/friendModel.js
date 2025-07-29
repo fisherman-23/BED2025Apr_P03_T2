@@ -2,7 +2,11 @@ const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 const { hash, compare } = require("../utils/hash.js");
 const jwt = require("jsonwebtoken");
-
+/**
+ * Retrieves a user ID based on their public UUID.
+ * @param {string} uuid - The public UUID of the user.
+ * @returns {Promise<number|null>} The user ID if found, otherwise null.
+ */
 async function getUserIdByUUID(uuid) {
   let connection;
   try {
@@ -26,7 +30,12 @@ async function getUserIdByUUID(uuid) {
     }
   }
 }
-
+/**
+ * Checks if a friend request or friendship already exists between two users.
+ * @param {number} senderId - The ID of the first user.
+ * @param {number} receiverId - The ID of the second user.
+ * @returns {Promise<boolean>} True if a request or friendship exists, otherwise false.
+ */
 async function checkRequestOrFriendshipExists(senderId, receiverId) {
   let connection;
   try {
@@ -71,7 +80,12 @@ async function checkRequestOrFriendshipExists(senderId, receiverId) {
     }
   }
 }
-
+/**
+ * Gets the friendship status between two users.
+ * @param {number} userA - The ID of the first user.
+ * @param {number} userB - The ID of the second user.
+ * @returns {Promise<string|null>} Friendship status: 'friends', 'outgoing_pending', 'incoming_pending', 'rejected', or null.
+ */
 async function getFriendshipStatus(userA, userB) {
   const connection = await sql.connect(dbConfig);
 
@@ -121,7 +135,12 @@ async function getFriendshipStatus(userA, userB) {
 
   return null;
 }
-
+/**
+ * Inserts a new friend request into the database.
+ * @param {number} senderId - The ID of the user sending the request.
+ * @param {number} receiverId - The ID of the user receiving the request.
+ * @returns {Promise<void>}
+ */
 async function insertFriendRequest(senderId, receiverId) {
   let connection;
   try {
@@ -147,6 +166,11 @@ async function insertFriendRequest(senderId, receiverId) {
   }
 }
 
+/**
+ * Retrieves all pending friend requests (incoming and outgoing) for a user.
+ * @param {number} userId - The ID of the user.
+ * @returns {Promise<{incoming: object[], outgoing: object[]}>} An object containing arrays of incoming and outgoing requests.
+ */
 async function getAllPendingRequests(userId) {
   let connection;
   try {
@@ -159,6 +183,7 @@ async function getAllPendingRequests(userId) {
           FR.SenderID,
           U.Name,
           U.PublicUUID,
+          U.ProfilePicture,
           'incoming' AS Direction
         FROM FriendRequests FR
         JOIN Users U ON FR.SenderID = U.ID
@@ -173,6 +198,7 @@ async function getAllPendingRequests(userId) {
           FR.ReceiverID AS TargetID,
           U.Name,
           U.PublicUUID,
+          U.ProfilePicture,
           'outgoing' AS Direction
         FROM FriendRequests FR
         JOIN Users U ON FR.ReceiverID = U.ID
@@ -200,7 +226,11 @@ async function getAllPendingRequests(userId) {
     }
   }
 }
-
+/**
+ * Retrieves a user's list of friends.
+ * @param {number} userId - The ID of the user.
+ * @returns {Promise<object[]>} An array of friend objects.
+ */
 async function getFriends(userId) {
   let connection;
   try {
@@ -211,7 +241,8 @@ async function getFriends(userId) {
           U.ID AS FriendID,
           U.Name,
           U.PublicUUID,
-          F.CreatedAt
+          F.CreatedAt,
+          U.ProfilePicture
         FROM Friends F
         JOIN Users U ON 
           (U.ID = F.UserID1 AND F.UserID2 = @userId)
@@ -232,7 +263,12 @@ async function getFriends(userId) {
     }
   }
 }
-
+/**
+ * Accepts a pending friend request for a user.
+ * @param {number} userId - The ID of the user accepting the request.
+ * @param {number} requestId - The ID of the friend request.
+ * @returns {Promise<void>}
+ */
 async function acceptFriendRequest(userId, requestId) {
   let connection;
   try {
@@ -285,7 +321,12 @@ async function acceptFriendRequest(userId, requestId) {
     }
   }
 }
-
+/**
+ * Rejects a pending friend request for a user.
+ * @param {number} userId - The ID of the user rejecting the request.
+ * @param {number} requestId - The ID of the friend request.
+ * @returns {Promise<void>}
+ */
 async function rejectFriendRequest(userId, requestId) {
   let connection;
   try {
@@ -323,7 +364,12 @@ async function rejectFriendRequest(userId, requestId) {
     }
   }
 }
-
+/**
+ * Removes a pending friend request initiated by the user.
+ * @param {number} requestId - The ID of the friend request.
+ * @param {number} userId - The ID of the user who sent the request.
+ * @returns {Promise<boolean>} True if a request was deleted, otherwise false.
+ */
 async function removeFriendRequest(requestId, userId) {
   console.log(
     "Removing pending friend request ID:",
@@ -362,6 +408,12 @@ async function removeFriendRequest(requestId, userId) {
   }
 }
 
+/**
+ * Removes an existing friendship between two users.
+ * @param {number} userId - The ID of the user.
+ * @param {number} friendId - The ID of the friend to remove.
+ * @returns {Promise<boolean>} True if the friendship or accepted request was removed, otherwise false.
+ */
 async function removeFriend(userId, friendId) {
   let connection;
   try {

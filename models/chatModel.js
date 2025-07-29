@@ -85,8 +85,10 @@ async function getUserConversations(userId) {
             c.ID,
             c.User1ID,
             u1.Name AS User1Name,
+            u1.ProfilePicture AS User1ProfilePic,
             c.User2ID,
             u2.Name AS User2Name,
+            u2.ProfilePicture AS User2ProfilePic,
             c.CreatedAt
             FROM Conversations c
             JOIN Users u1 ON c.User1ID = u1.ID

@@ -14,10 +14,10 @@ const renderFriendsAndRequests = () => {
         "flex flex-row bg-gray-100 p-4 rounded-2xl items-center gap-4";
 
       card.innerHTML = `
-        <img src="/assets/images/elderlyPFP.png" alt="Friend's Profile Picture"
+        <img src=${friend.ProfilePicture || "/assets/images/defaultPFP.png"} alt="Friend's Profile Picture"
           class="w-16 h-16 rounded-full mr-4 object-cover">
         <div class="flex flex-col">
-          <p class="text-lg font-semibold">${friend.Name}</p>
+          <p class="text-lg font-semibold">${friend.Name || "Unknown"}</p>
           <p class="text-sm text-gray-500">Friends since ${friend.CreatedAt || "recently"}</p>
         </div>
         <button class="ml-auto bg-[#D7E961] text-black px-4 py-2 rounded-xl">Remove</button>
@@ -35,7 +35,7 @@ const renderFriendsAndRequests = () => {
           const data = await response.json();
           if (response.ok) {
             alert(`Removed ${friend.Name} successfully.`);
-            testAll(); // Refresh both lists
+            loadFriendsAndRequests(); // Refresh both lists
           } else {
             alert(`Error: ${data.message || "Something went wrong"}`);
           }
@@ -58,7 +58,7 @@ const renderFriendsAndRequests = () => {
         "flex flex-row bg-gray-100 p-4 rounded-2xl items-center gap-4";
 
       card.innerHTML = `
-        <img src="/assets/images/elderlyPFP.png" alt="Profile Picture"
+        <img src=${request.ProfilePicture || "/assets/images/defaultPFP.png"} alt="Profile Picture"
           class="w-16 h-16 rounded-full mr-4 object-cover">
         <div class="flex flex-col">
           <p class="text-lg font-semibold">${request.Name}</p>
@@ -81,7 +81,7 @@ const renderFriendsAndRequests = () => {
           const data = await res.json();
           if (res.ok) {
             alert(`Accepted ${request.Name}`);
-            testAll();
+            loadFriendsAndRequests();
           } else {
             alert(`Error: ${data.message}`);
           }
@@ -102,7 +102,7 @@ const renderFriendsAndRequests = () => {
           const data = await res.json();
           if (res.ok) {
             alert(`Rejected ${request.Name}`);
-            testAll();
+            loadFriendsAndRequests();
           } else {
             alert(`Error: ${data.message}`);
           }
@@ -121,7 +121,7 @@ const renderFriendsAndRequests = () => {
         "flex flex-row bg-gray-100 p-4 rounded-2xl items-center gap-4";
 
       card.innerHTML = `
-        <img src="/assets/images/elderlyPFP.png" alt="Profile Picture"
+        <img src=${request.ProfilePicture || "/assets/images/defaultPFP.png"} alt="Profile Picture"
           class="w-16 h-16 rounded-full mr-4 object-cover">
         <div class="flex flex-col">
           <p class="text-lg font-semibold">${request.Name}</p>
@@ -145,7 +145,7 @@ const renderFriendsAndRequests = () => {
           const data = await response.json();
           if (response.ok) {
             alert(`Cancelled request to ${request.Name}`);
-            testAll(); // Refresh both lists
+            loadFriendsAndRequests(); // Refresh both lists
           } else {
             alert(`Error: ${data.message || "Something went wrong"}`);
           }
@@ -161,7 +161,7 @@ const renderFriendsAndRequests = () => {
 };
 
 // --- Fetch both friends and requests ---
-const testAll = async () => {
+const loadFriendsAndRequests = async () => {
   try {
     const friendsRes = await fetch("/friends", {
       method: "GET",
@@ -241,7 +241,7 @@ async function getMatchProfile() {
 
 // --- Run on page load ---
 window.addEventListener("DOMContentLoaded", () => {
-  testAll();
+  loadFriendsAndRequests();
 
   document.querySelectorAll(".filter-chip").forEach((chip) => {
     chip.addEventListener("click", () => {
@@ -509,6 +509,7 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 function copyToClipboard(elementId) {
+  // Uses Clipboard API to copy text from an element
   const text = document.getElementById(elementId).innerText;
   navigator.clipboard
     .writeText(text)
@@ -613,7 +614,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
       return `
         <div class="flex flex-col items-center mt-8">
-          <img src="/assets/images/elderlyPFP.png" alt="Profile Picture"
+          <img src=${user.ProfilePicture || "/assets/images/defaultPFP.png"} alt="Profile Picture"
             class="w-32 h-32 rounded-full mb-4 object-cover">
 
           <p class="text-lg font-semibold">${user.Name || "Anonymous"}</p>
@@ -680,6 +681,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 
 function formatHobbies(user) {
+  // Format hobbies data into a readable string
   const hobbies = [];
   if (user.LikesHiking) hobbies.push("Hiking");
   if (user.LikesCooking) hobbies.push("Cooking");

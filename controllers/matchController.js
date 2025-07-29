@@ -1,5 +1,13 @@
 const matchModel = require("../models/matchModel");
 
+/**
+ * Creates a match profile for the authenticated user if one doesn't already exist.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.body` with profile data.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with 201 if created, 409 if already exists, or error.
+ */
 async function createMatchProfile(req, res) {
   const userId = req.user.id;
   const data = req.body;
@@ -17,7 +25,14 @@ async function createMatchProfile(req, res) {
     res.status(500).json({ error: "Could not create profile." });
   }
 }
-
+/**
+ * Checks whether the authenticated user has an existing match profile.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with `{ exists: boolean }` or error.
+ */
 async function hasMatchProfile(req, res) {
   const userId = req.user.id;
 
@@ -29,7 +44,14 @@ async function hasMatchProfile(req, res) {
     res.status(500).json({ error: "Could not check match profile." });
   }
 }
-
+/**
+ * Updates the authenticated user's match profile if it exists.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.body` with updated profile data.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with confirmation or 404 if profile doesn't exist.
+ */
 async function updateMatchProfile(req, res) {
   const userId = req.user.id;
   const data = req.body;
@@ -49,7 +71,14 @@ async function updateMatchProfile(req, res) {
     res.status(500).json({ error: "Could not update profile." });
   }
 }
-
+/**
+ * Retrieves the authenticated user's match profile.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with profile data or 404 if not found.
+ */
 async function getMatchProfile(req, res) {
   const userId = req.user.id;
   try {
@@ -63,7 +92,14 @@ async function getMatchProfile(req, res) {
     res.status(500).json({ error: "Error retrieving profile." });
   }
 }
-
+/**
+ * Fetches potential matches for the authenticated user based on profile compatibility.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with an array of potential match profiles or error.
+ */
 async function getPotentialMatches(req, res) {
   const userId = req.user.id;
 
@@ -74,7 +110,15 @@ async function getPotentialMatches(req, res) {
     res.status(500).json({ error: "Failed to fetch potential matches." });
   }
 }
-
+/**
+ * Likes another user on behalf of the authenticated user.
+ * Returns whether the like resulted in a match.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.params.targetUserId`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with `{ success: true, matched: boolean }` or error.
+ */
 async function likeUser(req, res) {
   const userId = req.user.id;
   const targetUserId = parseInt(req.params.targetUserId, 10);
@@ -91,7 +135,14 @@ async function likeUser(req, res) {
     res.status(500).json({ error: "Failed to like user." });
   }
 }
-
+/**
+ * Skips (dislikes) another user on behalf of the authenticated user.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.params.targetUserId`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with `{ success: true }` or error.
+ */
 async function skipUser(req, res) {
   const userId = req.user.id;
   const targetUserId = parseInt(req.params.targetUserId, 10);

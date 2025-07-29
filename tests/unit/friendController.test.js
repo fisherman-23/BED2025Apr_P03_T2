@@ -8,7 +8,7 @@ describe("friendController", () => {
 
   beforeEach(() => {
     req = {
-      user: { id: 1, ID: 1 }, // some use `.id`, some `.ID`
+      user: { id: 1, ID: 1 },
       params: {},
     };
 

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Dashboard - CircleAge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .navbar {
+            background: linear-gradient(to right, #D7E961, #78B5D3);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-icons {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .nav-icons img {
+            width: 2.5rem;
+            height: 2.5rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-icons img:hover {
+            transform: scale(1.1);
+        }
+        
+        .team-card {
+            background: #FFFFFF;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-team-primary {
+            background: linear-gradient(to right, #D7E961, #78B5D3);
+            color: #000000;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-team-secondary {
+            background-color: #7161E9;
+            color: #FFFFFF;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-team-tertiary {
+            background-color: #C1E3F4;
+            color: #000000;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            background: linear-gradient(to right, #D7E961, #78B5D3);
+            color: #000000;
+            border-bottom: 2px solid #7161E9;
+        }
+        
+        .tab-button:hover {
+            background-color: #C1E3F4;
+            color: #000000;
+        }
+        
+        .compliance-high { 
+            background: linear-gradient(to right, #10b981, #34d399); 
+        }
+        .compliance-medium { 
+            background: linear-gradient(to right, #f59e0b, #fbbf24); 
+        }
+        .compliance-low { 
+            background: linear-gradient(to right, #ef4444, #f87171); 
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #78B5D3;
+        }
+        
+        .trend-up {
+            color: #10b981;
+        }
+        
+        .trend-down {
+            color: #ef4444;
+        }
+        
+        .trend-stable {
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="flex flex-col h-screen">
+        <nav class="navbar">
+            <img src="/assets/Logo.svg" alt="Logo">
+            <div class="nav-icons">
+                <a onclick="window.location.href='index.html';"><img src="/assets/icons/NAV-House.svg" alt="home"></a>
+                <a onclick="window.location.href='medicationManager.html';"><img src="/assets/icons/NAV-Hospital.svg" alt="medical"></a>
+                <a onclick="window.location.href='facilities.html';"><img src="/assets/icons/NAV-Tram.svg" alt="transport"></a>
+                <a><img src="/assets/icons/NAV-exercise.svg" alt="exercise"></a>
+                <a><img src="/assets/icons/NAV-social.svg" alt="social"></a>
+            </div>
+        </nav>
+
+        <div class="flex-1 overflow-auto">
+            <div class="max-w-7xl mx-auto p-6">
+                <!-- Header -->
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 class="text-4xl font-bold text-gray-800">Health Dashboard</h1>
+                        <p class="text-gray-600 mt-1">Track your medication compliance and health trends</p>
+                        <div class="flex items-center space-x-4 mt-2">
+                            <button onclick="window.location.href='medicationManager.html'" class="text-blue-600 hover:text-blue-800 font-medium">
+                                ← Back to Medication Manager
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button id="addMetricBtn" class="btn-team-primary flex items-center space-x-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Add Health Data</span>
+                        </button>
+                        <button id="generateReportBtn" class="btn-team-secondary">
+                            <svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                            Generate Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Overview Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="team-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-3xl font-bold text-green-600" id="overallCompliance">0%</p>
+                                <p class="text-gray-600">Overall Compliance</p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-3xl font-bold text-blue-600" id="totalMedications">0</p>
+                                <p class="text-gray-600">Active Medications</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-3xl font-bold text-purple-600" id="healthRecords">0</p>
+                                <p class="text-gray-600">Health Records</p>
+                            </div>
+                            <div class="bg-purple-100 p-3 rounded-full">
+                                <svg class="w-8 h-8 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 3a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-3xl font-bold text-orange-600" id="streakDays">0</p>
+                                <p class="text-gray-600">Day Streak</p>
+                            </div>
+                            <div class="bg-orange-100 p-3 rounded-full">
+                                <svg class="w-8 h-8 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <div class="bg-white rounded-2xl shadow-lg mb-8">
+                    <div class="border-b border-gray-200">
+                        <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                            <button class="tab-button active py-4 px-1 border-b-2 border-team-purple font-medium text-sm" data-tab="compliance">
+                                Medication Compliance
+                            </button>
+                            <button class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="trends">
+                                Health Trends
+                            </button>
+                            <button class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="metrics">
+                                Health Metrics
+                            </button>
+                        </nav>
+                    </div>
+
+                    <div class="p-6">
+                        <!-- Medication Compliance Tab -->
+                        <div id="compliance-content" class="tab-content">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800 mb-4">Weekly Compliance Chart</h3>
+                                    <div class="bg-white p-4 rounded-lg border">
+                                        <canvas id="complianceChart" width="400" height="300"></canvas>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800 mb-4">Medication Breakdown</h3>
+                                    <div id="medicationCompliance" class="space-y-3">
+                                        <!-- Medication compliance items will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Health Trends Tab -->
+                        <div id="trends-content" class="tab-content hidden">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800 mb-4">Health Trends Overview</h3>
+                                    <div class="bg-white p-4 rounded-lg border">
+                                        <canvas id="trendsChart" width="400" height="300"></canvas>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800 mb-4">Trend Analysis</h3>
+                                    <div id="trendAnalysis" class="space-y-4">
+                                        <!-- Trend analysis will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Health Metrics Tab -->
+                        <div id="metrics-content" class="tab-content hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <!-- Health metrics cards will be loaded here -->
+                                <div id="healthMetrics"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Health Metric Modal -->
+    <div id="metricModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">Add Health Metric</h3>
+                    <button id="closeMetricModal" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <form id="metricForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Metric Type</label>
+                        <select id="metricType" name="metricType" class="form-input" required>
+                            <option value="">Select metric type</option>
+                            <option value="blood_pressure">Blood Pressure</option>
+                            <option value="weight">Weight</option>
+                            <option value="heart_rate">Heart Rate</option>
+                            <option value="blood_sugar">Blood Sugar</option>
+                            <option value="temperature">Temperature</option>
+                            <option value="oxygen_saturation">Oxygen Saturation</option>
+                            <option value="pain_level">Pain Level</option>
+                            <option value="mood">Mood</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Value</label>
+                        <input type="text" id="metricValue" name="value" class="form-input" 
+                               placeholder="e.g., 120/80, 70.5, 8/10" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                        <input type="text" id="metricUnit" name="unit" class="form-input" 
+                               placeholder="e.g., mmHg, kg, bpm" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date & Time</label>
+                        <input type="datetime-local" id="metricDateTime" name="recordedAt" class="form-input" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
+                        <textarea id="metricNotes" name="notes" class="form-input" rows="3" 
+                                  placeholder="Any additional notes about this measurement..."></textarea>
+                    </div>
+
+                    <div class="flex space-x-3 pt-4">
+                        <button type="submit" class="btn-team-primary flex-1">Add Metric</button>
+                        <button type="button" id="cancelMetricBtn" class="btn-team-tertiary flex-1">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/medicationManager/health-tracking.js"></script>
+</body>
+</html>

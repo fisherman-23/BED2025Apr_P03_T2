@@ -94,13 +94,17 @@ async function loadChatList() {
           return response.json();
         })
         .then((currentUser) => {
+          // Determine friend ID and name based on current user
           const friendId =
             convo.User1ID === currentUser.id ? convo.User2ID : convo.User1ID;
           const friendName =
             convo.User1ID === currentUser.id
               ? convo.User2Name
               : convo.User1Name;
-          const friendProfilePic = "/assets/images/elderlyPFP.png"; // placeholder
+          const friendProfilePic =
+            convo.User1ID === currentUser.id
+              ? convo.User2ProfilePic
+              : convo.User1ProfilePic;
 
           // Message content and time or "Read" status text (adjust as needed)
           const messagePreview = lastMessage
@@ -143,7 +147,9 @@ async function loadChatList() {
     chatListEl.innerHTML = `<p class="text-red-500">Error loading chats: ${err.message}</p>`;
   }
 }
+// Load messages for a specific conversation
 async function loadChatMessages(conversationId, friendID, friendName) {
+  // Ensure IDs are integers
   friendID = parseInt(friendID, 10);
   conversationId = parseInt(conversationId, 10);
   const chatHeaderName = document.getElementById("chatHeaderName");
@@ -201,7 +207,7 @@ async function loadChatMessages(conversationId, friendID, friendName) {
         message.SenderID === friendID
           ? "flex justify-start mb-2"
           : "flex justify-end mb-2";
-
+      // If the message is deleted
       const innerHTML = message.IsDeleted
         ? `
     <div class="bg-gray-200 p-4 rounded-2xl max-w-xs">
@@ -209,14 +215,16 @@ async function loadChatMessages(conversationId, friendID, friendName) {
       <p class="text-sm text-gray-400 text-right">${formatTime(message.SentAt)}</p>
     </div>
   `
-        : message.SenderID === friendID
+        : // If the message is not deleted
+          message.SenderID === friendID
           ? `
       <div class="bg-white p-4 rounded-2xl max-w-xs">
         <p class="text-gray-700"><strong>${friendName}:</strong> ${message.Content}</p>
         <p class="text-sm text-gray-400 text-right">${formatTime(message.SentAt)}</p>
       </div>
     `
-          : `
+          : // If the message is from the current user
+            `
       <div class="bg-blue-100 p-4 rounded-2xl max-w-xs relative pr-10">
         <button class="absolute top-2 right-2 text-gray-400 hover:text-red-500"
           onclick="deleteMessage('${message.ID}', '${conversationId}', '${friendID}', '${friendName}')"
@@ -254,7 +262,15 @@ async function sendMessage(conversationId, friendID, friendName) {
       credentials: "include",
       body: JSON.stringify({ content }),
     });
-    if (!response.ok) throw new Error("Failed to send message");
+    if (!response.ok) {
+      const errorDetails = await response.json();
+      alert(
+        `Failed to send message: ${errorDetails.error || "No error details provided"}`
+      );
+      throw new Error(
+        `Failed to send message: ${errorDetails.error || "No error details provided"}`
+      );
+    }
     messageInput.value = "";
     loadChatMessages(conversationId, friendID, friendName);
   } catch (err) {
@@ -427,6 +443,7 @@ async function smartReply(content) {
     console.error("No messages available for smart reply");
     return;
   }
+  // Pair the last 3 messages with their sender names, and determine if they were deleted
   content = content
     .slice(-3)
     .map((msg) =>
