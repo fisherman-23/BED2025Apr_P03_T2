@@ -569,76 +569,144 @@ app.post(
 
 // Module 4: Senior fitness coach
 
-app.get("/exercises/goals", authenticateJWT, goalController.getGoals);
-app.get("/exercise/stats", authenticateJWT, exerciseController.getUserStats);
-app.get(
-  "/exercises/incompleted-goals",
-  authenticateJWT,
-  goalController.getIncompletedGoals
-);
+app.get("/exercises/goals", authenticateJWT, (req, res) => {
+  goalController.getGoals(req, res);
+  // #swagger.description = 'Get the user exercise goals'
+});
 
-app.get("/exercises", authenticateJWT, exerciseController.getExercises);
+app.get("/exercises/stats", authenticateJWT, (req, res) => {
+  exerciseController.getUserStats(req, res);
+  // #swagger.description = 'Get the user exercise statistics (number of exercise and goal completed)'
+});
 
-app.get(
-  "/exercises/steps/:exerciseId",
-  authenticateJWT,
-  exerciseController.getSteps
-);
+app.get("/exercises/incompleted-goals", authenticateJWT, (req, res) => {
+  goalController.getIncompletedGoals(req, res);
+  // #swagger.description = 'Get the user incompleted exercise goals'
+});
 
-app.get(
-  "/exercises/preferences",
-  authenticateJWT,
-  exerciseController.getExercisePreferences
-);
+app.get("/exercises", authenticateJWT, (req, res) => {
+  exerciseController.getExercises(req, res);
+  // #swagger.description = 'Get exercises from database'
+});
 
-app.put(
-  "/exercises/preferences",
-  authenticateJWT,
-  exerciseController.updateExercisePreferences
-);
+app.get("/exercises/steps/:exerciseId", authenticateJWT, (req, res) => {
+  exerciseController.getSteps(req, res);
+  // #swagger.description = 'Get exercise step from database'
+  // #swagger.parameters['exerciseId"] = { description: 'ID of the exercise the user wants to view the steps', in: 'path', required: true, type: 'string' }
+});
 
-app.put("/exercises/reset", authenticateJWT, goalController.resetGoal);
+app.get("/exercises/preferences", authenticateJWT, (req, res) => {
+  exerciseController.getExercisePreferences(req, res);
+  // #swagger.description = 'Get user exercise preferences'
+});
 
-app.post(
-  "/exercises/personalisation",
-  authenticateJWT,
-  exerciseController.personalisation
-);
+app.put("/exercises/preferences", authenticateJWT, (req, res) => {
+  exerciseController.updateExercisePreferences(req, res);
+  /*
+   #swagger.description = 'Updates user exercise preferences'
+   #swagger.parameters['body'] = {
+     in: 'body',
+      required: true,
+     schema: {
+       $categoryIds: [1, 2, 3]
+      }
+    }
+  */
+});
 
-app.put("/exercises/goals", authenticateJWT, goalController.updateGoal);
+app.put("/exercises/reset", authenticateJWT, (req, res) => {
+  goalController.resetGoal(req, res);
+  // #swagger.description = 'Resets exercise goals user has completed the day before'
+});
 
-app.post(
-  "/exercises/goals",
-  authenticateJWT,
-  validateGoal,
-  goalController.createGoal
-);
+app.post("/exercises/personalisation", authenticateJWT, (req, res) => {
+  exerciseController.personalisation(req, res);
+  /*
+   #swagger.description = 'Saves user exercise preferences'
+   #swagger.parameters['body'] = {
+     in: 'body',
+     required: true,
+     schema: {
+       $categoryIds: [1, 2, 3]
+     }
+   }
+  */
+});
 
-app.delete(
-  "/exercises/goals/:goalId",
-  authenticateJWT,
-  goalController.deleteGoal
-);
+app.put("/exercises/goals", authenticateJWT, (req, res) => {
+  goalController.updateGoal(req, res);
+  /*
+   #swagger.description = 'Updates user exercise goal to completed'
+   #swagger.parameters['body'] = {
+     in: 'body',
+     required: true,
+     schema: {
+       $goalIds: [1, 2, 3]
+     }
+   }
+  */
+});
 
-app.delete(
-  "/exercises/preferences",
-  authenticateJWT,
-  exerciseController.deleteExercisePreference
-);
+app.post("/exercises/goals", authenticateJWT, validateGoal, (req, res) => {
+  goalController.createGoal(req, res);
+  /*
+   #swagger.description = 'Creates user exercise goal'
+   #swagger.parameters['body'] = {
+     in: 'body',
+     required: true,
+     schema: {
+       $name: "Name of goal",
+       $description: "Description of goal"
+     }
+   }
+  */
+});
 
-app.post("/exercise/weather", authenticateJWT, weatherController.getWeather);
+app.delete("/exercises/goals/:goalId", authenticateJWT, (req, res) => {
+  goalController.deleteGoal(req, res);
+  // #swagger.description = 'Delete user exercise goal'
+  // #swagger.parameters['goalId'] = { description: 'ID of the goal the user is trying to delete', in: 'path', required: true, type: 'string' }
+});
 
-app.post(
-  "/exercise/logExercise/:exerciseID",
-  authenticateJWT,
-  exerciseController.logExerciseCompletion
-);
+app.delete("/exercises/preferences", authenticateJWT, (req, res) => {
+  exerciseController.deleteExercisePreference(req, res);
+  // #swagger.description = 'Delete user exercises preferences'
+});
 
-app.post(
-  "/exercise/logGoals",
-  authenticateJWT,
-  goalController.logGoalCompletion
-);
+app.post("/exercises/weather", authenticateJWT, (req, res) => {
+  weatherController.getWeather(req, res);
+  /*
+   #swagger.description = 'Get weather data from external api'
+   #swagger.parameters['body'] = {
+     in: 'body',
+     required: true,
+     schema: {
+       $lat: "latitude of user location",
+       $lon: "Longitude of user location"
+     }
+   }
+  */
+});
+
+app.post("/exercises/logExercise/:exerciseID", authenticateJWT, (req, res) => {
+  exerciseController.logExerciseCompletion(req, res);
+  // #swagger.description = 'Log completed exercise for user'
+  // #swagger.parameters['exerciseID'] = { description: 'ID of the exercise the user just completed', in: 'path', required: true, type: 'string' }
+});
+
+app.post("/exercises/logGoals", authenticateJWT, (req, res) => {
+  goalController.logGoalCompletion(req, res);
+  /*
+   #swagger.description = 'Log completed exercise for user'
+   #swagger.parameters['body'] = {
+     in: 'body',
+     required: true,
+     schema: {
+       $goalIds: [1, 2]
+     }
+   }
+  */
+});
 
 // Module 5: Messaging and Buddy System
 // Routes for friend system
