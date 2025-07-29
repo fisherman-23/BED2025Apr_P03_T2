@@ -1,5 +1,13 @@
 const reviewModel = require("../models/reportModel.js");
-
+/**
+ * Creates a report for a review.
+ *
+ * @async
+ * @function createReport
+ * @param {Object} req - Express request object, requires `req.body.reviewId` and `req.body.reason`.
+ * @param {Object} res - Express response object.
+ * @returns {Object} 200 OK with success message or 500 on error.
+ */
 async function createReport(req, res) {
     try {
         console.log("Creating report for review ID:", req.body.reviewId);

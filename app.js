@@ -374,53 +374,95 @@ app.get(
   "/facilities/nearby",
   authenticateJWT,
   validateNearbyFacilities,
-  facilitiesController.getNearbyFacilities
+  (req, res) => {
+    // #swagger.description = 'Get nearby facilities based on user location'
+    // #swagger.parameters['lat'] = { in: 'query', required: true, type: 'number', description: 'Latitude coordinate of user location' }
+    // #swagger.parameters['lng'] = { in: 'query', required: true, type: 'number', description: 'Longitude coordinate of user location' }
+    // #swagger.parameters['rad'] = { in: 'query', required: false, type: 'number', description: 'Search radius in meters' }
+    facilitiesController.getNearbyFacilities(req, res);
+  }
 );
 
 app.get(
   "/facilities/id/:id",
   authenticateJWT,
   validateFacilityId,
-  facilitiesController.getFacilityById
+  (req, res) => {
+    // #swagger.description = 'Get facility details of a facility by its facilityId'
+    // #swagger.parameters['id'] = { in: 'path', required: true, type: 'integer', description: 'ID of the facility' }
+    facilitiesController.getFacilityById(req, res);
+  }
 );
 
 app.get(
   "/facilities/type/:type",
   authenticateJWT,
   validateFacilityType,
-  facilitiesController.getFacilitiesByType
+  (req, res) => {
+    // #swagger.description = 'Get all facilities of a specific type (Polyclinic, Hospital, Community Center, Park)'
+    // #swagger.parameters['type'] = { in: 'path', required: true, type: 'string', description: 'Type of facility', enum: ['Polyclinic', 'Hospital', 'Community Center', 'Park'] }
+    facilitiesController.getFacilitiesByType(req, res);
+  }
 );
 
 app.get("/facilities", 
   authenticateJWT, 
-  facilitiesController.getFacilities
+  (req, res) => {
+    // #swagger.description = 'Get all available facilities'
+    facilitiesController.getFacilities(req, res);
+  }
 );
 
 app.get(
   "/api/geocode",
   authenticateJWT,
   validateLocationAccess,
-  facilitiesController.handleLocationAccess
+  (req, res) => {
+    // #swagger.description = 'Convert latitude and longitude coordinates to a readable address using reverse geocoding'
+    // #swagger.parameters['lat'] = { in: 'query', required: true, type: 'number', description: 'Latitude coordinate' }
+    // #swagger.parameters['lng'] = { in: 'query', required: true, type: 'number', description: 'Longitude coordinate' }
+    facilitiesController.handleLocationAccess(req, res);
+  }
+);
+
+app.post("/api/geocode", 
+  authenticateJWT, 
+  (req, res) => {
+    // #swagger.description = 'Convert an address to latitude and longitude coordinates using forward geocoding'
+    // #swagger.parameters['body'] = { in: 'body', required: true, schema: { type: 'object', properties: { address: { type: 'string', description: 'Address to convert to coordinates' } } } }
+    navigationController.geocodeAddress(req, res);
+  }
 );
 
 app.get(
   "/bookmarks/:facilityId",
   authenticateJWT,
   validateFacilityIdParam,
-  bookmarkController.checkIfBookmarked
+  (req, res) => {
+    // #swagger.description = 'Check if a specific facility is bookmarked by the authenticated user'
+    // #swagger.parameters['facilityId'] = { in: 'path', required: true, type: 'integer', description: 'ID of the facility to check bookmark status for' }
+    bookmarkController.checkIfBookmarked(req, res);
+  }
 );
 
 app.get(
   "/bookmarks",
   authenticateJWT,
-  bookmarkController.getBookmarkedFacilities
+  (req, res) => {
+    // #swagger.description = 'Get all bookmarked facilities for the authenticated user'
+    bookmarkController.getBookmarkedFacilities(req, res);
+  }
 );
 
 app.post(
   "/bookmarks",
   authenticateJWT,
   validateBookmarkData,
-  bookmarkController.saveBookmark
+  (req, res) => {
+    // #swagger.description = 'Create a new bookmark for a facility'
+    // #swagger.parameters['body'] = { in: 'body', required: true, schema: { type: 'object', properties: { facilityId: { type: 'integer', description: 'ID of the facility to bookmark' }, locationName: { type: 'string', description: 'Name of the selected facility', maxLength: 100 }, note: { type: 'string', description: 'Personal notes for the facility', maxLength: 500 } } } }
+    bookmarkController.saveBookmark(req, res);
+  }
 );
 
 app.put(
@@ -428,21 +470,35 @@ app.put(
   authenticateJWT,
   validateBookmarkId,
   validateBookmarkData,
-  bookmarkController.updateBookmark
+  (req, res) => {
+    // #swagger.description = 'Update an existing bookmark with new notes'
+    // #swagger.parameters['bookmarkId'] = { in: 'path', required: true, type: 'integer', description: 'ID of the bookmark to update' }
+    // #swagger.parameters['body'] = { in: 'body', required: true, schema: { type: 'object', properties: { facilityId: { type: 'integer', description: 'ID of the facility' }, locationName: { type: 'string', description: 'Name of the bookmark', maxLength: 100 }, note: { type: 'string', description: 'Updated personal notes', maxLength: 500 } } } }
+    bookmarkController.updateBookmark(req, res);
+  }
 );
 
 app.delete(
   "/bookmarks/:bookmarkId",
   authenticateJWT,
   validateBookmarkId,
-  bookmarkController.deleteBookmark
+  (req, res) => {
+    // #swagger.description = 'Delete a specific bookmark by its ID'
+    // #swagger.parameters['bookmarkId'] = { in: 'path', required: true, type: 'integer', description: 'ID of the bookmark to delete' }
+    bookmarkController.deleteBookmark(req, res);
+  }
 );
 
 app.get(
   "/reviews/:facilityId",
   authenticateJWT,
   validateFacilityIdParam,
-  reviewController.getReviewsByFacilityId
+  (req, res) => {
+    // #swagger.description = 'Get all reviews for a specific facility and sort them optionally'
+    // #swagger.parameters['facilityId'] = { in: 'path', required: true, type: 'integer', description: 'ID of the facility to get reviews for' }
+    // #swagger.parameters['sort'] = { in: 'query', required: false, type: 'string', description: 'Sort order for reviews', enum: ['newest', 'oldest', 'highest', 'lowest'] }
+    reviewController.getReviewsByFacilityId(req, res);
+  }
 );
 
 app.put(
@@ -450,43 +506,66 @@ app.put(
   authenticateJWT,
   validateReviewIdParam,
   validateUpdateReviewData,
-  reviewController.updateReview
-);
-
-app.post(
-  "/reviews",
-  authenticateJWT,
-  validateReviewData,
-  reviewController.createReview
+  (req, res) => {
+    // #swagger.description = 'Update an existing review by the authenticated user'
+    // #swagger.parameters['id'] = { in: 'path', required: true, type: 'integer', description: 'ID of the review to update' }
+    // #swagger.parameters['body'] = { in: 'body', required: true, schema: { type: 'object', properties: { rating: { type: 'integer', minimum: 1, maximum: 5, description: 'Updated accessibility rating' }, comment: { type: 'string', maxLength: 500, description: 'Updated review comment' } } } }
+    reviewController.updateReview(req, res);
+  }
 );
 
 app.delete(
   "/reviews/:id",
   authenticateJWT,
   validateReviewIdParam,
-  reviewController.deleteReview
+  (req, res) => {
+    // #swagger.description = 'Delete a review written by the authenticated user by its ID'
+    // #swagger.parameters['id'] = { in: 'path', required: true, type: 'integer', description: 'ID of the review to delete' }
+    reviewController.deleteReview(req, res);
+  }
+);
+
+app.post(
+  "/reviews",
+  authenticateJWT,
+  validateReviewData,
+  (req, res) => {
+    // #swagger.description = 'Create a new review for a facility'
+    // #swagger.parameters['body'] = { in: 'body', required: true, schema: { type: 'object', properties: { facilityId: { type: 'integer', description: 'ID of the facility being reviewed' }, rating: { type: 'integer', minimum: 1, maximum: 5, description: 'Accessibility rating from 1 to 5' }, comment: { type: 'string', maxLength: 500, description: 'Review comment' } } } }
+    reviewController.createReview(req, res);
+  }
 );
 
 app.post(
   "/reports",
   authenticateJWT,
   validateReportData,
-  reportController.createReport
+  (req, res) => {
+    // #swagger.description = 'Report an inappropriate review by another user for moderation'
+    // #swagger.parameters['body'] = { in: 'body', required: true, schema: { type: 'object', properties: { reviewId: { type: 'integer', description: 'ID of the review being reported' }, reason: { type: 'string', description: 'Reason for reporting the review' } } } }
+    reportController.createReport(req, res);
+  }
 );
 
 app.get(
   "/api/google-maps-config",
   authenticateJWT,
-  navigationController.getGoogleMapsConfig
+  (req, res) => {
+    // #swagger.description = 'Get Google Maps API configuration for frontend map integration'
+    navigationController.getGoogleMapsConfig(req, res);
+  }
 );
 
 app.post(
   "/api/directions/:facilityId",
   authenticateJWT,
-  navigationController.getFacilityDirections
+  (req, res) => {
+    // #swagger.description = 'Get navigation directions from origin to a specific facility using Google Maps'
+    // #swagger.parameters['facilityId'] = { in: 'path', required: true, type: 'integer', description: 'ID of the destination facility' }
+    // #swagger.parameters['body'] = { in: 'body', required: true, schema: { type: 'object', properties: { origin: { type: 'string', description: 'Starting location (address or coordinates)' }, travelMode: { type: 'string', enum: ['DRIVING', 'WALKING', 'BICYCLING', 'TRANSIT'], description: 'Mode of transportation' } } } }
+    navigationController.getFacilityDirections(req, res);
+  }
 );
-
-app.post("/api/geocode", authenticateJWT, navigationController.geocodeAddress);
 
 // Module 4: Senior fitness coach
 

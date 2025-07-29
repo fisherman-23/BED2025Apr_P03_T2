@@ -43,7 +43,7 @@ class FacilityManager {
       document.getElementById('closeBookmarkPopup').addEventListener('click', () => {
         this.hideBookmarkPopup();
       });
-      
+      // Save or update bookmark on button click
       document.getElementById('saveBookmark').addEventListener('click', (e) => {
         e.preventDefault();
         if (this.isEditing && this.currentBookmarkId) {
@@ -52,7 +52,7 @@ class FacilityManager {
           this.saveBookmark();
         }
       });
-
+      // Display list of facilities
       this.renderList();
       } catch (error) {
       console.error("Error initializing FacilityManager:", error);
@@ -62,7 +62,9 @@ class FacilityManager {
   // Handles the user's request to access their current location
   async handleLocationAccess() {
     this.locationElement.innerText = "Finding your current location...";
+    // Check if the browser supports Geolocation API
     if (navigator.geolocation) {
+      // Use the Geolocation API to get the user's current position
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           this.currentLocation = {
@@ -77,6 +79,7 @@ class FacilityManager {
           alert("Unable to access your location. Please enable location services.");
         }
       );
+    // Geolocation is not supported by the browser
     } else {
       console.error("Geolocation is not supported by this browser.");
       this.locationElement.innerText = "Geolocation is not supported by this browser.";
@@ -109,10 +112,10 @@ class FacilityManager {
         method: "GET",
         credentials: "include"
       });
-      console.log ("Response status:", res.status);
       if (!res.ok) {
         throw new Error(`Failed to fetch nearby facilities: ${res.statusText}`);
       }
+      // Get the list of nearby facilities
       const facilities = await res.json();
 
       if (!facilities || facilities.length === 0) {
@@ -121,10 +124,10 @@ class FacilityManager {
         await this.fetchFacilities();
       } else {
         this.baseDataset = facilities; // Set nearby facilities as base
-        this.facilities = facilities; // Also update facilities for compatibility
+        this.facilities = facilities; // Also update facilities
         this.filtered = facilities;
         this.isNearbyMode = true;
-        this.hideFilterButtons(); // Hide type filters in nearby mode
+        this.hideFilterButtons(); // Hide filter by type buttons in nearby mode
         this.renderList();
       }
     } catch (error) {
@@ -146,7 +149,7 @@ class FacilityManager {
       this.facilities = facilities;
       this.baseDataset = facilities; // Set base dataset
       this.filtered = this.facilities;
-      this.isNearbyMode = false; // Track mode
+      this.isNearbyMode = false;
       this.selectedFilter = null;
       this.activeFiltersContainer.innerHTML = '';
       this.showFilterButtons(); // Show type filters in all mode
@@ -162,6 +165,7 @@ class FacilityManager {
   async fetchFacilitiesByType(facilityType) {
     try {
       console.log("Fetching facilities by type:", facilityType);
+      // Encode the facility type to handle special characters
       const encodedType = encodeURIComponent(facilityType);
       const res = await fetch(`/facilities/type/${encodedType}`, {
         method: "GET",
@@ -172,7 +176,7 @@ class FacilityManager {
       }
       this.filtered = await res.json();
       this.selectedFilter = facilityType;
-      this.updateActiveFilters(facilityType);
+      this.updateActiveFilters(facilityType); // Update active filters display
       this.renderList();
     } catch (error) {
       console.error("Error fetching facilities by type:", error);
@@ -181,7 +185,7 @@ class FacilityManager {
       this.filtered = [];
     }
   }
-
+  // Fetches bookmarked facilities from the database
   async fetchBookmarkedFacilities() {
     try {
       const res = await fetch(`/bookmarks`, {
@@ -292,13 +296,13 @@ class FacilityManager {
     await this.fetchFacilities(); // Reset to all facilities
     this.renderList();
   }
-
-  async showDetails(facilityId) {
+  // Fetches details for a specific facility by ID
+  async showFacilityDetails(facilityId) {
     try {
       console.log("Fetching details for facility ID:", facilityId);
       const res = await fetch(`/facilities/id/${facilityId}`, {
-        method: 'GET',
-        credentials: 'include'
+        method: "GET",
+        credentials: "include"
       });
       if (!res.ok) {
         throw new Error(`Failed to fetch facility details: ${res.statusText}`);
@@ -306,10 +310,10 @@ class FacilityManager {
       this.currentFacility = await res.json();
       this.renderFacilityDetails();
     } catch (error) {
-      console.error("Error in showDetails:", error);
+      console.error("Error in showFacilityDetails:", error);
     }
   }
-
+  // Renders the details of the selected facility
   renderFacilityDetails() {
     const facility = this.currentFacility;
     this.currentFacility = facility;
@@ -329,7 +333,7 @@ class FacilityManager {
     document.getElementById('facilityMap').src = facility.static_map_url;
 
     document.getElementById('viewReviewsButton').href = `/review.html?facilityId=${facility.facilityId}`;
-
+    // Initialize bookmark and share buttons
     this.initBookmarkButton(facility).then(() => {
       this.showBookmarkNotes(facility);
     });
@@ -356,7 +360,7 @@ class FacilityManager {
             </div>
         </div>
       `;
-      card.addEventListener('click', () => this.showDetails(facility.facilityId));
+      card.addEventListener('click', () => this.showFacilityDetails(facility.facilityId));
       this.list.appendChild(card);
     });
   }
@@ -382,6 +386,7 @@ class FacilityManager {
       `;
       this.currentNotes = notes || '';
       const editButton = notesSection.querySelector('#editNotesButton');
+      // Set up click event for edit button
       editButton.addEventListener('click', () => {
         this.isEditing = true;
         this.showBookmarkPopup(facility);
@@ -417,7 +422,7 @@ class FacilityManager {
       }
     };
   }
-
+  // Initializes the share button for the selected facility
   initShareButton(facility) {
     const shareButton = document.getElementById('shareButton');
     
@@ -425,17 +430,19 @@ class FacilityManager {
       await this.shareFacility(facility);
     };
   }
-
+  // Handles sharing the facility
   async shareFacility(facility) {
     if (!navigator.share) {
       alert("Sharing is not supported in this browser.");
       return;
     }
+    // Prevent multiple share operations
     if (this.isSharing) {
       console.warn("Share operation already in progress.");
       return;
     }
     this.isSharing = true;
+    // Use the Web Share API to share facility details
     try {
       await navigator.share({
         title: facility.name,
@@ -449,11 +456,12 @@ class FacilityManager {
     this.isSharing = false;
   }
 
+  // Checks if the facility is bookmarked and retrieves bookmark details
   async checkIfBookmarked(facilityId) {
     try {
       const res = await fetch(`/bookmarks/${facilityId}`, {
-        method: 'GET',
-        credentials: 'include'
+        method: "GET",
+        credentials: "include"
       });
       if (!res.ok) {
         throw new Error(`Failed to check bookmark status: ${res.statusText}`);
@@ -478,14 +486,12 @@ class FacilityManager {
 
   // Show bookmark popup with facility name input
   async showBookmarkPopup(facility) {
-    console.log('1. Starting showBookmarkPopup')
     this.currentFacility = facility;
     this.bookmarkPopup.style.visibility = 'visible';
     this.locationNameInput.value = facility.name || '';
 
     // Check bookmark status
     const { isBookmarked, notes } = await this.checkIfBookmarked(facility.facilityId);
-    console.log ('2.get bookmark status:', isBookmarked, 'Notes:', notes);
     this.currentNotes = notes || '';
 
     // Set input values
@@ -559,6 +565,7 @@ class FacilityManager {
     }
   }
 
+  // Updates an existing bookmark with new notes
   async updateBookmark(bookmarkId) {
     try {
       const bookmarkData = {
@@ -597,16 +604,18 @@ class FacilityManager {
     }
   }
 
+  // Removes a bookmark by ID
   async removeBookmark(bookmarkId) {
     try {
       const res = await fetch(`/bookmarks/${bookmarkId}`, {
-        method: 'DELETE',
-        credentials: 'include',
+        method: "DELETE",
+        credentials: "include"
       });
       if (!res.ok) {
         throw new Error(`Failed to remove bookmark: ${res.statusText}`);
       }
 
+      this.fetchBookmarkedFacilities(); // Refresh bookmarked facilities
       // Clear current notes reference
       this.currentNotes = null;
 

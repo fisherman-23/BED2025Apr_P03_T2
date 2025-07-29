@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // fetch and load user data
+    // load user data
     async function loadUserData(userId) {
         try {
             const user = await fetchUserDetails(userId);
@@ -66,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // fetch user details by ID
     async function fetchUserDetails(userId) {
         try {
             const res = await fetch (`/users/${userId}`, {
