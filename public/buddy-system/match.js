@@ -102,6 +102,7 @@ document
 
       if (res.ok) {
         const data = await res.json();
+        // Update the status message based on profile existence
         statusDiv.textContent = data.exists
           ? "Match profile exists."
           : "No match profile found.";
