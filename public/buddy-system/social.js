@@ -509,6 +509,7 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 function copyToClipboard(elementId) {
+  // Uses Clipboard API to copy text from an element
   const text = document.getElementById(elementId).innerText;
   navigator.clipboard
     .writeText(text)
@@ -680,6 +681,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 
 function formatHobbies(user) {
+  // Format hobbies data into a readable string
   const hobbies = [];
   if (user.LikesHiking) hobbies.push("Hiking");
   if (user.LikesCooking) hobbies.push("Cooking");

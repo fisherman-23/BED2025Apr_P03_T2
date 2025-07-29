@@ -7,6 +7,7 @@ dotenv.config();
 const jwt = require("jsonwebtoken");
 const { upload, handleUpload } = require("./utils/fileUpload.js");
 
+// Controllers
 const userController = require("./controllers/userController.js");
 const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
@@ -28,10 +29,12 @@ const appointmentController = require("./controllers/appointmentController.js");
 const goalController = require("./controllers/goalController.js");
 const weatherController = require("./controllers/weatherController.js");
 
+// Swagger setup
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const swaggerFile = require("./swagger-output.json");
 
+// Middlewares
 const {
   validateCreateGroup,
   validateGroupId,
@@ -80,8 +83,12 @@ const {
 const { validateMessage } = require("./middlewares/chatValidation.js");
 
 const { compareSync } = require("bcrypt");
+
+// Initialize the database connection
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Database connection configuration
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
@@ -89,16 +96,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use(protectSpecificRoutes);
 app.use(redirectIfAuthenticated);
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
+
 app.get("/me", authenticateJWT, (req, res) => {
   // #swagger.description = 'Get the authenticated user\'s basic profile information'
 
   res.json({ username: req.user.email, id: req.user.id, uuid: req.user.uuid });
 });
-
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
-
+// Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, "public")));
 
+// Routes for user authentication and management
 app.post("/users/login", validateLoginUser, userController.loginUser);
 app.post("/users/logout", authenticateJWT, userController.logoutUser);
 app.post("/users", validateCreateUser, userController.createUser);
@@ -131,27 +139,98 @@ app.get("/users/uuid/:uuid", authenticateJWT, (req, res) => {
   userController.getUserByUUID(req, res);
 });
 
-app.post("/friend-invite/:uuid", authenticateJWT, (req, res) => {
-  // #swagger.description = 'Send a friend request to the user identified by UUID'
-  // #swagger.parameters['uuid'] = { description: 'UUID of the user to send friend request to', in: 'path', required: true, type: 'string' }
+// Module 1: Medication & Appointment Manager
+// Medication routes
+app.post(
+  "/api/medications",
+  authenticateJWT,
+  medicationController.createMedication
+);
+app.get(
+  "/api/medications",
+  authenticateJWT,
+  medicationController.getUserMedications
+);
+app.get(
+  "/api/medications/:id",
+  authenticateJWT,
+  medicationController.getMedicationById
+);
+app.put(
+  "/api/medications/:id",
+  authenticateJWT,
+  medicationController.updateMedication
+);
+app.delete(
+  "/api/medications/:id",
+  authenticateJWT,
+  medicationController.deleteMedication
+);
+app.post(
+  "/api/medications/:id/taken",
+  authenticateJWT,
+  medicationController.markMedicationTaken
+);
+app.get(
+  "/api/medications/reminders/upcoming",
+  authenticateJWT,
+  medicationController.getUpcomingReminders
+);
 
-  friendController.sendFriendRequest(req, res);
-});
+// Appointment routes
+app.post(
+  "/api/appointments",
+  authenticateJWT,
+  appointmentController.createAppointment
+);
+app.get(
+  "/api/appointments",
+  authenticateJWT,
+  appointmentController.getUserAppointments
+);
+app.get(
+  "/api/appointments/:id",
+  authenticateJWT,
+  appointmentController.getAppointmentById
+);
+app.put(
+  "/api/appointments/:id",
+  authenticateJWT,
+  appointmentController.updateAppointment
+);
+app.delete(
+  "/api/appointments/:id",
+  authenticateJWT,
+  appointmentController.deleteAppointment
+);
 
-app.get("/friend-requests", authenticateJWT, (req, res) => {
-  // #swagger.description = 'List all pending friend requests for the authenticated user'
-  friendController.listAllPendingRequests(req, res);
-});
+// Doctor routes
+app.get("/api/doctors", authenticateJWT, appointmentController.getAllDoctors);
+app.get(
+  "/api/doctors/search",
+  authenticateJWT,
+  appointmentController.searchDoctors
+);
+app.get(
+  "/api/doctors/:doctorId/availability",
+  authenticateJWT,
+  appointmentController.getDoctorAvailability
+);
 
-app.get("/friends", authenticateJWT, (req, res) => {
-  // #swagger.description = 'List all friends of the authenticated user'
-  friendController.listFriends(req, res);
-});
+// Appointment helper routes
+app.post(
+  "/api/appointments/:id/reminder",
+  authenticateJWT,
+  appointmentController.sendAppointmentReminder
+);
+app.post(
+  "/api/appointments/:id/directions",
+  authenticateJWT,
+  appointmentController.getDirections
+);
 
-app.patch("/friend-requests/:id/accept", authenticateJWT, (req, res) => {
-  // #swagger.description = 'Accept a friend request identified by its ID'
-  // #swagger.parameters['id'] = { description: 'ID of the friend request to accept', in: 'path', required: true, type: 'string' }
-  friendController.acceptFriendRequest(req, res);
+app.get("/medicationManager", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/medicationManager.html"));
 });
 
 app.post(
@@ -161,168 +240,58 @@ app.post(
   handleUpload
 );
 
-app.patch("/friend-requests/:id/reject", authenticateJWT, (req, res) => {
-  // #swagger.description = 'Reject a friend request by its ID'
-  // #swagger.parameters['id'] = { description: 'ID of the friend request to reject', in: 'path', required: true, type: 'string' }
-
-  friendController.rejectFriendRequest(req, res);
-});
-
-app.delete("/friends/:friendId", authenticateJWT, (req, res) => {
-  // #swagger.description = 'Remove a friend by their friend ID'
-  // #swagger.parameters['friendId'] = { description: 'ID of the friend to remove', in: 'path', required: true, type: 'string' }
-
-  friendController.removeFriend(req, res);
-});
-
-app.delete("/friend-requests/:id/withdraw", authenticateJWT, (req, res) => {
-  // #swagger.description = 'Withdraw a previously sent friend request by its ID'
-  // #swagger.parameters['id'] = { description: 'ID of the friend request to withdraw', in: 'path', required: true, type: 'string' }
-
-  friendController.withdrawFriendRequest(req, res);
-});
-
-app.get("/match/profile/check", authenticateJWT, (req, res) => {
-  // #swagger.description = 'Check if the authenticated user has a match profile'
-
-  matchController.hasMatchProfile(req, res);
-});
-
-app.get("/match/profile", authenticateJWT, (req, res) => {
-  // #swagger.description = 'Get the authenticated user\'s match profile'
-
-  matchController.getMatchProfile(req, res);
-});
-
-app.put("/match/profile", authenticateJWT, validateMatchProfile, (req, res) => {
-  // #swagger.description = 'Update the authenticated user\'s match profile'
-
-  matchController.updateMatchProfile(req, res);
-});
-
-app.post(
-  "/match/profile",
-  authenticateJWT,
-  validateMatchProfile,
-  (req, res) => {
-    // #swagger.description = 'Create a new match profile for the authenticated user'
-
-    matchController.createMatchProfile(req, res);
-  }
-);
-
-app.get("/match/potential", authenticateJWT, (req, res) => {
-  // #swagger.description = 'Get potential matches for the authenticated user'
-
-  matchController.getPotentialMatches(req, res);
-});
-
-app.post("/match/like/:targetUserId", authenticateJWT, (req, res) => {
-  // #swagger.description = 'Like a user by their targetUserId'
-  // #swagger.parameters['targetUserId'] = { description: 'ID of the user to like', in: 'path', required: true, type: 'string' }
-
-  matchController.likeUser(req, res);
-});
-
-app.post("/match/skip/:targetUserId", authenticateJWT, (req, res) => {
-  // #swagger.description = 'Skip a user by their targetUserId'
-  // #swagger.parameters['targetUserId'] = { description: 'ID of the user to skip', in: 'path', required: true, type: 'string' }
-
-  matchController.skipUser(req, res);
-});
-
 // Module 2: Community Events
+app.get("/groups/joined", authenticateJWT, (req, res) => {
+  // #swagger.description = 'List all groups the authenticated user has joined'
+  eventsController.getJoinedGroups(req, res);
+});
 
-app.get(
-  "/groups/joined",
-  authenticateJWT,
-  (req, res) => {
-    // #swagger.description = 'List all groups the authenticated user has joined'
-    eventsController.getJoinedGroups(req, res);
-  }
-);
+app.get("/groups/available", authenticateJWT, (req, res) => {
+  // #swagger.description = 'List all public/available groups the user can join'
+  eventsController.getAvailableGroups(req, res);
+});
 
-app.get(
-  "/groups/available",
-  authenticateJWT,
-  (req, res) => {
-    // #swagger.description = 'List all public/available groups the user can join'
-    eventsController.getAvailableGroups(req, res);
-  }
-);
+app.post("/groups", authenticateJWT, validateCreateGroup, (req, res) => {
+  // #swagger.description = 'Create a new group'
+  // #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/components/schemas/CreateGroup' } }
+  eventsController.createGroup(req, res);
+});
 
-app.post(
-  "/groups",
-  authenticateJWT,
-  validateCreateGroup,
-  (req, res) => {
-    // #swagger.description = 'Create a new group'
-    // #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/components/schemas/CreateGroup' } }
-    eventsController.createGroup(req, res);
-  }
-);
+app.post("/groups/join", authenticateJWT, validateGroupId, (req, res) => {
+  // #swagger.description = 'Join an existing group by its ID'
+  // #swagger.parameters['body'] = { in: 'body', schema: { type: 'object', properties: { groupId: { type: 'integer' } } } }
+  eventsController.joinGroup(req, res);
+});
 
-app.post(
-  "/groups/join",
-  authenticateJWT,
-  validateGroupId,
-  (req, res) => {
-    // #swagger.description = 'Join an existing group by its ID'
-    // #swagger.parameters['body'] = { in: 'body', schema: { type: 'object', properties: { groupId: { type: 'integer' } } } }
-    eventsController.joinGroup(req, res);
-  }
-);
+app.delete("/groups/leave", authenticateJWT, validateGroupId, (req, res) => {
+  // #swagger.description = 'Leave a group'
+  // #swagger.parameters['body'] = { in: 'body', schema: { type: 'object', properties: { groupId: { type: 'integer' } } } }
+  eventsController.leaveGroup(req, res);
+});
 
-app.delete(
-  "/groups/leave",
-  authenticateJWT,
-  validateGroupId,
-  (req, res) => {
-    // #swagger.description = 'Leave a group'
-    // #swagger.parameters['body'] = { in: 'body', schema: { type: 'object', properties: { groupId: { type: 'integer' } } } }
-    eventsController.leaveGroup(req, res);
-  }
-);
+app.get("/groups/:groupId/invite-token", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Retrieve the invite token for a specific group'
+  // #swagger.parameters['groupId'] = { in: 'path', required: true, type: 'integer', description: 'ID of the group' }
+  eventsController.getGroupInviteToken(req, res);
+});
 
-app.get(
-  "/groups/:groupId/invite-token",
-  authenticateJWT,
-  (req, res) => {
-    // #swagger.description = 'Retrieve the invite token for a specific group'
-    // #swagger.parameters['groupId'] = { in: 'path', required: true, type: 'integer', description: 'ID of the group' }
-    eventsController.getGroupInviteToken(req, res);
-  }
-);
+app.get("/groups/token/:token", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Find a group by its invite token'
+  // #swagger.parameters['token'] = { in: 'path', required: true, type: 'string', description: 'Invite token' }
+  eventsController.findGroupByToken(req, res);
+});
 
-app.get(
-  "/groups/token/:token",
-  authenticateJWT,
-  (req, res) => {
-    // #swagger.description = 'Find a group by its invite token'
-    // #swagger.parameters['token'] = { in: 'path', required: true, type: 'string', description: 'Invite token' }
-    eventsController.findGroupByToken(req, res);
-  }
-);
+app.post("/groups/join-by-token", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Join a group using its invite token'
+  // #swagger.parameters['body'] = { in: 'body', schema: { type: 'object', properties: { token: { type: 'string' } } } }
+  eventsController.joinGroupByToken(req, res);
+});
 
-app.post(
-  "/groups/join-by-token",
-  authenticateJWT,
-  (req, res) => {
-    // #swagger.description = 'Join a group using its invite token'
-    // #swagger.parameters['body'] = { in: 'body', schema: { type: 'object', properties: { token: { type: 'string' } } } }
-    eventsController.joinGroupByToken(req, res);
-  }
-);
-
-app.get(
-  "/announcements",
-  authenticateJWT,
-  (req, res) => {
-    // #swagger.description = 'List announcements for a specified group'
-    // #swagger.parameters['groupId'] = { in: 'query', required: true, type: 'integer', description: 'ID of the group' }
-    announcementsController.getAnnouncements(req, res);
-  }
-);
+app.get("/announcements", authenticateJWT, (req, res) => {
+  // #swagger.description = 'List announcements for a specified group'
+  // #swagger.parameters['groupId'] = { in: 'query', required: true, type: 'integer', description: 'ID of the group' }
+  announcementsController.getAnnouncements(req, res);
+});
 
 app.post(
   "/announcements",
@@ -335,15 +304,11 @@ app.post(
   }
 );
 
-app.get(
-  "/announcements/:id/comments",
-  authenticateJWT,
-  (req, res) => {
-    // #swagger.description = 'Retrieve all comments for a given announcement'
-    // #swagger.parameters['id'] = { in: 'path', required: true, type: 'integer', description: 'Announcement ID' }
-    announcementsController.getComments(req, res);
-  }
-);
+app.get("/announcements/:id/comments", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Retrieve all comments for a given announcement'
+  // #swagger.parameters['id'] = { in: 'path', required: true, type: 'integer', description: 'Announcement ID' }
+  announcementsController.getComments(req, res);
+});
 
 app.post(
   "/announcements/:id/comments",
@@ -369,34 +334,22 @@ app.delete(
   }
 );
 
-app.post(
-  "/meetings",
-  authenticateJWT,
-  (req, res) => {
-    // #swagger.description = 'Create a new meeting room for a group'
-    // #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/components/schemas/CreateMeeting' } }
-    meetingsController.createMeeting(req, res);
-  }
-);
+app.post("/meetings", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Create a new meeting room for a group'
+  // #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/components/schemas/CreateMeeting' } }
+  meetingsController.createMeeting(req, res);
+});
 
-app.get(
-  "/meetings/:meetingId/data",
-  authenticateJWT,
-  (req, res) => {
-    // #swagger.description = 'Get WebRTC signaling data for joining a meeting'
-    // #swagger.parameters['meetingId'] = { in: 'path', required: true, type: 'integer', description: 'Meeting ID' }
-    meetingsController.getMeetingData(req, res);
-  }
-);
+app.get("/meetings/:meetingId/data", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Get WebRTC signaling data for joining a meeting'
+  // #swagger.parameters['meetingId'] = { in: 'path', required: true, type: 'integer', description: 'Meeting ID' }
+  meetingsController.getMeetingData(req, res);
+});
 
-app.get(
-  "/meetings/join",
-  authenticateJWT,
-  (req, res) => {
-    // #swagger.description = 'Join a meeting room by its name'
-    meetingsController.joinByName(req, res);
-  }
-);
+app.get("/meetings/join", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Join a meeting room by its name'
+  meetingsController.joinByName(req, res);
+});
 
 app.put(
   "/announcements/:id",
@@ -410,18 +363,11 @@ app.put(
   }
 );
 
-app.delete(
-  "/announcements/:id",
-  authenticateJWT,
-  (req, res) => {
-    // #swagger.description = 'Delete an announcement'
-    // #swagger.parameters['id'] = { in: 'path', required: true, type: 'integer', description: 'Announcement ID' }
-    announcementsController.deleteAnnouncement(req, res);
-  }
-);
-
-
-
+app.delete("/announcements/:id", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Delete an announcement'
+  // #swagger.parameters['id'] = { in: 'path', required: true, type: 'integer', description: 'Announcement ID' }
+  announcementsController.deleteAnnouncement(req, res);
+});
 
 // Module 3: Transport Navigator
 app.get(
@@ -615,109 +561,51 @@ app.post(
   goalController.logGoalCompletion
 );
 
-// Module 1: Medication & Appointment Manager
-// Medication routes
-app.post(
-  "/api/medications",
-  authenticateJWT,
-  medicationController.createMedication
-);
-app.get(
-  "/api/medications",
-  authenticateJWT,
-  medicationController.getUserMedications
-);
-app.get(
-  "/api/medications/:id",
-  authenticateJWT,
-  medicationController.getMedicationById
-);
-app.put(
-  "/api/medications/:id",
-  authenticateJWT,
-  medicationController.updateMedication
-);
-app.delete(
-  "/api/medications/:id",
-  authenticateJWT,
-  medicationController.deleteMedication
-);
-app.post(
-  "/api/medications/:id/taken",
-  authenticateJWT,
-  medicationController.markMedicationTaken
-);
-app.get(
-  "/api/medications/reminders/upcoming",
-  authenticateJWT,
-  medicationController.getUpcomingReminders
-);
+// Module 5: Messaging and Buddy System
+// Routes for friend system
+app.post("/friend-invite/:uuid", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Send a friend request to the user identified by UUID'
+  // #swagger.parameters['uuid'] = { description: 'UUID of the user to send friend request to', in: 'path', required: true, type: 'string' }
 
-// Appointment routes
-app.post(
-  "/api/appointments",
-  authenticateJWT,
-  appointmentController.createAppointment
-);
-app.get(
-  "/api/appointments",
-  authenticateJWT,
-  appointmentController.getUserAppointments
-);
-app.get(
-  "/api/appointments/:id",
-  authenticateJWT,
-  appointmentController.getAppointmentById
-);
-app.put(
-  "/api/appointments/:id",
-  authenticateJWT,
-  appointmentController.updateAppointment
-);
-app.delete(
-  "/api/appointments/:id",
-  authenticateJWT,
-  appointmentController.deleteAppointment
-);
-
-// Doctor routes
-app.get("/api/doctors", authenticateJWT, appointmentController.getAllDoctors);
-app.get(
-  "/api/doctors/search",
-  authenticateJWT,
-  appointmentController.searchDoctors
-);
-app.get(
-  "/api/doctors/:doctorId/availability",
-  authenticateJWT,
-  appointmentController.getDoctorAvailability
-);
-
-// Appointment helper routes
-app.post(
-  "/api/appointments/:id/reminder",
-  authenticateJWT,
-  appointmentController.sendAppointmentReminder
-);
-app.post(
-  "/api/appointments/:id/directions",
-  authenticateJWT,
-  appointmentController.getDirections
-);
-
-app.get("/medicationManager", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/medicationManager.html"));
+  friendController.sendFriendRequest(req, res);
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+app.get("/friend-requests", authenticateJWT, (req, res) => {
+  // #swagger.description = 'List all pending friend requests for the authenticated user'
+  friendController.listAllPendingRequests(req, res);
 });
 
-if (require.main === module) {
-  app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-  });
-}
+app.get("/friends", authenticateJWT, (req, res) => {
+  // #swagger.description = 'List all friends of the authenticated user'
+  friendController.listFriends(req, res);
+});
+
+app.patch("/friend-requests/:id/accept", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Accept a friend request identified by its ID'
+  // #swagger.parameters['id'] = { description: 'ID of the friend request to accept', in: 'path', required: true, type: 'string' }
+  friendController.acceptFriendRequest(req, res);
+});
+
+app.patch("/friend-requests/:id/reject", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Reject a friend request by its ID'
+  // #swagger.parameters['id'] = { description: 'ID of the friend request to reject', in: 'path', required: true, type: 'string' }
+
+  friendController.rejectFriendRequest(req, res);
+});
+
+app.delete("/friends/:friendId", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Remove a friend by their friend ID'
+  // #swagger.parameters['friendId'] = { description: 'ID of the friend to remove', in: 'path', required: true, type: 'string' }
+
+  friendController.removeFriend(req, res);
+});
+
+app.delete("/friend-requests/:id/withdraw", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Withdraw a previously sent friend request by its ID'
+  // #swagger.parameters['id'] = { description: 'ID of the friend request to withdraw', in: 'path', required: true, type: 'string' }
+
+  friendController.withdrawFriendRequest(req, res);
+});
 
 app.get("/invite", (req, res) => {
   // #swagger.description = 'Serve the invite HTML page'
@@ -725,6 +613,57 @@ app.get("/invite", (req, res) => {
   res.sendFile(path.join(__dirname, "public/invite.html"));
 });
 
+// Routes for profile matching system
+app.get("/match/profile/check", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Check if the authenticated user has a match profile'
+
+  matchController.hasMatchProfile(req, res);
+});
+
+app.get("/match/profile", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Get the authenticated user\'s match profile'
+
+  matchController.getMatchProfile(req, res);
+});
+
+app.put("/match/profile", authenticateJWT, validateMatchProfile, (req, res) => {
+  // #swagger.description = 'Update the authenticated user\'s match profile'
+
+  matchController.updateMatchProfile(req, res);
+});
+
+app.post(
+  "/match/profile",
+  authenticateJWT,
+  validateMatchProfile,
+  (req, res) => {
+    // #swagger.description = 'Create a new match profile for the authenticated user'
+
+    matchController.createMatchProfile(req, res);
+  }
+);
+
+app.get("/match/potential", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Get potential matches for the authenticated user'
+
+  matchController.getPotentialMatches(req, res);
+});
+
+app.post("/match/like/:targetUserId", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Like a user by their targetUserId'
+  // #swagger.parameters['targetUserId'] = { description: 'ID of the user to like', in: 'path', required: true, type: 'string' }
+
+  matchController.likeUser(req, res);
+});
+
+app.post("/match/skip/:targetUserId", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Skip a user by their targetUserId'
+  // #swagger.parameters['targetUserId'] = { description: 'ID of the user to skip', in: 'path', required: true, type: 'string' }
+
+  matchController.skipUser(req, res);
+});
+
+// Chat system routes
 app.post("/conversations", authenticateJWT, (req, res) => {
   // #swagger.description = 'Start a new conversation'
 
@@ -772,7 +711,15 @@ app.post("/smart-reply", authenticateJWT, (req, res) => {
 
   chatController.getSmartReplies(req, res);
 });
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
 
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
 process.on("SIGINT", async () => {
   console.log("Server is gracefully shutting down");
   await sql.close();

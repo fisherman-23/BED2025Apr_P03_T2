@@ -94,6 +94,7 @@ async function loadChatList() {
           return response.json();
         })
         .then((currentUser) => {
+          // Determine friend ID and name based on current user
           const friendId =
             convo.User1ID === currentUser.id ? convo.User2ID : convo.User1ID;
           const friendName =
@@ -206,7 +207,7 @@ async function loadChatMessages(conversationId, friendID, friendName) {
         message.SenderID === friendID
           ? "flex justify-start mb-2"
           : "flex justify-end mb-2";
-
+      // If the message is deleted
       const innerHTML = message.IsDeleted
         ? `
     <div class="bg-gray-200 p-4 rounded-2xl max-w-xs">
@@ -214,14 +215,16 @@ async function loadChatMessages(conversationId, friendID, friendName) {
       <p class="text-sm text-gray-400 text-right">${formatTime(message.SentAt)}</p>
     </div>
   `
-        : message.SenderID === friendID
+        : // If the message is not deleted
+          message.SenderID === friendID
           ? `
       <div class="bg-white p-4 rounded-2xl max-w-xs">
         <p class="text-gray-700"><strong>${friendName}:</strong> ${message.Content}</p>
         <p class="text-sm text-gray-400 text-right">${formatTime(message.SentAt)}</p>
       </div>
     `
-          : `
+          : // If the message is from the current user
+            `
       <div class="bg-blue-100 p-4 rounded-2xl max-w-xs relative pr-10">
         <button class="absolute top-2 right-2 text-gray-400 hover:text-red-500"
           onclick="deleteMessage('${message.ID}', '${conversationId}', '${friendID}', '${friendName}')"
@@ -259,7 +262,15 @@ async function sendMessage(conversationId, friendID, friendName) {
       credentials: "include",
       body: JSON.stringify({ content }),
     });
-    if (!response.ok) throw new Error("Failed to send message");
+    if (!response.ok) {
+      const errorDetails = await response.json();
+      alert(
+        `Failed to send message: ${errorDetails.error || "No error details provided"}`
+      );
+      throw new Error(
+        `Failed to send message: ${errorDetails.error || "No error details provided"}`
+      );
+    }
     messageInput.value = "";
     loadChatMessages(conversationId, friendID, friendName);
   } catch (err) {
@@ -432,6 +443,7 @@ async function smartReply(content) {
     console.error("No messages available for smart reply");
     return;
   }
+  // Pair the last 3 messages with their sender names, and determine if they were deleted
   content = content
     .slice(-3)
     .map((msg) =>

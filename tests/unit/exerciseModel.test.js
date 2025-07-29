@@ -3,6 +3,7 @@ const exercise = require("../../models/exerciseModel.js");
 const sql = require("mssql");
 jest.mock("mssql");
 
+// Test getting exercise preferences
 describe("exercise.getExercisePreferences", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -55,6 +56,7 @@ describe("exercise.getExercisePreferences", () => {
   });
 });
 
+// Test updating exercise preferences
 describe("exercise.updateExercisePreferences", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -117,6 +119,7 @@ describe("exercise.updateExercisePreferences", () => {
   });
 });
 
+// Test deleting Exercises preferences
 describe("exercise.deleteExercisePreferences", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -163,6 +166,7 @@ describe("exercise.deleteExercisePreferences", () => {
   });
 });
 
+// Test getting exercises
 describe("exercise.getExercises", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -268,6 +272,7 @@ describe("exercise.getExercises", () => {
   });
 });
 
+// Test getting exercise steps
 describe("exercise.getSteps", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -323,6 +328,7 @@ describe("exercise.getSteps", () => {
   });
 });
 
+// Test creating user preferences
 describe("exercise.personalisation", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -375,6 +381,7 @@ describe("exercise.personalisation", () => {
   });
 });
 
+// Test getting user statistics
 describe("exercise.getUserStats", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -435,6 +442,7 @@ describe("exercise.getUserStats", () => {
   });
 });
 
+// Test logging user completed exercise
 describe("exercise.logExerciseCompletion", () => {
   beforeEach(() => {
     jest.clearAllMocks();

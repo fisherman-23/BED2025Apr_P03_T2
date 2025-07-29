@@ -4,7 +4,7 @@ const exerciseModel = require("../../models/exerciseModel");
 
 jest.mock("../../models/exerciseModel");
 
-// getExercises
+// Test exercise controller for getting exercises
 describe("exerciseController.getExercises", () => {
   beforeEach(() => jest.clearAllMocks());
   it("should return user exercises", async () => {
@@ -54,6 +54,7 @@ describe("exerciseController.getExercises", () => {
   });
 });
 
+// Test controller getting exercises steps
 describe("exerciseController.getSteps", () => {
   beforeEach(() => jest.clearAllMocks());
 
@@ -92,6 +93,7 @@ describe("exerciseController.getSteps", () => {
   });
 });
 
+// Test controller creating user preferences
 describe("exerciseController.personalisation", () => {
   beforeEach(() => jest.clearAllMocks());
 
@@ -148,6 +150,7 @@ describe("exerciseController.personalisation", () => {
   });
 });
 
+// Test controller getting user exercises preferences
 describe("exerciseController.getExercisePreferences", () => {
   beforeEach(() => jest.clearAllMocks());
 
@@ -204,6 +207,7 @@ describe("exerciseController.getExercisePreferences", () => {
   });
 });
 
+// Test controller updating exercise preferences
 describe("exerciseController.updateExercisePreferences", () => {
   beforeEach(() => jest.clearAllMocks());
 
@@ -246,6 +250,7 @@ describe("exerciseController.updateExercisePreferences", () => {
   });
 });
 
+// Test controller deleting exercise preferences
 describe("exerciseController.deleteExercisePreference", () => {
   beforeEach(() => jest.clearAllMocks());
 
@@ -285,6 +290,7 @@ describe("exerciseController.deleteExercisePreference", () => {
   });
 });
 
+// Test controller get user statistics
 describe("exerciseController.getUserStats", () => {
   beforeEach(() => jest.clearAllMocks());
 
@@ -323,6 +329,7 @@ describe("exerciseController.getUserStats", () => {
   });
 });
 
+// Test controller logging user completed exercise
 describe("exerciseController.logExerciseCompletion", () => {
   beforeEach(() => jest.clearAllMocks());
 
