@@ -55,8 +55,14 @@ The website consists of 5 specialized modules.
 
 ### Module 1: Medication & Appointment Manager
 
-| Feature | Description |
-| ------- | ----------- |
+| Feature          | Description                                                                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Medication CRUD Management    | Comprehensive medication tracking system allowing elderly users to add, view, update, and delete medications with dosage amounts, timing schedules, and special instructions. Features validation for required fields and displays immediate confirmation messages. |
+| Automated SMS Reminder System | Intelligent reminder system that sends SMS notifications at prescribed medication times using Twilio API integration. Includes 15-minute pre-reminders, escalating alerts for missed doses every 30 minutes up to 2 hours, and direct "mark as taken" functionality from SMS responses. |
+| Appointment Booking Integration | Caregiver-assisted appointment management connecting seniors with healthcare providers through doctor database searches by specialty and location. Features real-time availability checking, OneMap API integration for clinic directions, and automated email confirmations to both elderly users and caregivers. |
+| Emergency Contact Alert System | Multi-tier safety system allowing users to designate primary and secondary emergency contacts with customizable alert preferences (immediate, 1-hour, 2-hour delays). Automatically triggers SMS/email escalation when medication adherence issues are detected, with integration to medication tracking for pattern analysis. |
+| Real-time Health Analytics Dashboard | Interactive health monitoring dashboard using Chart.js visualizations designed specifically for seniors with large, clear fonts. Features medication compliance tracking with color-coded indicators (green/yellow/red), daily/weekly/monthly trend analysis, and simple warning messages for concerning patterns. Includes printable reports for doctor visits. |
+| Caregiver Monitoring Portal | Comprehensive real-time dashboard enabling family caregivers to monitor elderly family member's medication adherence remotely. Displays live compliance metrics, generates automated alerts for missed medications exceeding 2-hour thresholds, provides detailed medication history logs, and creates weekly adherence reports with PDF generation for healthcare provider sharing. |
 
 ### Module 2: Community Events & Meetings
 
