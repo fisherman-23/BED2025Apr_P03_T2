@@ -146,7 +146,9 @@ async function loadChatList() {
     chatListEl.innerHTML = `<p class="text-red-500">Error loading chats: ${err.message}</p>`;
   }
 }
+// Load messages for a specific conversation
 async function loadChatMessages(conversationId, friendID, friendName) {
+  // Ensure IDs are integers
   friendID = parseInt(friendID, 10);
   conversationId = parseInt(conversationId, 10);
   const chatHeaderName = document.getElementById("chatHeaderName");
