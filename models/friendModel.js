@@ -159,6 +159,7 @@ async function getAllPendingRequests(userId) {
           FR.SenderID,
           U.Name,
           U.PublicUUID,
+          U.ProfilePicture,
           'incoming' AS Direction
         FROM FriendRequests FR
         JOIN Users U ON FR.SenderID = U.ID
@@ -173,6 +174,7 @@ async function getAllPendingRequests(userId) {
           FR.ReceiverID AS TargetID,
           U.Name,
           U.PublicUUID,
+          U.ProfilePicture,
           'outgoing' AS Direction
         FROM FriendRequests FR
         JOIN Users U ON FR.ReceiverID = U.ID
@@ -211,7 +213,8 @@ async function getFriends(userId) {
           U.ID AS FriendID,
           U.Name,
           U.PublicUUID,
-          F.CreatedAt
+          F.CreatedAt,
+          U.ProfilePicture
         FROM Friends F
         JOIN Users U ON 
           (U.ID = F.UserID1 AND F.UserID2 = @userId)

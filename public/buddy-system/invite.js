@@ -23,7 +23,7 @@ window.addEventListener("DOMContentLoaded", () => {
         document.getElementById("name").textContent = data.Name;
         document.getElementById("uuid").textContent = data.PublicUUID;
         document.getElementById("pfp").src =
-          data.ProfilePicture || "/assets/images/elderlyPFP.png";
+          data.ProfilePicture || "/assets/images/defaultPFP.png";
 
         const addButton = document.getElementById("addFriendBtn");
         addButton.style.display = "block"; // Show the button
@@ -37,7 +37,7 @@ window.addEventListener("DOMContentLoaded", () => {
         console.error("Error fetching user data:", error);
         document.getElementById("name").textContent = "User not found";
         document.getElementById("uuid").textContent = "N/A";
-        document.getElementById("pfp").src = "/assets/images/elderlyPFP.png";
+        document.getElementById("pfp").src = "/assets/images/defaultPFP.png";
         document.getElementById("addFriendBtn").style.display = "none";
         alert("User not found or an error occurred while fetching data.");
       });
@@ -45,7 +45,7 @@ window.addEventListener("DOMContentLoaded", () => {
     console.error("No UUID found in URL");
     document.getElementById("name").textContent = "No UUID provided";
     document.getElementById("uuid").textContent = "N/A";
-    document.getElementById("pfp").src = "/assets/images/elderlyPFP.png";
+    document.getElementById("pfp").src = "/assets/images/defaultPFP.png";
     document.getElementById("addFriendBtn").style.display = "none";
 
     alert("No UUID found in the URL.");

@@ -100,7 +100,10 @@ async function loadChatList() {
             convo.User1ID === currentUser.id
               ? convo.User2Name
               : convo.User1Name;
-          const friendProfilePic = "/assets/images/elderlyPFP.png"; // placeholder
+          const friendProfilePic =
+            convo.User1ID === currentUser.id
+              ? convo.User2ProfilePic
+              : convo.User1ProfilePic;
 
           // Message content and time or "Read" status text (adjust as needed)
           const messagePreview = lastMessage
