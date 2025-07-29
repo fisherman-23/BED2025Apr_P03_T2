@@ -1,5 +1,6 @@
 class ReviewManager {
     constructor() {
+        // Get facilityId from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         this.facilityId = urlParams.get('facilityId');
         
@@ -7,6 +8,7 @@ class ReviewManager {
         console.error('Missing facilityId in URL');
         return;
         }
+        // Initialize properties
         this.currentUserId = null;
         this.reviews = [];
         this.currentSort = 'newest';
@@ -15,26 +17,18 @@ class ReviewManager {
     }
 
     async init() {
-        if (!this.facilityId) {
-            console.error("No facility ID found in URL");
-            return;
-        }
-
         await this.getCurrentUser();
         await this.loadFacilityDetails();
         this.createEditReviewModal();
         await this.loadReviews();
         this.setupEventListeners();
     }
-
+    // Fetch current user details for managing editing and deleting user's reviews
     async getCurrentUser() {
         try {
             const res = await fetch('/me', {
-                method: 'GET',
-                headers: {
-                    'content-Type': 'application/json',
-                    'credentials': 'include'
-                }
+                method: "GET",
+                credentials: "include"
             });
             if (!res.ok) {
                 throw new Error("Failed to fetch current user");
@@ -45,15 +39,12 @@ class ReviewManager {
             console.error("Error fetching current user:", error);
         }
     }
-
+    // Load facility details to display on the page
     async loadFacilityDetails() {
         try {
             const res = await fetch(`/facilities/id/${this.facilityId}`, {
-                method: 'GET',
-                headers: {
-                    'content-Type': 'application/json',
-                    'credentials': 'include'
-                }
+                method: "GET",
+                credentials: "include"
             });
             if (!res.ok) {
                 throw new Error("Failed to fetch facility details");
@@ -66,7 +57,7 @@ class ReviewManager {
             console.error("Error loading facility details:", error);
         }
     }
-
+    // Render facility details on the page
     renderFacilityDetails(facility) {
         document.getElementById('facilityName').textContent = facility.name;
         document.getElementById('facilityAddress').textContent = facility.address;
@@ -75,7 +66,7 @@ class ReviewManager {
         document.getElementById('facilityImage').src = facility.image_url;
         document.getElementById('facilityMap').src = facility.static_map_url;
     }
-
+    // Create modal for editing existing reviews by the user
     createEditReviewModal() {
         const modalHTML = `
         <div id="editReviewModal" class="edit-modal">
@@ -100,7 +91,7 @@ class ReviewManager {
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         this.setupModalEventListeners();
     }
-
+    // Set up event listeners for the edit modal
     setupModalEventListeners() {
         document.querySelectorAll('.rating-number').forEach(button => {
             button.addEventListener('click', (e) => {
@@ -117,7 +108,7 @@ class ReviewManager {
             await this.handleSaveEdit();
         });
     }
-
+    // Open the edit modal with pre-filled review data
     openEditModal(review) {
         this.currentEditReviewId = review.reviewId;
         document.getElementById('editComment').value = review.comment;
@@ -129,12 +120,12 @@ class ReviewManager {
         });
         document.getElementById('editReviewModal').style.display = 'flex';
     }
-
+    // Close the edit modal
     closeEditModal() {
         this.currentEditReviewId = null;
         document.getElementById('editReviewModal').style.display = 'none';
     }
-
+    // Handle saving the edited review
     async handleSaveEdit() {
         if (!this.currentEditReviewId) {
             console.error("No review ID set for editing");
@@ -148,13 +139,14 @@ class ReviewManager {
         
         const rating = selected.dataset.value;
         const comment = document.getElementById('editComment').value;
+        // Send updated review data to the database
         try {
             const res = await fetch(`/reviews/${this.currentEditReviewId}`, {
-                method: 'PUT',
+                method: "PUT",
                 headers: {
-                    'content-Type': 'application/json',
-                    'credentials': 'include'
+                    "Content-Type": "application/json"
                 },
+                credentials: "include",
                 body: JSON.stringify({ rating, comment })
             });
             if (!res.ok) {
@@ -165,32 +157,29 @@ class ReviewManager {
             console.log("Review updated:", updatedReview);
             alert("Review updated successfully.");
             await this.loadReviews();
-            this.sortAndRenderReviews();
             this.closeEditModal();
         } catch (error) {
             console.error("Error updating review:", error);
             alert(error.message || "Failed to update review. Please try again.");
         }
     }
-
+    // Load reviews for the facility
     async loadReviews() {
         try {
             const res = await fetch(`/reviews/${this.facilityId}?sort=${this.currentSort}`, {
-                method: 'GET',
-                headers: {
-                    'content-Type': 'application/json',
-                    'credentials': 'include'
-                }
+                method: "GET",
+                credentials: "include"
             });
             if (!res.ok) {
                 throw new Error("Failed to fetch reviews");
             }
-            this.reviews = await res.json();            this.renderReviews();
+            this.reviews = await res.json();
+            this.renderReviews();
         } catch (error) {
             console.error("Error loading reviews:", error);
         }
     }
-
+    // Render reviews on the page
     renderReviews() {
         const reviewList = document.getElementById('reviewsList');
         reviewList.innerHTML = '';
@@ -198,13 +187,13 @@ class ReviewManager {
             reviewList.innerHTML = '<p>No reviews available for this facility.</p>';
             return;
         }
-
+        // Sort reviews based on current sort type
         this.reviews.forEach(review => {
             const reviewElement = this.createReviewElement(review);
             reviewList.appendChild(reviewElement);
         });
     }
-
+    // Create a review element for rendering
     createReviewElement(review) {
         const isCurrentUser = this.currentUserId === review.userId;
         const date = new Date(review.createdAt).toLocaleDateString();
@@ -244,34 +233,26 @@ class ReviewManager {
             e.stopPropagation();
             dropdown.classList.toggle('show');
         });
-
+        // Allow editing or deleting reviews only for the current user
         if (isCurrentUser) {
             reviewElement.querySelector('.review-edit-button').addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.openEditModal(review);
-            });
-            
+            });     
             reviewElement.querySelector('.review-delete-button').addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.handleDeleteReview(review.reviewId);
             });
+        // Allow reporting reviews for other user's reviews
         } else {
             reviewElement.querySelector('.review-report-button').addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.handleReportReview(review.reviewId);
             });
         }
-
-        // Close dropdown when clicking outside 
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.review-actions')) {
-                dropdown.classList.remove('show');
-            }
-        });
-        
         return reviewElement;
     }
-
+    // Set up event listeners for the review actions
     setupEventListeners() {
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.review-actions')) {
@@ -280,7 +261,7 @@ class ReviewManager {
                 });  
             }
         });
-
+        // Filter button functionality
         const filterButton = document.getElementById('filterButton');
         const filterDropdown = document.getElementById('filterDropdown');
         const currentFilter = document.getElementById('currentFilter');
@@ -303,7 +284,7 @@ class ReviewManager {
             filterDropdown.classList.remove('show');
         });
     }
-
+    // Sort and render reviews based on the current sort type
     sortAndRenderReviews() {
         if (this.currentSort === 'newest') {
             this.reviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -318,21 +299,17 @@ class ReviewManager {
         }
         this.renderReviews();
     }
-
+    // Handle reporting a review
     async handleReportReview(reviewId) {
-        console.log (`Reporting review with ID: ${reviewId}`);
+        // Prompt user for report reason
         const reason = prompt("Please enter the reason for reporting this review:");
-        if (!reason) {
-            alert("Report cancelled. No reason provided.");
-            return;
-        }
         try {
             const res = await fetch(`/reports`, {
-                method: 'POST',
+                method: "POST",
                 headers: {
-                    'content-Type': 'application/json',
-                    'credentials': 'include'
+                    "Content-Type": "application/json"
                 },
+                credentials: "include",
                 body: JSON.stringify({ 
                     reviewId: reviewId,
                     reason: reason
@@ -349,16 +326,16 @@ class ReviewManager {
             alert(error.message || "Failed to report review. Please try again.");
         }
     }
-
+    // Handle deleting a review
     async handleDeleteReview(reviewId) {
         if (confirm("Are you sure you want to delete this review?")) {
             try {
                 const res = await fetch(`/reviews/${reviewId}`, {
-                    method: 'DELETE',
+                    method: "DELETE",
                     headers: {
-                        'content-Type': 'application/json',
-                        'credentials': 'include'
-                    }
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "include"
                 });
                 if (!res.ok) {
                     const errorData = await res.json();

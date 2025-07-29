@@ -1,6 +1,13 @@
 const NavigationModel = require('../models/navigationModel');
-
-// Get Google Maps configuration for frontend
+/**
+ * Retrieves Google Maps configuration for frontend.
+ *
+ * @async
+ * @function getGoogleMapsConfig
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @returns {Object} 200 OK with Google Maps config or 500 on error.
+ */
 async function getGoogleMapsConfig(req, res) {
     try {
         const config = {
@@ -15,8 +22,15 @@ async function getGoogleMapsConfig(req, res) {
         res.status(500).json({ error: 'Unable to get map configuration' });
     }
 }
-
-// Get directions between two points
+/**
+ * Retrieves directions to a facility.
+ *
+ * @async
+ * @function getFacilityDirections
+ * @param {Object} req - Express request object, requires `req.params.id` and `req.body.origin`.
+ * @param {Object} res - Express response object.
+ * @returns {Object} 200 OK with directions or 500 on error.
+ */
 async function getFacilityDirections(req, res) {
     try {
         const { facilityId } = req.params;
@@ -56,8 +70,15 @@ async function getFacilityDirections(req, res) {
         res.status(500).json({ error: 'Unable to get directions' });
     }
 }
-
-// Geocode an address to get coordinates
+/**
+ * Geocodes an address to get coordinates.
+ *
+ * @async
+ * @function geocodeAddress
+ * @param {Object} req - Express request object, requires `req.body.address`.
+ * @param {Object} res - Express response object.
+ * @returns {Object} 200 OK with geocoded address or 500 on error.
+ */
 async function geocodeAddress(req, res) {
     try {
         const { address } = req.body;

@@ -1,7 +1,14 @@
 const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 const jwt = require("jsonwebtoken");
-
+/**
+ * Retrieves all bookmarked facilities for a user.
+ *
+ * @function getBookmarkedFacilities
+ * @param {number} userId - The ID of the user.
+ * @returns {Array} - An array of bookmarked facilities.
+ * @throws Will throw if the database query fails.
+ */
 async function getBookmarkedFacilities(userId) {
     let connection;
     try {
@@ -29,7 +36,15 @@ async function getBookmarkedFacilities(userId) {
         }
     }
 }
-
+/**
+ * Checks if a facility is bookmarked by a user.
+ *
+ * @function checkIfBookmarked
+ * @param {number} userId - The ID of the user.
+ * @param {number} facilityId - The ID of the facility.
+ * @returns {Object} - An object containing bookmark information, including `isBookmarked`, `bookmarkId`, and `notes`.
+ * @throws Will throw if the database query fails.
+ */
 async function checkIfBookmarked(userId, facilityId) {
     let connection;
     try {
@@ -60,7 +75,18 @@ async function checkIfBookmarked(userId, facilityId) {
         }
     }
 }
-
+/**
+ * Saves a bookmark for a user.
+ *
+ * @function saveBookmark
+ * @param {Object} bookmarkData - The data for the bookmark.
+ * @param {number} bookmarkData.userId - The ID of the user.
+ * @param {number} bookmarkData.facilityId - The ID of the facility.
+ * @param {string} bookmarkData.locationName - The name of the location.
+ * @param {string} bookmarkData.note - The note for the bookmark.
+ * @returns {number} - The ID of the created bookmark.
+ * @throws Will throw if the database query fails.
+ */
 async function saveBookmark(bookmarkData) {
     let connection;
     try {
@@ -90,7 +116,17 @@ async function saveBookmark(bookmarkData) {
         }
     }
 }
-
+/**
+ * Updates an existing bookmark.
+ *
+ * @function updateBookmark
+ * @param {number} bookmarkId - The ID of the bookmark to update.
+ * @param {Object} bookmarkData - The updated data for the bookmark.
+ * @param {string} bookmarkData.locationName - The updated location name for the bookmark.
+ * @param {string} bookmarkData.note - The updated note for the bookmark.
+ * @returns {boolean} - True if the bookmark was updated successfully, false otherwise.
+ * @throws Will throw if the database query fails.
+ */
 async function updateBookmark(bookmarkId, bookmarkData) {
     let connection;
     try {
@@ -123,7 +159,14 @@ async function updateBookmark(bookmarkId, bookmarkData) {
         }
     }
 }
-
+/**
+ * Deletes a bookmark.
+ *
+ * @function deleteBookmark
+ * @param {number} bookmarkId - The ID of the bookmark to delete.
+ * @returns {boolean} - True if the bookmark was deleted successfully, false otherwise.
+ * @throws Will throw if the database query fails.
+ */
 async function deleteBookmark(bookmarkId) {
     let connection;
     try {

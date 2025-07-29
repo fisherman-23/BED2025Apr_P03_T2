@@ -1,6 +1,14 @@
 const axios = require('axios');
-
-// Get directions from Google Maps API
+/**
+ * Retrieves directions from Google Maps API.
+ *
+ * @function getDirections
+ * @param {string} origin - The starting point for directions.
+ * @param {string} destination - The endpoint for directions.
+ * @param {string} travelMode - The mode of travel ('DRIVING', 'TRANSIT', 'WALKING').
+ * @returns {Array} - An array of route objects.
+ * @throws Will throw if the API request fails.
+ */
 async function getDirections(origin, destination, travelMode = 'TRANSIT') {
     try {
         const directionsUrl = 'https://maps.googleapis.com/maps/api/directions/json';
@@ -24,8 +32,14 @@ async function getDirections(origin, destination, travelMode = 'TRANSIT') {
         throw error;
     }
 }
-
-// Geocode an address to coordinates
+/**
+ * Geocodes an address to coordinates.
+ *
+ * @function geocodeAddress
+ * @param {string} address - The address to geocode.
+ * @returns {Object} - The geocoded location data.
+ * @throws Will throw if the API request fails.
+ */
 async function geocodeAddress(address) {
     try {
         const geocodeUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
@@ -51,8 +65,13 @@ async function geocodeAddress(address) {
         throw error;
     }
 }
-
-// Format coordinates for Google Maps API
+/**
+ * Formats latitude and longitude coordinates for Google Maps API.
+ * 
+ * @param {*} latitude - The latitude coordinate.
+ * @param {*} longitude - The longitude coordinate.
+ * @returns {string} - The formatted coordinates string.
+ */
 function formatCoordinates(latitude, longitude) {
     return `${latitude},${longitude}`;
 }

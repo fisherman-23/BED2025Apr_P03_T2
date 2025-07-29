@@ -15,7 +15,7 @@ const reviewSchema = Joi.object({
         "number.max": "Rating must be at most 5",
         "any.required": "Rating is required to submit a review"
     }),
-    comment: Joi.string().max(500).optional().messages({
+    comment: Joi.string().max(500).optional().allow('', null).messages({
         "string.base": "Comment must be text",
         "string.max": "Comment cannot exceed 500 characters"
     })

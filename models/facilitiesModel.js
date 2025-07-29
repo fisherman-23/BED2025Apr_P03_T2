@@ -2,7 +2,15 @@ const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 const jwt = require("jsonwebtoken");
 const axios = require('axios');
-
+/**
+ * Handles location access for a given latitude and longitude.
+ *
+ * @function handleLocationAccess
+ * @param {number} latitude - The latitude of the location.
+ * @param {number} longitude - The longitude of the location.
+ * @returns {Object} - The address information for the location.
+ * @throws Will throw if the geocoding request fails.
+ */
 async function handleLocationAccess(latitude, longitude) {
     try {
         console.log("Handling location access for coordinates:", latitude, longitude);
@@ -30,7 +38,16 @@ async function handleLocationAccess(latitude, longitude) {
         throw new Error("Failed to access location data.");
     }
 }
-
+/**
+ * Retrieves nearby facilities based on the user's location.
+ *
+ * @function getNearbyFacilities
+ * @param {number} latitude - The latitude of the user's location.
+ * @param {number} longitude - The longitude of the user's location.
+ * @param {number} radius - The search radius in meters (default is 2000).
+ * @returns {Array} - An array of nearby facilities.
+ * @throws Will throw if the database query fails.
+ */
 async function getNearbyFacilities(latitude, longitude, radius = 2000) {
     let connection;
     try {
@@ -61,7 +78,13 @@ async function getNearbyFacilities(latitude, longitude, radius = 2000) {
         }
     }
 }
-
+/**
+ * Retrieves all facilities from the database.
+ *
+ * @function getFacilities
+ * @returns {Array} - An array of all facilities.
+ * @throws Will throw if the database query fails.
+ */
 async function getFacilities() {
     let connection;
     try {
@@ -82,7 +105,14 @@ async function getFacilities() {
         }
     }
 }
-
+/**
+ * Retrieves a facility by its ID.
+ *
+ * @function getFacilityById
+ * @param {number} facilityId - The ID of the facility to retrieve.
+ * @returns {Object} - The facility object.
+ * @throws Will throw if the database query fails.
+ */
 async function getFacilityById(facilityId) {
     let connection;
     try {
@@ -108,7 +138,14 @@ async function getFacilityById(facilityId) {
         }
     }
 }
-
+/**
+ * Retrieves facilities by their type.
+ *
+ * @function getFacilitiesByType
+ * @param {string} facilityType - The type of facilities to retrieve.
+ * @returns {Array} - An array of facilities matching the specified type.
+ * @throws Will throw if the database query fails.
+ */
 async function getFacilitiesByType(facilityType) {
     let connection;
     try {
@@ -131,8 +168,14 @@ async function getFacilitiesByType(facilityType) {
         }
     }
 }
-
-// Function to save a new facility to the database
+/**
+ * Saves a new facility to the database.
+ *
+ * @function saveFacility
+ * @param {Object} facilityData - The data for the facility to save.
+ * @returns {Object} - The saved facility object.
+ * @throws Will throw if the database query fails.
+ */
 async function saveFacility(facilityData) {
     let connection;
     try {

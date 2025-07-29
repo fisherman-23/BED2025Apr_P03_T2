@@ -22,26 +22,29 @@ document.addEventListener('DOMContentLoaded', function() {
             center: { lat: 1.3521, lng: 103.8198 }, // Default to Singapore
             zoom: 12
         });
-        
+
         directionsService = new google.maps.DirectionsService();
         directionsRenderer = new google.maps.DirectionsRenderer({
             map: map,
             suppressMarkers: false
         });
-        
+        // Set up autocomplete for start location
         const autocomplete = new google.maps.places.Autocomplete(startInput, {
             componentRestrictions: { country: 'SG' },
             fields: ['formatted_address', 'geometry'],
         });
-
+        // Listen for place changes
         autocomplete.addListener('place_changed', () => {
             const place = autocomplete.getPlace();
             if (!place || !place.geometry) return;
+            // Update autocompletePlace with selected place
             autocompletePlace = {
                 geometry: { location: place.geometry.location },
                 formatted_address: place.formatted_address
             };
+            // Set the start input value to the formatted address
             startInput.value = place.formatted_address;
+            // If facility coordinates are set, try to route
             if (facilityCoords) tryRoute();
         });
         
@@ -67,6 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 tryRoute();
             });
         });
+        // Update active button based on current mode
         document.querySelectorAll('.transport-option').forEach(button => {
             if (button.dataset.mode === currentMode) {
                 button.classList.add('active');
@@ -74,17 +78,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.classList.remove('active');
             }
         });
-
+        // Set up event listener for start input
         if (navigator.geolocation) {
+            // Get user's current location
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const latlng = {
                         lat: position.coords.latitude,
                         lng: position.coords.longitude
                     };
+                    // Set map center to user's location
                     map.setCenter(latlng);
                     const geocoder = new google.maps.Geocoder();
                     geocoder.geocode({ location: latlng }, (results, status) => {
+                        // Set start input to user's address
                         if (status === 'OK' && results[0]) {
                             startInput.value = results[0].formatted_address;
                             autocompletePlace = {
@@ -112,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 processStartLocationInput(valid);
             }
         });
-
+        // Handle focus on start input
         startInput.addEventListener('focus', (e) => {
             if (e.target.value === 'Enter your current location') {
                 if (navigator.geolocation) {
@@ -122,6 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 lat: position.coords.latitude,
                                 lng: position.coords.longitude
                             };
+                            // Set map center to user's location
                             const geocoder = new google.maps.Geocoder();
                             geocoder.geocode({ location: latlng }, (results, status) => {
                                 if (status === 'OK' && results[0]) {
@@ -142,11 +150,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
+    // Process start location input
     function processStartLocationInput(input) {
         if (autocompletePlace && autocompletePlace.formatted_address === input) {
+            // If the input matches the autocomplete place, calculate route
             calculateAndDisplayRoute();
         } else {
+            // If the input doesn't match, geocode the address
             const geocoder = new google.maps.Geocoder();
             geocoder.geocode({ address: input }, (results, status) => {
                 if (status === 'OK' && results[0]) {
@@ -161,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
-
+    // Try to route from start to end
     function tryRoute() {
         if (!facilityCoords) {
             console.warn('No facility coordinates available.');
@@ -178,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function calculateAndDisplayRoute() {
         const origin = autocompletePlace.geometry.location
         const destination = new google.maps.LatLng(facilityCoords.lat, facilityCoords.lng);
-
+        // Request directions from Google Maps API
         directionsService.route({
             origin,
             destination,
@@ -196,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
+    // Show route on map
     function showRouteOnMap(routeIndex) {
         if (!latestDirectionsResponse) return;
         const selectedRoute = {
@@ -256,6 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Show focused route details
     function showFocusedRoute(route, index) {
         const routesList = document.getElementById('routesList');
         routesList.innerHTML = '';
@@ -320,11 +331,12 @@ document.addEventListener('DOMContentLoaded', function() {
         routesList.appendChild(routeElement);
     }
 
+    // Get facility details from the database for latitude and longitude
     async function fetchFacilityDetails(facilityId) {
         try {
             const res = await fetch(`/facilities/id/${facilityId}`, {
-                method: 'GET',
-                credentials: 'include'
+                method: "GET",
+                credentials: "include"
             });
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({ error: 'Network response was not ok' }));
@@ -344,8 +356,8 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // Fetch Google Maps configuration from backend
             const response = await fetch('/api/google-maps-config', {
-                method: 'GET',
-                credentials: 'include'
+                method: "GET",
+                credentials: "include"
             });
             
             if (!response.ok) {
@@ -354,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const config = await response.json();
-            
+            // Load Google Maps script dynamically
             const script = document.createElement('script');
             script.src = `https://maps.googleapis.com/maps/api/js?key=${config.apiKey}&libraries=${config.libraries.join(',')}&callback=initMap&loading=${config.loading}`;
             script.async = true;
@@ -366,6 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Show review modal
     async function showReviewModal() {
         const modalHTML = `
         <div id="reviewModal" class="review-modal">
@@ -391,6 +404,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setupReviewModalListeners();
     }
 
+    // Set up review modal listeners
     function setupReviewModalListeners() {
         document.querySelectorAll('.rating-number').forEach(button => {
             button.addEventListener('click', (e) => {
@@ -408,6 +422,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Handle save review
     async function handleSaveReview() {
         const ratingButtons = document.querySelectorAll('.rating-number.selected');
         const rating = ratingButtons.length > 0 ? parseInt(ratingButtons[0].dataset.value) : null;
@@ -420,11 +435,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const response = await fetch(`/reviews`, {
-                method: 'POST',
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json"
                 },
-                credentials: 'include',
+                credentials: "include",
                 body: JSON.stringify({ facilityId, rating, comment })
             });
 

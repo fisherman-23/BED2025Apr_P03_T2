@@ -1,7 +1,16 @@
 const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 const jwt = require("jsonwebtoken");
-
+/**
+ * Creates a report for a review and deactivates the reported review removing it from display.
+ * 
+ * @param {Object} reportData - The data for the report.
+ * @param {number} reportData.reviewId - The ID of the review being reported.
+ * @param {number} reportData.userId - The ID of the user reporting the review.
+ * @param {string} reportData.reason - The reason for reporting the review.
+ * @returns {Promise<boolean>} - Returns true if the report was created successfully, false otherwise.
+ * @throws Will throw if the database query fails.
+ */
 async function createReport(reportData) {
     let connection;
     try {

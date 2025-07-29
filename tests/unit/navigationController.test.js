@@ -1,7 +1,12 @@
 const navigationController = require("../../controllers/navigationController");
 const navigationModel = require("../../models/navigationModel");
 
-jest.mock("../../models/navigationModel");
+jest.mock("../../models/navigationModel", () => ({
+    getFacilityDetails: jest.fn(),
+    formatCoordinates: jest.fn(),
+    getDirections: jest.fn(),
+    geocodeAddress: jest.fn()
+}));
 
 let req, res;
 

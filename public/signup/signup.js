@@ -114,6 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // prepare user data for submission
     const userData = {
       Email: email,
       Password: password,
@@ -123,6 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ProfilePicture: uploadedImageUrl ||  null,
     };
 
+    // submit user data to database
     try {
       const res = await fetch("/users", {
         method: "POST",

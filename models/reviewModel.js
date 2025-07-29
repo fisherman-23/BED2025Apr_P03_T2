@@ -1,7 +1,13 @@
 const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 const jwt = require("jsonwebtoken");
-
+/**
+ * Retrieves all reviews for a specific facility.
+ * 
+ * @param {number} facilityId - The ID of the facility.
+ * @returns {Promise<Object[]>} - Array of review objects for the facility.
+ * @throws Will throw if the database query fails.
+ */
 async function getReviewsByFacilityId(facilityId) {
     let connection;
     try {
@@ -30,7 +36,17 @@ async function getReviewsByFacilityId(facilityId) {
         }
     }
 }
-
+/**
+ * Creates a new review.
+ * 
+ * @param {Object} reviewData - The data for the review.
+ * @param {number} reviewData.facilityId - The ID of the facility being reviewed.
+ * @param {number} reviewData.userId - The ID of the user creating the review.
+ * @param {number} reviewData.rating - The rating given in the review.
+ * @param {string} reviewData.comment - The comment for the review.
+ * @returns {Promise<boolean>} - Returns true if the review was created successfully, false otherwise.
+ * @throws Will throw if the database query fails.
+ */
 async function createReview(reviewData) {
     let connection;
     try {
@@ -59,7 +75,17 @@ async function createReview(reviewData) {
         }
     }
 }
-
+/**
+ * Updates an existing review.
+ *
+ * @param {number} reviewId - The ID of the review to update.
+ * @param {Object} reviewData - The updated review data.
+ * @param {number} reviewData.userId - The ID of the user updating the review.
+ * @param {number} reviewData.rating - The updated rating for the review.
+ * @param {string} reviewData.comment - The updated comment for the review.
+ * @returns {Promise<boolean>} - Returns true if the review was updated successfully, false otherwise.
+ * @throws Will throw if the database query fails.
+ */
 async function updateReview(reviewId, reviewData) {
     let connection;
     try {
@@ -89,7 +115,14 @@ async function updateReview(reviewId, reviewData) {
         }
     }
 }
-
+/**
+ * Deletes a review.
+ *
+ * @param {number} reviewId - The ID of the review to delete.
+ * @param {number} userId - The ID of the user deleting the review.
+ * @returns {Promise<boolean>} - Returns true if the review was deleted successfully, false otherwise.
+ * @throws Will throw if the database query fails.
+ */
 async function deleteReview(reviewId, userId) {
     let connection;
     try {

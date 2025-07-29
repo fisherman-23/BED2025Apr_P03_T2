@@ -1,5 +1,13 @@
 const facilitiesModel = require("../models/facilitiesModel.js");
-
+/**
+ * Handles location access for the user and returns location data.
+ *
+ * @async
+ * @function handleLocationAccess
+ * @param {Object} req - Express request object, requires `req.query.lat` and `req.query.lng`.
+ * @param {Object} res - Express response object.
+ * @returns {Object} 200 OK with location data or 500 on error.
+ */
 async function handleLocationAccess(req, res) {
     try {
         const { lat, lng } = req.query;
@@ -10,7 +18,15 @@ async function handleLocationAccess(req, res) {
         res.status(500).json({ error: "Error fetching location data" });
     }
 }
-
+/**
+ * Retrieves nearby facilities based on user's location.
+ *
+ * @async
+ * @function getNearbyFacilities
+ * @param {Object} req - Express request object, requires `req.query.lat`, `req.query.lng`, and `req.query.rad`.
+ * @param {Object} res - Express response object.
+ * @returns {Object} 200 OK with nearby facilities or 500 on error.
+ */
 async function getNearbyFacilities(req, res) {
     try {
         const  {lat, lng, rad } = req.query;
@@ -21,7 +37,15 @@ async function getNearbyFacilities(req, res) {
         res.status(500).json({ error: "Error fetching nearby facilities" });
     }
 }
-
+/**
+ * Retrieves all facilities.
+ *
+ * @async
+ * @function getFacilities
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @returns {Object} 200 OK with facilities or 500 on error.
+ */
 async function getFacilities(req, res) {
     try {
         const facilities = await facilitiesModel.getFacilities();
@@ -31,7 +55,15 @@ async function getFacilities(req, res) {
         res.status(500).json({ error: "Error fetching facilities" });
     }
 }
-
+/**
+ * Retrieves a facility by its ID.
+ *
+ * @async
+ * @function getFacilityById
+ * @param {Object} req - Express request object, requires `req.params.id`.
+ * @param {Object} res - Express response object.
+ * @returns {Object} 200 OK with facility data or 404 if not found, 500 on error.
+ */
 async function getFacilityById(req, res) {
     try {
         const facility = await facilitiesModel.getFacilityById(req.params.id);
@@ -44,7 +76,15 @@ async function getFacilityById(req, res) {
         res.status(500).json({ error: "Error fetching facility by ID" });
     }
 }
-
+/**
+ * Retrieves facilities by their type.
+ *
+ * @async
+ * @function getFacilitiesByType
+ * @param {Object} req - Express request object, requires `req.params.type`.
+ * @param {Object} res - Express response object.
+ * @returns {Object} 200 OK with facilities or 500 on error.
+ */
 async function getFacilitiesByType(req, res) {
     try {
         const facilityType = req.params.type;

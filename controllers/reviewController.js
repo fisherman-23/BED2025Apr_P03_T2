@@ -1,5 +1,13 @@
 const reviewModel = require("../models/reviewModel.js");
-
+/**
+ * Retrieves reviews for a specific facility.
+ *
+ * @async
+ * @function getReviewsByFacilityId
+ * @param {Object} req - Express request object, requires `req.params.facilityId`.
+ * @param {Object} res - Express response object.
+ * @returns {Object} 200 OK with reviews or 500 on error.
+ */
 async function getReviewsByFacilityId(req, res) {
     try {
         const reviews = await reviewModel.getReviewsByFacilityId(req.params.facilityId);
@@ -9,7 +17,15 @@ async function getReviewsByFacilityId(req, res) {
         res.status(500).json({ error: "Error fetching reviews" });
     }
 }
-
+/**
+ * Creates a review for a facility.
+ *
+ * @async
+ * @function createReview
+ * @param {Object} req - Express request object, requires `req.body.facilityId`, `req.body.rating`, and `req.body.comment`.
+ * @param {Object} res - Express response object.
+ * @returns {Object} 201 Created with success message or 500 on error.
+ */
 async function createReview(req, res) {
     try {
         const reviewData = {
@@ -34,7 +50,15 @@ async function createReview(req, res) {
         }
     }
 }
-
+/**
+ * Updates an existing review made by the user.
+ *
+ * @async
+ * @function updateReview
+ * @param {Object} req - Express request object, requires `req.params.id` and `req.body`.
+ * @param {Object} res - Express response object.
+ * @returns {Object} 200 OK with success message or 404 if not found, 500 on error.
+ */
 async function updateReview(req, res) {
     try {
         const reviewData = {
@@ -54,7 +78,15 @@ async function updateReview(req, res) {
         res.status(500).json({ error: "Error updating review" });
     }
 }
-
+/**
+ * Deletes a review made by the user.
+ *
+ * @async
+ * @function deleteReview
+ * @param {Object} req - Express request object, requires `req.params.id`.
+ * @param {Object} res - Express response object.
+ * @returns {Object} 200 OK with success message or 404 if not found, 500 on error.
+ */
 async function deleteReview(req, res) {
     try {
         const success = await reviewModel.deleteReview(req.params.id, req.user.id);
