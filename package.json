@@ -6,6 +6,9 @@
     "test": "jest",
     "dev": "node app.js"
   },
+  "jest": {
+    "setupFilesAfterEnv": ["./jest.setup.js"]
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fisherman-23/BED2025Apr_P03_T2.git"
