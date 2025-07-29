@@ -537,7 +537,8 @@ class FacilityManager {
       });
 
       if (!res.ok) {
-        throw new Error(`Failed to save bookmark: ${res.statusText}`);
+        const errorData = await res.json();
+        throw new Error(errorData.error || `Failed to save bookmark: ${res.statusText}`);
       }
 
       // Update current notes reference
@@ -554,7 +555,7 @@ class FacilityManager {
 
     } catch (error) {
       console.error("Error saving bookmark:", error);
-      alert("Failed to save bookmark. Please try again later.");
+      alert(error.message || "Failed to save bookmark. Please try again later.");
     }
   }
 
@@ -577,7 +578,8 @@ class FacilityManager {
       });
 
       if (!res.ok) {
-        throw new Error(`Failed to update bookmark: ${res.statusText}`);
+        const errorData = await res.json();
+        throw new Error(errorData.error || `Failed to update bookmark: ${res.statusText}`);
       }
       // Update current notes reference
       this.currentNotes = this.locationNotesInput.value;
@@ -591,7 +593,7 @@ class FacilityManager {
       this.isEditing = false;
     } catch (error) { 
       console.error("Error updating bookmark:", error);
-      alert("Failed to update bookmark. Please try again later.");
+      alert(error.message || "Failed to update bookmark. Please try again later.");
     }
   }
 

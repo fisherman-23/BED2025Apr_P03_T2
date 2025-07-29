@@ -1,13 +1,12 @@
-const axios = require('axios');
+const NavigationModel = require('../models/navigationModel');
 
 // Get Google Maps configuration for frontend
 async function getGoogleMapsConfig(req, res) {
     try {
-    // Only return the API key for authenticated users
-    const config = {
-        apiKey: process.env.GOOGLE_MAPS_API_KEY,
-        libraries: ['places'],
-        loading: 'async'
+        const config = {
+            apiKey: process.env.GOOGLE_MAPS_API_KEY,
+            libraries: ['places'],
+            loading: 'async'
         };
         
         res.json(config);
@@ -24,59 +23,36 @@ async function getFacilityDirections(req, res) {
         const { origin, travelMode = 'TRANSIT' } = req.body;
 
         if (!origin) {
-        return res.status(400).json({ error: 'Origin location is required' });
+            return res.status(400).json({ error: 'Origin location is required' });
         }
 
-        // First get the facility details to get destination coordinates
-        const facilityResponse = await axios.get(
-        `${req.protocol}://${req.get('host')}/facilities/id/${facilityId}`,
-        {
-            headers: {
-            'Cookie': req.headers.cookie
-            }
-        }
-        );
-
-        const facility = facilityResponse.data;
+        const facility = await NavigationModel.getFacilityDetails(facilityId, req);
         
-        if (!facility || !facility.latitude || !facility.longitude) {
-        return res.status(404).json({ error: 'Facility not found or coordinates missing' });
-        }
+        const destination = NavigationModel.formatCoordinates(facility.latitude, facility.longitude);
 
-        const destination = `${facility.latitude},${facility.longitude}`;
-
-        // Call Google Directions API
-        const directionsUrl = `https://maps.googleapis.com/maps/api/directions/json`;
-        const params = {
-        origin,
-        destination,
-        mode: travelMode.toLowerCase(),
-        alternatives: true,
-        key: process.env.GOOGLE_MAPS_API_KEY
-        };
-
-        const response = await axios.get(directionsUrl, { params });
-
-        if (response.data.status !== 'OK') {
-        return res.status(400).json({ 
-            error: 'Unable to get directions', 
-            details: response.data.error_message 
-        });
-        }
+        const routes = await NavigationModel.getDirections(origin, destination, travelMode);
 
         res.json({
-        routes: response.data.routes,
-        facility: {
-            name: facility.name,
-            address: facility.address,
-            coordinates: {
-            lat: facility.latitude,
-            lng: facility.longitude
+            routes,
+            facility: {
+                name: facility.name,
+                address: facility.address,
+                coordinates: {
+                    lat: facility.latitude,
+                    lng: facility.longitude
+                }
             }
-        }
         });
     } catch (error) {
         console.error('Error getting facility directions:', error);
+        
+        if (error.message.includes('Facility not found')) {
+            return res.status(404).json({ error: error.message });
+        }
+        if (error.message.includes('Unable to get directions')) {
+            return res.status(400).json({ error: error.message });
+        }
+        
         res.status(500).json({ error: 'Unable to get directions' });
     }
 }
@@ -87,32 +63,19 @@ async function geocodeAddress(req, res) {
         const { address } = req.body;
 
         if (!address) {
-        return res.status(400).json({ error: 'Address is required' });
+            return res.status(400).json({ error: 'Address is required' });
         }
 
-        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json`;
-        const params = {
-        address,
-        key: process.env.GOOGLE_MAPS_API_KEY
-        };
-
-        const response = await axios.get(geocodeUrl, { params });
-
-        if (response.data.status !== 'OK') {
-        return res.status(400).json({ 
-            error: 'Unable to geocode address', 
-            details: response.data.error_message 
-        });
-        }
-
-        const result = response.data.results[0];
-        res.json({
-        formatted_address: result.formatted_address,
-        geometry: result.geometry,
-        place_id: result.place_id
-        });
+        const result = await NavigationModel.geocodeAddress(address);
+        
+        res.json(result);
     } catch (error) {
         console.error('Error geocoding address:', error);
+        
+        if (error.message.includes('Unable to geocode')) {
+            return res.status(400).json({ error: error.message });
+        }
+        
         res.status(500).json({ error: 'Unable to geocode address' });
     }
 }

@@ -158,7 +158,8 @@ class ReviewManager {
                 body: JSON.stringify({ rating, comment })
             });
             if (!res.ok) {
-                throw new Error("Failed to update review");
+                const errorData = await res.json();
+                throw new Error(errorData.error || `Failed to update review: ${res.statusText}`);
             }
             const updatedReview = await res.json();
             console.log("Review updated:", updatedReview);
@@ -168,7 +169,7 @@ class ReviewManager {
             this.closeEditModal();
         } catch (error) {
             console.error("Error updating review:", error);
-            alert("Failed to update review. Please try again.");
+            alert(error.message || "Failed to update review. Please try again.");
         }
     }
 
@@ -338,13 +339,14 @@ class ReviewManager {
                 })
             });
             if (!res.ok) {
-            throw new Error("Failed to report review");
+                const errorData = await res.json();
+                throw new Error(errorData.error || `Failed to report review: ${res.statusText}`);
             }
             await this.loadReviews();
             alert("Review reported successfully.");
         } catch (error) {
             console.error("Error reporting review:", error);
-            alert("Failed to report review. Please try again.");
+            alert(error.message || "Failed to report review. Please try again.");
         }
     }
 
@@ -359,13 +361,14 @@ class ReviewManager {
                     }
                 });
                 if (!res.ok) {
-                    throw new Error("Failed to delete review");
+                    const errorData = await res.json();
+                    throw new Error(errorData.error || `Failed to delete review: ${res.statusText}`);
                 }
                 await this.loadReviews();
                 alert("Review deleted successfully.");
             } catch (error) {
                 console.error("Error deleting review:", error);
-                alert("Failed to delete review. Please try again.");
+                alert(error.message || "Failed to delete review. Please try again.");
             }
         }
     }

@@ -27,7 +27,11 @@ async function createReview(req, res) {
         }
     } catch (error) {
         console.error("Error in addReview:", error);
-        res.status(500).json({ error: "Error adding review" });
+        if (error.message && error.message.includes('UNIQUE KEY constraint')) {
+            res.status(409).json({ error: "You have already reviewed this facility. Please edit your existing review instead." });
+        } else {
+            res.status(500).json({ error: "Error adding review" });
+        }
     }
 }
 

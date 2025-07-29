@@ -1,32 +1,35 @@
 const Joi = require("joi");
 
-const bookmarkIdSchema = Joi.object({
-    bookmarkId: Joi.number().integer().positive().required().messages({
-        "number.base": "Bookmark ID must be a number",
-        "number.integer": "Bookmark ID must be an integer",
-        "number.positive": "Bookmark ID must be a positive number",
-        "any.required": "Bookmark ID is required",
-    }),
-});
-
 const bookmarkSchema = Joi.object({
   facilityId: Joi.number().integer().positive().required()
     .messages({
-      "number.base": "Facility ID must be a number",
-      "number.integer": "Facility ID must be an integer",
-      "number.positive": "Facility ID must be a positive number",
-      "any.required": "Facility ID is required"
+      "number.base": "Facility ID must be a valid number",
+      "number.integer": "Facility ID must be a whole number",
+      "number.positive": "Facility ID must be greater than 0",
+      "any.required": "Facility ID is required to create a bookmark"
     }),
-  locationName: Joi.string().optional(),
-  note: Joi.string().allow('').optional()
+  locationName: Joi.string().max(100).optional().messages({
+    "string.base": "Location name must be text",
+    "string.max": "Location name cannot exceed 100 characters"
+  }),
+  note: Joi.string().allow('').max(500).optional().messages({
+    "string.base": "Note must be text",
+    "string.max": "Note cannot exceed 500 characters"
+  })
 });
 
 function validateBookmarkId(req, res, next) {
-    const params = { bookmarkId: Number(req.params.bookmarkId) };
-    const { error } = bookmarkIdSchema.validate(params, { abortEarly: false });
-    if (error) {
-        const errorMessages = error.details.map((d) => d.message).join(", ");
-        return res.status(400).json({ error: errorMessages });
+    const bookmarkId = Number(req.params.bookmarkId);
+    if (isNaN(bookmarkId) || bookmarkId <= 0) {
+        return res.status(400).json({ error: "Invalid bookmark ID" });
+    }
+    next();
+}
+
+function validateFacilityIdParam(req, res, next) {
+    const facilityId = Number(req.params.facilityId);
+    if (isNaN(facilityId) || facilityId <= 0) {
+        return res.status(400).json({ error: "Invalid facility ID" });
     }
     next();
 }
@@ -35,7 +38,7 @@ function validateBookmarkData(req, res, next) {
     const { error } = bookmarkSchema.validate(req.body, { abortEarly: false });
     if (error) {
         const errorMessages = error.details.map((d) => d.message).join(", ");
-        return res.status(400).json({ error: errorMessages });
+        return res.status(400).json({ error: `Bookmark validation failed: ${errorMessages}` });
     }
     next();
 }
@@ -43,4 +46,5 @@ function validateBookmarkData(req, res, next) {
 module.exports = {
     validateBookmarkId,
     validateBookmarkData,
+    validateFacilityIdParam,
 };

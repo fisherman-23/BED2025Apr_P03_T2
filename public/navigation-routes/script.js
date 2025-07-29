@@ -327,13 +327,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 credentials: 'include'
             });
             if (!res.ok) {
-                throw new Error('Network response was not ok');
+                const errorData = await res.json().catch(() => ({ error: 'Network response was not ok' }));
+                throw new Error(errorData.error || `Failed to fetch facility: ${res.statusText}`);
             }
             const facility = await res.json();
             return facility;
         } catch (error) {
             console.error('Error fetching facility details:', error);
-            alert('Unable to load facility details. Please try again later.');
+            alert(error.message || 'Unable to load facility details. Please try again later.');
             window.location.href = '/facilities.html';
             return null;
         }
@@ -348,7 +349,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             if (!response.ok) {
-                throw new Error('Failed to load map configuration');
+                const errorData = await response.json().catch(() => ({ error: 'Failed to load map configuration' }));
+                throw new Error(errorData.error || `Failed to load map configuration: ${response.statusText}`);
             }
             
             const config = await response.json();
@@ -360,7 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.head.appendChild(script);
         } catch (error) {
             console.error('Error loading Google Maps configuration:', error);
-            alert('Unable to load map configuration. Please refresh the page and try again.');
+            alert(error.message || 'Unable to load map configuration. Please refresh the page and try again.');
         }
     }
 
@@ -427,15 +429,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Failed to submit review: ${response.status} - ${errorText}`);
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Failed to submit review: ${response.status} - ${response.statusText}`);
             }
 
             alert('Thank you for your review!');
             document.getElementById('reviewModal').remove();
         } catch (error) {
             console.error('Error submitting review:', error);
-            alert('Unable to submit your review. Please try again.');
+            alert(error.message || 'Unable to submit your review. Please try again.');
         }
     }
 
