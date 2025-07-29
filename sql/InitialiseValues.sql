@@ -13,29 +13,31 @@ VALUES
 SET IDENTITY_INSERT Users ON;
 
 INSERT INTO Users (
-  userID,
-  email,
-  password,
-  name,
-  aboutMe,
-  phoneNumber,
-  dateOfBirth,
-  profilePicture,
-  createdAt,
-  updatedAt,
-  isActive
+  ID,
+  PublicUUID,
+  Email,
+  Password,
+  Name,
+  AboutMe,
+  PhoneNumber,
+  DateOfBirth,
+  ProfilePicture,
+  CreatedAt,
+  UpdatedAt,
+  IsActive
 )
 VALUES (
   1,
+  NEWID(),
   'ranen@gmail.com',
-  '$2b$05$roSzDWAjjGhHLWuWFLUJWO2pspgpw8ESJUNnqpEct6u3xD7M3i40q',
+  '$2b$05$SuhzjSpTVmBZGh5poFUOzO.8v3pD1sRdPnIyJnGrrw0y8sIyxbNgC',
   'Ranen Sim',
   NULL,
-  '55555555',
+  '12343561',
   '2000-01-01',
-  'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/profile_pictures%2F1752402549388_Penguin%20PFP%20Rounded.png',
-  '2025-07-13 18:29:11.453',
-  '2025-07-13 18:29:11.453',
+  'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/profile_pictures%2F1753825162062_Penguin%20PFP%20Rounded.png',
+  '2025-07-30 05:39:24.273',
+  '2025-07-30 05:39:24.273',
   1
 );
 
@@ -56,7 +58,7 @@ VALUES
 (
   'Singapore Tech Talk Collective - AI, Apps, and Mor',
   'Dive into lively discussions on artificial intelligence, mobile apps, smart gadgets, and tech news over casual meetups. Great for all ages and skill levels.',
-  'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1752402245024_tech%20talks.jpg',
+  'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1753826510097_tech-talks-series-social-en.jpg',
   0,
   '2025-07-13 10:24:06.550',
   1
@@ -85,6 +87,86 @@ VALUES
   '2025-07-13 10:25:22.573',
   1
 );
+
+INSERT INTO Announcements (GroupID, Title, Content, ImageUrl, CreatedAt, CreatedBy)
+VALUES
+  (1,
+   'Trail Clean‑Up Day',
+   'Join us next Sunday for a community trail clean‑up at MacRitchie Reservoir. Gloves and trash bags will be provided!',
+   'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1753827587369_622c9db03e233386fd9e8fd9_cleanup.jpg',
+   '2025-07-30 06:19:48.680',
+   1),
+  (1,
+   'Sunrise Trek Reminder',
+   'Don''t forget our sunrise trek this Saturday at Bukit Timah Hill! Meet at the main entrance by 6:30 AM. Water and light snack recommended',
+   'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1753827507713_1680164838571.jpg',
+   '2025-07-30 06:18:29.967',
+   1),
+  (2,
+   'Guest Speaker: Cloud Security',
+   'Excited to host Jane Tan on July 29 at 7 PM. She''ll share best practices in cloud security for mobile apps.',
+   'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1753827832237_Cloud-security-as-a-service-head.jpg',
+   '2025-07-30 06:23:53.760',
+   1),
+  (2,
+   'Next AI Meetup',
+   'Our next meetup is on Tuesday at 7 PM in the tech lab. We''ll demo a few open‑source AI tools—bring your laptop!',
+   'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1753827787996_1746631413729.jpg',
+   '2025-07-30 06:23:10.220',
+   1),
+  (3,
+   'New Jam Schedule',
+   'We''ve updated our jam session schedule: Tuesdays 6 PM and Saturdays 4 PM at Community Hall 3. See you there!',
+   'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1753827919119_images.jpg',
+   '2025-07-30 06:25:20.697',
+   1),
+  (3,
+   'Open Mic Night',
+   'Get ready for our monthly open mic this Friday at 8 PM. Instruments, vocals, or just your ears—everyone''s welcome!',
+   'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1753827878054_httpscdn.evbuc.comimages10535807.jpg',
+   '2025-07-30 06:24:39.430',
+   1),
+  (4,
+   'July Discussion Recap',
+   'Thanks to everyone who joined the July meeting on "The Alchemist." Notes and highlights have been uploaded to our shared folder.',
+   'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1753828010297_Untitled-design-3-e1536867937710.jpg',
+   '2025-07-30 06:26:51.833',
+   1),
+  (4,
+   'August Book Pick: "Educated"',
+   'We''ve voted on our August read: Tara Westover''s memoir "Educated." Grab your copy and join us August 30 at 3 PM.',
+   'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1753827973948_Educated-Tara-Westover.jpg',
+   '2025-07-30 06:26:15.247',
+   1),
+  (5,
+   'Monthly Wellness Breakfast',
+   'Join us next month for a post‑walk healthy breakfast at the café near the ArtScience Museum, July 28 at 8 AM.',
+   'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1753828100663_50710c0b805cee57b74b34fb1324cfef.jpg',
+   '2025-07-30 06:28:22.047',
+   1),
+  (5,
+   'Weekend Botanic Walk',
+   'This Saturday we''ll explore the Flower Dome and Supertree Grove at 7 AM. Meet at the Gardens by the Bay main gate.',
+   'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1753828055095_1siO2ETUnwgtQCauzF5mK7Q.jpg',
+   '2025-07-30 06:27:37.163',
+   1);
+
+INSERT INTO Comments (AnnouncementID, UserID, Content, CreatedAt)
+VALUES
+  (2,  1, 'Great initiative! Count me in.',              '2025-07-30 07:00:00'),
+  (2,  1, 'Can’t wait to help tidy up the trail.',       '2025-07-30 07:05:00'),
+  (1,  1, 'Sounds awesome—see you bright and early!',    '2025-07-30 07:10:00'),
+  (4,  1, 'Jane Tan always gives the best insights.',     '2025-07-30 07:20:00'),
+  (4,  1, 'Looking forward to learning more about this.', '2025-07-30 07:25:00'),
+  (3,  1, 'I’ll bring my laptop—ready to code!',          '2025-07-30 07:30:00'),
+  (6,  1, 'Perfect—Tuesdays work best for me.',           '2025-07-30 07:35:00'),
+  (6,  1, 'Can we also set up a Sunday afternoon slot?',  '2025-07-30 07:40:00'),
+  (5,  1, 'I might just bring my guitar!',                '2025-07-30 07:45:00'),
+  (8,  1, 'Thanks for sharing the notes—very helpful!',   '2025-07-30 07:50:00'),
+  (7,  1, 'Great choice—a must-read!',                    '2025-07-30 07:55:00'),
+  (10, 1, 'Sounds delicious—I’m in!',                     '2025-07-30 08:00:00'),
+  (10, 1, 'Any vegetarian options available?',            '2025-07-30 08:05:00'),
+  (9,  1, 'Can’t wait to see the Supertrees again.',      '2025-07-30 08:10:00');
 
 
 
