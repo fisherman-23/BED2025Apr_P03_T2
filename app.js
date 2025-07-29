@@ -69,14 +69,16 @@ const {
 const {
   validateBookmarkId,
   validateBookmarkData,
+  validateFacilityIdParam,
 } = require("./middlewares/bookmarkValidation.js");
 const {
   validateReviewIdParam,
   validateReviewData,
   validateUpdateReviewData,
-} = require("./middlewares/reviewValidation.js");
-
-const { validateReportData } = require("./middlewares/reportValidation.js");
+} = require("./middlewares/reviewValidation.js")
+const { 
+  validateReportData 
+} = require("./middlewares/reportValidation.js");
 
 const { validateMessage } = require("./middlewares/chatValidation.js");
 
@@ -389,7 +391,10 @@ app.get(
   facilitiesController.getFacilitiesByType
 );
 
-app.get("/facilities", authenticateJWT, facilitiesController.getFacilities);
+app.get("/facilities", 
+  authenticateJWT, 
+  facilitiesController.getFacilities
+);
 
 app.get(
   "/api/geocode",
@@ -401,6 +406,7 @@ app.get(
 app.get(
   "/bookmarks/:facilityId",
   authenticateJWT,
+  validateFacilityIdParam,
   bookmarkController.checkIfBookmarked
 );
 
@@ -421,6 +427,7 @@ app.put(
   "/bookmarks/:bookmarkId",
   authenticateJWT,
   validateBookmarkId,
+  validateBookmarkData,
   bookmarkController.updateBookmark
 );
 
@@ -434,6 +441,7 @@ app.delete(
 app.get(
   "/reviews/:facilityId",
   authenticateJWT,
+  validateFacilityIdParam,
   reviewController.getReviewsByFacilityId
 );
 
@@ -466,7 +474,6 @@ app.post(
   reportController.createReport
 );
 
-// endpoints for Google Maps API integration
 app.get(
   "/api/google-maps-config",
   authenticateJWT,

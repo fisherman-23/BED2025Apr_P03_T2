@@ -132,6 +132,31 @@ describe("reviewController.createReview", () => {
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith({ error: "Error adding review" });
     });
+
+    it("should handle duplicate review constraint and return 409 status", async () => {
+        const constraintError = new Error("Violation of UNIQUE KEY constraint 'UQ_Reviews_User_Facility'");
+        reviewModel.createReview.mockRejectedValue(constraintError);
+
+        const req = {
+            body: { facilityId: 1, rating: 5, comment: "Great!" },
+            user: { id: 1 }
+        };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+
+        await reviewController.createReview(req, res);
+
+        expect(reviewModel.createReview).toHaveBeenCalledWith(expect.objectContaining({
+            facilityId: 1,
+            userId: 1
+        }));
+        expect(res.status).toHaveBeenCalledWith(409);
+        expect(res.json).toHaveBeenCalledWith({ 
+            error: "You have already reviewed this facility. Please edit your existing review instead." 
+        });
+    });
 });
 
 describe("reviewController.updateReview", () => {
