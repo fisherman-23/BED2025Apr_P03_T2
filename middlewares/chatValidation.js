@@ -13,6 +13,7 @@ const messageSchema = joi.object({
 const validateMessage = (req, res, next) => {
   const { error } = messageSchema.validate(req.body);
   if (error) {
+    console.error("Validation error:", error.details[0].message);
     return res.status(400).json({ error: error.details[0].message });
   }
   next();

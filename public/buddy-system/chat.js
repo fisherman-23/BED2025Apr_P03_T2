@@ -259,7 +259,15 @@ async function sendMessage(conversationId, friendID, friendName) {
       credentials: "include",
       body: JSON.stringify({ content }),
     });
-    if (!response.ok) throw new Error("Failed to send message");
+    if (!response.ok) {
+      const errorDetails = await response.json();
+      alert(
+        `Failed to send message: ${errorDetails.error || "No error details provided"}`
+      );
+      throw new Error(
+        `Failed to send message: ${errorDetails.error || "No error details provided"}`
+      );
+    }
     messageInput.value = "";
     loadChatMessages(conversationId, friendID, friendName);
   } catch (err) {

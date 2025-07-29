@@ -84,6 +84,12 @@ The website consists of 5 specialized modules.
 
 ## Technology Stack
 
-| Component | Description                                                         |
-| --------- | ------------------------------------------------------------------- |
-| Jest      | Jest is utilized for unit testing of controller and model functions |
+| Component                | Description                                                                                                                                                                |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Jest**                 | Jest is utilized for unit testing of controller and model functions.                                                                                                       |
+| **Swagger**              | Swagger is used for API documentation for our API routes, helping to provide detailed information.                                                                         |
+| **Gemini Flash 2.0**     | Gemini LLM API is used for generating potential replies based on the context of the conversation in the chat module. The latest 3 messages are joined and sent to the API. |
+| **Tailwind CDN**         | Tailwind CSS is included via CDN to quickly apply utility-first styles for responsive and modern UI design.                                                                |
+| **qrcodejs CDN**         | qrcodejs is included via CDN to generate QR codes dynamically on the client side.                                                                                          |
+| **Express.js**           | Express.js is the Node.js web framework used to handle routing, middleware, and server-side logic.                                                                         |
+| **Microsoft SQL Server** | MSSQL is the database system used to store and retrieve structured data for the application.                                                                               |
