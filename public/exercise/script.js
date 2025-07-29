@@ -9,14 +9,14 @@ async function fetchExercise() {
   try {
     const res = await fetch(`/exercises`, {
       method: "GET",
-      credentials: "include"
+      credentials: "include",
     });
     if (!res.ok) {
       throw new Error(`Server error: ${res.status} ${res.statusText}`);
     }
 
     exercises = await res.json();
-    currentIndex = 0;  
+    currentIndex = 0;
     localStorage.setItem("exerciseList", JSON.stringify(exercises));
     console.log(exercises);
 
@@ -29,11 +29,10 @@ async function fetchExercise() {
   }
 }
 
-
 async function renderNextBatch() {
   const nextBatch = exercises.slice(currentIndex, currentIndex + batchSize);
 
-  nextBatch.forEach(exercise => {
+  nextBatch.forEach((exercise) => {
     const card = document.createElement("div");
     card.className = "card-wrapper";
     card.innerHTML = `
@@ -47,31 +46,31 @@ async function renderNextBatch() {
       </div>
     `;
     container.appendChild(card);
-    const button = card.querySelector('.viewExercise');
-      button.addEventListener('click', () => {
-        window.location.href = `exercise-steps.html?id=${exercise.exerciseId}`;
-      });
+    const button = card.querySelector(".viewExercise");
+    button.addEventListener("click", () => {
+      window.location.href = `exercise-steps.html?id=${exercise.exerciseId}`;
+    });
   });
 
   currentIndex += batchSize;
   if (currentIndex >= exercises.length) {
     viewMoreBtn.style.display = "none";
-  }else {
+  } else {
     viewMoreBtn.style.display = "flex";
   }
 }
 
 // Preferences
 
-document.querySelectorAll('.exercise-option').forEach(btn => {
-btn.addEventListener('click', () => {
-    btn.classList.toggle('selected');
-});
+document.querySelectorAll(".exercise-option").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    btn.classList.toggle("selected");
+  });
 });
 
-const personalise_popup = document.getElementById('personalise-popup');
+const personalise_popup = document.getElementById("personalise-popup");
 
-document.getElementById('personalise-close').addEventListener("click", () => {
+document.getElementById("personalise-close").addEventListener("click", () => {
   personalise_popup.style.opacity = 0;
   personalise_popup.style.visibility = "hidden";
 });
@@ -83,125 +82,141 @@ personalise_popup.addEventListener("click", (e) => {
   }
 });
 
-
-document.getElementById('personalise').addEventListener("click", async () => {
-  document.querySelectorAll('.exercise-option').forEach(btn => {btn.classList.remove('selected');});
+document.getElementById("personalise").addEventListener("click", async () => {
+  document.querySelectorAll(".exercise-option").forEach((btn) => {
+    btn.classList.remove("selected");
+  });
   personalise_popup.style.opacity = 1;
   personalise_popup.style.visibility = "visible";
   const pref = await fetch("/exercises/preferences", {
     method: "GET",
-    credentials: "include"
+    credentials: "include",
   });
   const preferences = await pref.json();
   if (preferences.categoryIds.length > 0) {
     const selectedIds = preferences.categoryIds;
-    selectedIds.forEach(id => {
-      const match = document.querySelector(`.exercise-option[data-category-id="${id}"]`);
-      if (match) match.classList.add('selected');
+    selectedIds.forEach((id) => {
+      const match = document.querySelector(
+        `.exercise-option[data-category-id="${id}"]`
+      );
+      if (match) match.classList.add("selected");
     });
-    document.getElementById('personalise-text').textContent = "You can update your preferences below";
-    document.getElementById('personalise-add').style.display = "none";
-    document.getElementById('personalise-update').style.display = "flex";
-    document.getElementById('personalise-clear').style.display = "flex";
+    document.getElementById("personalise-text").textContent =
+      "You can update your preferences below";
+    document.getElementById("personalise-add").style.display = "none";
+    document.getElementById("personalise-update").style.display = "flex";
+    document.getElementById("personalise-clear").style.display = "flex";
   }
 });
 
 // Update preferences
-document.getElementById('personalise-update').addEventListener("click", async () => {
-  const selectedOptions = Array.from(document.querySelectorAll('.exercise-option.selected')).map(btn => btn.dataset.categoryId);
-  if (selectedOptions.length === 0) {
-    alert("Please select at least one category.");
-    return;
-  }
-
-  try {
-    const res = await fetch("/exercises/preferences", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        categoryIds: selectedOptions,
-      })
-    });
-
-    if (!res.ok) {
-      throw new Error(`Server error: ${res.status} ${res.statusText}`);
+document
+  .getElementById("personalise-update")
+  .addEventListener("click", async () => {
+    const selectedOptions = Array.from(
+      document.querySelectorAll(".exercise-option.selected")
+    ).map((btn) => btn.dataset.categoryId);
+    if (selectedOptions.length === 0) {
+      alert("Please select at least one category.");
+      return;
     }
-    const result = await res.json();
-    console.log(result);
-    alert("Preferences updated successfully!");
-    await fetchExercise(); // Refresh the exercise list
-    personalise_popup.style.opacity = 0;
-    personalise_popup.style.visibility = "hidden";
-  } catch (error) {
-    console.error("Error updating preferences:", error);
-    alert("Failed to update preferences. Please try again later.");
-  }
-});
+
+    try {
+      const res = await fetch("/exercises/preferences", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          categoryIds: selectedOptions,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status} ${res.statusText}`);
+      }
+      const result = await res.json();
+      console.log(result);
+      alert("Preferences updated successfully!");
+      await fetchExercise(); // Refresh the exercise list
+      personalise_popup.style.opacity = 0;
+      personalise_popup.style.visibility = "hidden";
+    } catch (error) {
+      console.error("Error updating preferences:", error);
+      alert("Failed to update preferences. Please try again later.");
+    }
+  });
 
 // Delete preferences
-document.getElementById('personalise-clear').addEventListener("click", async () => {
-  try {
-    const res = await fetch("/exercises/preferences", {
-      method: "DELETE",
-      credentials: "include"
-    });
-    if (!res.ok) {
-      throw new Error(`Server error: ${res.status} ${res.statusText}`);
+document
+  .getElementById("personalise-clear")
+  .addEventListener("click", async () => {
+    try {
+      const res = await fetch("/exercises/preferences", {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status} ${res.statusText}`);
+      }
+      alert("Preferences cleared successfully!");
+      document.querySelectorAll(".exercise-option").forEach((btn) => {
+        btn.classList.remove("selected");
+      });
+      await fetchExercise(); // Refresh the exercise list
+      personalise_popup.style.opacity = 0;
+      personalise_popup.style.visibility = "hidden";
+      document.getElementById("personalise-text").textContent =
+        "PLease select which type of exercises you prefer";
+      document.getElementById("personalise-add").style.display = "flex";
+      document.getElementById("personalise-update").style.display = "none";
+      document.getElementById("personalise-clear").style.display = "none";
+    } catch (error) {
+      console.error("Error clearing preferences:", error);
+      alert("Failed to clear preferences. Please try again later.");
     }
-    alert("Preferences cleared successfully!");
-    document.querySelectorAll('.exercise-option').forEach(btn => {btn.classList.remove('selected');});
-    await fetchExercise(); // Refresh the exercise list
-    personalise_popup.style.opacity = 0;
-    personalise_popup.style.visibility = "hidden";
-    document.getElementById('personalise-text').textContent = "PLease select which type of exercises you prefer";
-    document.getElementById('personalise-add').style.display = "flex";
-    document.getElementById('personalise-update').style.display = "none";
-    document.getElementById('personalise-clear').style.display = "none";
-  } catch (error) {
-    console.error("Error clearing preferences:", error);
-    alert("Failed to clear preferences. Please try again later.");
-  }
-});
+  });
 
 // Add preferences
-document.getElementById('personalise-add').addEventListener("click", async () => {
-  const selectedOptions = Array.from(document.querySelectorAll('.exercise-option.selected')).map(btn => btn.dataset.categoryId);
-  if (selectedOptions.length === 0) {
-    alert("Please select at least one category.");
-    return;
-  }
-
-  try {
-    const res = await fetch("/exercises/personalisation", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        categoryIds: selectedOptions,
-      })
-    });
-
-    if (!res.ok) {
-      throw new Error(`Server error: ${res.status} ${res.statusText}`);
+document
+  .getElementById("personalise-add")
+  .addEventListener("click", async () => {
+    const selectedOptions = Array.from(
+      document.querySelectorAll(".exercise-option.selected")
+    ).map((btn) => btn.dataset.categoryId);
+    if (selectedOptions.length === 0) {
+      alert("Please select at least one category.");
+      return;
     }
 
-    const result = await res.json();
-    console.log(result);
-    alert("Preferences saved successfully!");
-    await fetchExercise(); // Refresh the exercise list
-    personalise_popup.style.opacity = 0;
-    personalise_popup.style.visibility = "hidden";
-  } catch (error) {
-    console.error("Error saving preferences:", error);
-    alert("Failed to save preferences. Please try again later.");
-  }
-});
+    try {
+      const res = await fetch("/exercises/personalisation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          categoryIds: selectedOptions,
+        }),
+      });
 
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status} ${res.statusText}`);
+      }
+
+      const result = await res.json();
+      console.log(result);
+      alert("Preferences saved successfully!");
+      await fetchExercise(); // Refresh the exercise list
+      personalise_popup.style.opacity = 0;
+      personalise_popup.style.visibility = "hidden";
+    } catch (error) {
+      console.error("Error saving preferences:", error);
+      alert("Failed to save preferences. Please try again later.");
+    }
+  });
 
 // Goal Management
 
@@ -226,7 +241,7 @@ goalPopup.addEventListener("click", (e) => {
 document.getElementById("goal-add").addEventListener("click", async () => {
   const goalName = document.getElementById("goal-name-input").value;
   const goalDesc = document.getElementById("goal-description-input").value;
- 
+
   if (!goalName || !goalDesc) {
     alert("Please fill in all fields.");
     return;
@@ -237,31 +252,30 @@ document.getElementById("goal-add").addEventListener("click", async () => {
     const res = await fetch("/exercises/goals", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       credentials: "include",
       body: JSON.stringify({
         name: goalName,
-        description: goalDesc
-      })
+        description: goalDesc,
+      }),
     });
- 
+
     if (!res.ok) {
       const err = await res.json(); // read the error JSON
       throw new Error(err.message || "Failed to create goal");
     }
- 
+
     const result = await res.json();
     fetchGoals(result);
     alert("Goal created successfully!");
     goalPopup.style.opacity = 0;
     goalPopup.style.visibility = "hidden";
   } catch (error) {
-    console.log(error)
+    console.log(error);
     alert(`Failed to create goal: ${error}`);
   }
 });
-
 
 // Fetch and display goals
 async function fetchGoals(newGoal = null) {
@@ -269,7 +283,7 @@ async function fetchGoals(newGoal = null) {
   if (newGoal !== null) {
     const noGoalsMsg = goalContainer.querySelector(".no-goals-message");
     if (noGoalsMsg) {
-      goalContainer.innerHTML = ""; 
+      goalContainer.innerHTML = "";
     }
     const card = document.createElement("div");
     card.className = "goalcard";
@@ -286,7 +300,7 @@ async function fetchGoals(newGoal = null) {
       try {
         const delRes = await fetch(`/exercises/goals/${newGoal.goalId}`, {
           method: "DELETE",
-          credentials: "include"
+          credentials: "include",
         });
         if (!delRes.ok) throw new Error();
         alert("Goal deleted successfully!");
@@ -306,12 +320,12 @@ async function fetchGoals(newGoal = null) {
   try {
     const res = await fetch("/exercises/goals", {
       method: "GET",
-      credentials: "include"
+      credentials: "include",
     });
     if (!res.ok) {
       throw new Error(`Server error: ${res.status} ${res.statusText}`);
     }
-    const goals = await res.json(); 
+    const goals = await res.json();
     goalContainer.innerHTML = "";
     if (goals.length === 0) {
       goalContainer.innerHTML = `
@@ -321,11 +335,11 @@ async function fetchGoals(newGoal = null) {
       `;
       return;
     }
-    goals.forEach(goal => {
+    goals.forEach((goal) => {
       const card = document.createElement("div");
       card.className = "goalcard";
       if (goal.last_completed_at !== null) {
-      card.classList.add("completed");
+        card.classList.add("completed");
       }
       card.innerHTML = `
         <img src="/assets/icons/goal.svg" alt="goalIcon">
@@ -338,15 +352,17 @@ async function fetchGoals(newGoal = null) {
       goalContainer.appendChild(card);
       console.log("Goal card created:", goal.name);
       console.log("Goal ID:", goal.goalId);
-      const deleteBtn = card.querySelector('.goalDelete');
-      deleteBtn.addEventListener('click', async () => {
+      const deleteBtn = card.querySelector(".goalDelete");
+      deleteBtn.addEventListener("click", async () => {
         try {
           const delRes = await fetch(`/exercises/goals/${goal.goalId}`, {
             method: "DELETE",
-            credentials: "include"
+            credentials: "include",
           });
           if (!delRes.ok) {
-            throw new Error(`Server error: ${delRes.status} ${delRes.statusText}`);
+            throw new Error(
+              `Server error: ${delRes.status} ${delRes.statusText}`
+            );
           }
           alert("Goal deleted successfully!");
           card.remove();
@@ -364,38 +380,36 @@ async function fetchGoals(newGoal = null) {
 }
 
 async function resetGoals() {
-  try{
+  try {
     await fetch("/exercises/reset", {
-    method: "PUT",
-    credentials: "include"
-  });
-  }catch (error) {
+      method: "PUT",
+      credentials: "include",
+    });
+  } catch (error) {
     console.error("Error resetting goals:", error);
     alert("Failed to reset goals.");
   }
 }
 
-async function getStatistic(){
-  try{
-    stats = await fetch("/exercise/stats",{
+async function getStatistic() {
+  try {
+    stats = await fetch("/exercises/stats", {
       method: "GET",
-      credentials: "include"
+      credentials: "include",
     });
-    if(!stats.ok){
+    if (!stats.ok) {
       throw new Error(`Server error: ${stats.status} ${stats.statusText}`);
     }
-    const stat = await stats.json()
-    document.getElementById("exerciseNum").innerHTML = stat.exercise_completed
-    document.getElementById("goalNum").innerHTML = stat.goal_completed
-  }catch(error){
+    const stat = await stats.json();
+    document.getElementById("exerciseNum").innerHTML = stat.exercise_completed;
+    document.getElementById("goalNum").innerHTML = stat.goal_completed;
+  } catch (error) {
     console.error("Error getting user statistics", error);
     alert("Failed to get user statistics");
   }
 }
 
-
-
-(async () =>{
+(async () => {
   await resetGoals();
   await fetchGoals();
   await fetchExercise();

@@ -1,5 +1,5 @@
 // Get the exercise ID from the URL
-const id = new URLSearchParams(window.location.search).get('id');
+const id = new URLSearchParams(window.location.search).get("id");
 console.log("Exercise ID:", id);
 // Get the cached exercise list
 const list = JSON.parse(localStorage.getItem("exerciseList"));
@@ -17,8 +17,10 @@ if (list) {
 
   if (selectedExercise) {
     document.querySelector(".start img").src = selectedExercise.image_url;
-    document.getElementById("exerciseName").textContent = `Welcome to ${selectedExercise.title}`;
-    document.getElementById("exerciseDesc").textContent = selectedExercise.description;
+    document.getElementById("exerciseName").textContent =
+      `Welcome to ${selectedExercise.title}`;
+    document.getElementById("exerciseDesc").textContent =
+      selectedExercise.description;
     document.getElementById("benefit").textContent = selectedExercise.benefits;
   } else {
     console.error("Exercise not found in cache.");
@@ -34,13 +36,13 @@ navigator.geolocation.getCurrentPosition(
     const lon = position.coords.longitude;
 
     try {
-      const res = await fetch("/exercise/weather", {
+      const res = await fetch("/exercises/weather", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ lat, lon })
+        body: JSON.stringify({ lat, lon }),
       });
       const data = await res.json();
 
@@ -61,7 +63,7 @@ navigator.geolocation.getCurrentPosition(
   }
 );
 
-document.getElementById('weather-close').addEventListener('click', ()=>{
+document.getElementById("weather-close").addEventListener("click", () => {
   document.getElementById("weather-notification").style.display = "none";
 });
 
@@ -72,7 +74,7 @@ button.addEventListener("click", () => {
   if (!hasStarted) {
     hasStarted = true;
     document.getElementById("Steps").style.display = "flex";
-    document.getElementById("finish").style.display = "flex"
+    document.getElementById("finish").style.display = "flex";
 
     button.textContent = "End Exercise";
   } else {
@@ -86,7 +88,7 @@ async function fetchExerciseSteps() {
   try {
     const res = await fetch(`/exercises/steps/${id}`, {
       method: "GET",
-      credentials: "include"
+      credentials: "include",
     });
 
     if (!res.ok) {
@@ -107,10 +109,9 @@ async function fetchExerciseSteps() {
           </div>
           <h2 class="insturctions">${step.instruction}</h2>
         </div>
-        ${index !== steps.length - 1 ? '<hr class="step-divider">' : ''}
+        ${index !== steps.length - 1 ? '<hr class="step-divider">' : ""}
       `;
     });
-
   } catch (error) {
     console.error("Error fetching exercise steps:", error);
   }
@@ -122,7 +123,7 @@ async function fetchGoals() {
   try {
     const res = await fetch("/exercises/incompleted-goals", {
       method: "GET",
-      credentials: "include"
+      credentials: "include",
     });
     if (!res.ok) {
       throw new Error(`Server error: ${res.status} ${res.statusText}`);
@@ -140,7 +141,7 @@ async function fetchGoals() {
       document.getElementById("goal-text").innerHTML = "Congrats!";
       return;
     }
-    goals.forEach(goal => {
+    goals.forEach((goal) => {
       const card = document.createElement("div");
       card.className = "goalcard";
       card.innerHTML = `
@@ -160,9 +161,11 @@ async function fetchGoals() {
 }
 
 function getCheckedGoalIds() {
-  const checkedBoxes = document.querySelectorAll('.goalCheckbox:checked');
+  const checkedBoxes = document.querySelectorAll(".goalCheckbox:checked");
   console.log("Checked Boxes:", checkedBoxes);
-  const checkedGoalIds = Array.from(checkedBoxes).map(box => box.dataset.goalId);
+  const checkedGoalIds = Array.from(checkedBoxes).map(
+    (box) => box.dataset.goalId
+  );
   return checkedGoalIds;
 }
 
@@ -175,10 +178,10 @@ document.getElementById("goal-update").addEventListener("click", async () => {
     const res = await fetch("/exercises/goals", {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ goalIds: checkedGoalIds })
+      body: JSON.stringify({ goalIds: checkedGoalIds }),
     });
     if (!res.ok) {
       throw new Error(`Server error: ${res.status} ${res.statusText}`);
@@ -186,16 +189,18 @@ document.getElementById("goal-update").addEventListener("click", async () => {
     const result = await res.json();
     console.log("Goals updated:", result);
     alert("Goals updated successfully!");
-    const logGoals = await fetch("/exercise/logGoals",{
+    const logGoals = await fetch("/exercises/logGoals", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ goalIds: checkedGoalIds })
-    })
+      body: JSON.stringify({ goalIds: checkedGoalIds }),
+    });
     if (!logGoals.ok) {
-      throw new Error(`Server error: ${logGoals.status} ${logGoals.statusText}`);
+      throw new Error(
+        `Server error: ${logGoals.status} ${logGoals.statusText}`
+      );
     }
     console.log("Exercise logged successfully.");
     goalPopup.style.opacity = 0;
@@ -205,19 +210,19 @@ document.getElementById("goal-update").addEventListener("click", async () => {
     console.error("Error updating goals:", error);
     alert("Failed to update goals. Please try again later.");
   }
-})
+});
 
 // Show goal popup
 const finish = document.getElementById("finish");
 const goalPopup = document.getElementById("goal-popup");
 finish.addEventListener("click", async () => {
-  console.log("logging exercises")
+  console.log("logging exercises");
   try {
-    const res = await fetch(`/exercise/logExercise/${id}`, {
+    const res = await fetch(`/exercises/logExercise/${id}`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
-      }, 
+        "Content-Type": "application/json",
+      },
       credentials: "include",
     });
     if (!res.ok) {
