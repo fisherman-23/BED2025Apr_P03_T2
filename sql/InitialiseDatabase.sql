@@ -386,8 +386,244 @@ SELECT 'Tables Created:' as Status, TABLE_NAME as Name
 FROM INFORMATION_SCHEMA.TABLES 
 WHERE TABLE_SCHEMA = 'dbo' 
 AND TABLE_NAME IN ('Medications', 'Doctors', 'Appointments', 'MedicationLogs', 'DrugInteractions', 'DrugConflicts', 'DoctorAvailability');
-GO
 
+-- Emergency Contacts Table
+CREATE TABLE EmergencyContacts (
+    contactId INT PRIMARY KEY IDENTITY(1,1),
+    userId INT NOT NULL,
+    name NVARCHAR(100) NOT NULL,
+    relationship NVARCHAR(50) NOT NULL,
+    phoneNumber NVARCHAR(20) NOT NULL,
+    email NVARCHAR(100),
+    isPrimary BIT DEFAULT 0,
+    alertPreferences NVARCHAR(MAX), -- JSON string for alert settings
+    isActive BIT DEFAULT 1,
+    createdAt DATETIME DEFAULT GETDATE(),
+    updatedAt DATETIME DEFAULT GETDATE(),
+    
+    FOREIGN KEY (userId) REFERENCES Users(ID),
+    CONSTRAINT UC_PrimaryContact UNIQUE (userId, isPrimary) -- Only one primary contact per user
+);
+
+-- Health Metrics Table
+CREATE TABLE HealthMetrics (
+    metricId INT PRIMARY KEY IDENTITY(1,1),
+    userId INT NOT NULL,
+    metricType NVARCHAR(50) NOT NULL, -- 'blood_pressure', 'weight', 'heart_rate', 'blood_sugar', etc.
+    value NVARCHAR(50) NOT NULL, -- stored as string to handle different formats
+    unit NVARCHAR(20) NOT NULL, -- 'mmHg', 'kg', 'bpm', 'mg/dL', etc.
+    notes NVARCHAR(500),
+    recordedAt DATETIME DEFAULT GETDATE(),
+    
+    FOREIGN KEY (userId) REFERENCES Users(ID)
+);
+
+-- Alert History Table
+CREATE TABLE AlertHistory (
+    alertId INT PRIMARY KEY IDENTITY(1,1),
+    userId INT NOT NULL,
+    medicationId INT NULL,
+    alertType NVARCHAR(50) NOT NULL, -- 'missed_medication', 'emergency', 'appointment_reminder'
+    message NVARCHAR(500) NOT NULL,
+    severity NVARCHAR(20) DEFAULT 'medium', -- 'low', 'medium', 'high', 'critical'
+    contactsNotified INT DEFAULT 0,
+    acknowledged BIT DEFAULT 0,
+    acknowledgedBy INT NULL,
+    acknowledgedAt DATETIME NULL,
+    acknowledgeNotes NVARCHAR(500),
+    triggeredAt DATETIME DEFAULT GETDATE(),
+    
+    FOREIGN KEY (userId) REFERENCES Users(ID),
+    FOREIGN KEY (medicationId) REFERENCES Medications(medicationId),
+    FOREIGN KEY (acknowledgedBy) REFERENCES Users(ID)
+);
+
+-- Caregiver Relationships Table
+CREATE TABLE CaregiverRelationships (
+    relationshipId INT PRIMARY KEY IDENTITY(1,1),
+    caregiverId INT NOT NULL,
+    patientId INT NOT NULL,
+    relationship NVARCHAR(50) NOT NULL, -- 'spouse', 'child', 'sibling', 'friend', 'professional'
+    permissions NVARCHAR(MAX), -- JSON string for permissions
+    alertPreferences NVARCHAR(MAX), -- JSON string for alert settings
+    isActive BIT DEFAULT 1,
+    createdAt DATETIME DEFAULT GETDATE(),
+    updatedAt DATETIME DEFAULT GETDATE(),
+    
+    FOREIGN KEY (caregiverId) REFERENCES Users(ID),
+    FOREIGN KEY (patientId) REFERENCES Users(ID),
+    CONSTRAINT UC_CaregiverPatient UNIQUE (caregiverId, patientId)
+);
+
+-- Caregiver Notes Table
+CREATE TABLE CaregiverNotes (
+    noteId INT PRIMARY KEY IDENTITY(1,1),
+    caregiverId INT NOT NULL,
+    patientId INT NOT NULL,
+    noteType NVARCHAR(50) DEFAULT 'general', -- 'general', 'medication', 'health', 'appointment'
+    content NVARCHAR(MAX) NOT NULL,
+    visibility NVARCHAR(20) DEFAULT 'private', -- 'private', 'shared_with_patient', 'shared_with_doctors'
+    createdAt DATETIME DEFAULT GETDATE(),
+    updatedAt DATETIME DEFAULT GETDATE(),
+    
+    FOREIGN KEY (caregiverId) REFERENCES Users(ID),
+    FOREIGN KEY (patientId) REFERENCES Users(ID)
+);
+
+-- Enhanced Medication Logs for better tracking
+-- Add new columns to existing MedicationLogs table
+ALTER TABLE MedicationLogs ADD COLUMN confirmedBy INT NULL;
+ALTER TABLE MedicationLogs ADD COLUMN confirmationMethod NVARCHAR(50) DEFAULT 'manual'; -- 'manual', 'qr_code', 'caregiver'
+ALTER TABLE MedicationLogs ADD COLUMN sideEffects NVARCHAR(500) NULL;
+ALTER TABLE MedicationLogs ADD COLUMN adherenceScore INT DEFAULT 100; -- 0-100 score
+
+-- Add foreign key for confirmedBy
+ALTER TABLE MedicationLogs ADD CONSTRAINT FK_MedicationLogs_ConfirmedBy 
+FOREIGN KEY (confirmedBy) REFERENCES Users(ID);
+
+-- Medication Compliance View (SCRUM-33)
+CREATE VIEW MedicationComplianceView AS
+SELECT 
+    m.userId,
+    m.medicationId,
+    m.name as medicationName,
+    m.dosage,
+    m.frequency,
+    COUNT(ml.logId) as dosesTaken,
+    CASE m.frequency
+        WHEN 'once_daily' THEN 7
+        WHEN 'twice_daily' THEN 14
+        WHEN 'three_times_daily' THEN 21
+        WHEN 'four_times_daily' THEN 28
+        ELSE 7
+    END as scheduledDoses,
+    CAST(COUNT(ml.logId) * 100.0 / 
+        CASE m.frequency
+            WHEN 'once_daily' THEN 7
+            WHEN 'twice_daily' THEN 14
+            WHEN 'three_times_daily' THEN 21
+            WHEN 'four_times_daily' THEN 28
+            ELSE 7
+        END AS DECIMAL(5,2)) as complianceRate
+FROM Medications m
+LEFT JOIN MedicationLogs ml ON m.medicationId = ml.medicationId 
+    AND ml.takenAt >= DATEADD(DAY, -7, GETDATE())
+WHERE m.active = 1
+GROUP BY m.userId, m.medicationId, m.name, m.dosage, m.frequency;
+
+-- Health Trends View (SCRUM-33)
+CREATE VIEW HealthTrendsView AS
+SELECT 
+    userId,
+    metricType,
+    AVG(CAST(value AS FLOAT)) as avgValue,
+    MIN(CAST(value AS FLOAT)) as minValue,
+    MAX(CAST(value AS FLOAT)) as maxValue,
+    COUNT(*) as recordCount,
+    CAST(recordedAt AS DATE) as recordDate
+FROM HealthMetrics
+WHERE recordedAt >= DATEADD(DAY, -30, GETDATE())
+GROUP BY userId, metricType, CAST(recordedAt AS DATE);
+
+-- Insert Sample Data for Testing
+-- Sample Emergency Contacts
+INSERT INTO EmergencyContacts (userId, name, relationship, phoneNumber, email, isPrimary, alertPreferences) VALUES
+(1, 'Mary Johnson', 'daughter', '+6591234567', 'mary.johnson@email.com', 1, '{"immediate": true, "missed_medication": true, "emergency": true}'),
+(1, 'Dr. Smith', 'family_doctor', '+6587654321', 'dr.smith@clinic.com', 0, '{"missed_medication": true, "health_alerts": true}'),
+(2, 'John Tan', 'spouse', '+6598765432', 'john.tan@email.com', 1, '{"immediate": true, "all_alerts": true}');
+
+-- Sample Health Metrics
+INSERT INTO HealthMetrics (userId, metricType, value, unit, notes) VALUES
+(1, 'blood_pressure', '120/80', 'mmHg', 'Normal reading'),
+(1, 'weight', '65.5', 'kg', 'Stable weight'),
+(1, 'heart_rate', '72', 'bpm', 'Resting heart rate'),
+(1, 'blood_sugar', '95', 'mg/dL', 'Fasting glucose'),
+(2, 'blood_pressure', '140/90', 'mmHg', 'Slightly elevated'),
+(2, 'weight', '78.2', 'kg', 'Weight loss goal'),
+(2, 'heart_rate', '85', 'bpm', 'After light exercise');
+
+-- Sample Caregiver Relationships
+INSERT INTO CaregiverRelationships (caregiverId, patientId, relationship, permissions, alertPreferences) VALUES
+(2, 1, 'spouse', '{"view_medications": true, "view_appointments": true, "receive_alerts": true}', '{"missed_medication": true, "health_alerts": true, "emergency": true}'),
+(3, 1, 'daughter', '{"view_medications": true, "view_health_metrics": true, "book_appointments": true}', '{"missed_medication": true, "appointment_reminders": true}');
+
+-- Sample Alert History
+INSERT INTO AlertHistory (userId, medicationId, alertType, message, severity, contactsNotified) VALUES
+(1, 1, 'missed_medication', 'Aspirin dose missed for 2 hours', 'medium', 1),
+(1, NULL, 'health_alert', 'Blood pressure reading elevated', 'high', 2),
+(2, 2, 'missed_medication', 'Metformin dose missed for 3 hours', 'high', 1);
+
+-- Sample Caregiver Notes
+INSERT INTO CaregiverNotes (caregiverId, patientId, noteType, content, visibility) VALUES
+(2, 1, 'medication', 'Patient reported mild nausea after taking morning medication', 'shared_with_doctors'),
+(2, 1, 'general', 'Seems more energetic today, appetite has improved', 'private'),
+(3, 1, 'appointment', 'Scheduled follow-up with cardiologist for next week', 'shared_with_patient');
+
+-- Create Indexes for Performance
+CREATE INDEX IX_EmergencyContacts_UserId ON EmergencyContacts(userId);
+CREATE INDEX IX_HealthMetrics_UserId_RecordedAt ON HealthMetrics(userId, recordedAt);
+CREATE INDEX IX_AlertHistory_UserId_TriggeredAt ON AlertHistory(userId, triggeredAt);
+CREATE INDEX IX_CaregiverRelationships_CaregiverId ON CaregiverRelationships(caregiverId);
+CREATE INDEX IX_CaregiverRelationships_PatientId ON CaregiverRelationships(patientId);
+CREATE INDEX IX_CaregiverNotes_PatientId ON CaregiverNotes(patientId);
+
+-- Stored Procedures for Complex Operations
+-- Calculate Overall Medication Compliance
+CREATE PROCEDURE sp_CalculateMedicationCompliance
+    @userId INT,
+    @days INT = 7
+AS
+BEGIN
+    SELECT 
+        AVG(complianceRate) as overallCompliance,
+        COUNT(*) as totalMedications,
+        COUNT(CASE WHEN complianceRate >= 80 THEN 1 END) as highComplianceMeds,
+        COUNT(CASE WHEN complianceRate < 60 THEN 1 END) as lowComplianceMeds
+    FROM MedicationComplianceView
+    WHERE userId = @userId;
+END;
+
+-- Generate Health Summary
+CREATE PROCEDURE sp_GenerateHealthSummary
+    @userId INT,
+    @days INT = 30
+AS
+BEGIN
+    SELECT 
+        metricType,
+        COUNT(*) as recordCount,
+        AVG(CAST(value AS FLOAT)) as avgValue,
+        MIN(CAST(value AS FLOAT)) as minValue,
+        MAX(CAST(value AS FLOAT)) as maxValue,
+        STDEV(CAST(value AS FLOAT)) as stdDev
+    FROM HealthMetrics
+    WHERE userId = @userId 
+        AND recordedAt >= DATEADD(DAY, -@days, GETDATE())
+    GROUP BY metricType
+    ORDER BY metricType;
+END;
+
+-- Trigger for Automatic Alert Generation
+CREATE TRIGGER tr_MedicationMissedAlert
+ON MedicationLogs
+AFTER INSERT
+AS
+BEGIN
+    -- Check for missed medications and create alerts
+    DECLARE @userId INT, @medicationId INT;
+    
+    SELECT @userId = m.userId, @medicationId = m.medicationId
+    FROM Medications m
+    INNER JOIN inserted i ON m.medicationId = i.medicationId;
+    
+    -- Logic for missed medication detection
+END;
+
+PRINT 'Sprint 3 database updates completed successfully!';
+PRINT 'New tables created: EmergencyContacts, HealthMetrics, AlertHistory, CaregiverRelationships, CaregiverNotes';
+PRINT 'Views created: MedicationComplianceView, HealthTrendsView';
+PRINT 'Sample data inserted for testing purposes';
+GO
 
 
 -- Module 2: Community events
