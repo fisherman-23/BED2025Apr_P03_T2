@@ -13,6 +13,10 @@ const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
 const chatController = require("./controllers/chatController.js");
 
+const caregiverController = require("./controllers/caregiverController.js");
+const emergencyContactsController = require("./controllers/emergencyContactsController.js");
+const healthMetricsController = require("./controllers/healthMetricsController.js");
+
 const eventsController = require("./controllers/eventsController.js");
 const announcementsController = require("./controllers/announcementsController.js");
 const meetingsController = require("./controllers/meetingsController.js");
@@ -140,105 +144,615 @@ app.get("/users/uuid/:uuid", authenticateJWT, (req, res) => {
 });
 
 // Module 1: Medication & Appointment Manager
-// Medication routes
+/**
+ * @swagger
+ * /api/medications/analytics:
+ *   get:
+ *     summary: Get medication adherence analytics
+ *     tags: [Medications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [daily, weekly, monthly]
+ *         description: Analytics period
+ *       - in: query
+ *         name: medicationId
+ *         schema:
+ *           type: integer
+ *         description: Specific medication ID (optional)
+ *     responses:
+ *       200:
+ *         description: Analytics data retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ */
+app.get(
+  "/api/medications/analytics",
+  authenticateJWT,
+  medicationController.getAdherenceAnalytics
+);
+
+/**
+ * @swagger
+ * /api/medications/missed:
+ *   get:
+ *     summary: Get missed medications with alert recommendations
+ *     tags: [Medications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: hoursThreshold
+ *         schema:
+ *           type: integer
+ *           default: 2
+ *         description: Hours threshold for missed medications
+ *     responses:
+ *       200:
+ *         description: Missed medications retrieved successfully
+ */
+app.get(
+  "/api/medications/missed",
+  authenticateJWT,
+  medicationController.getMissedMedications
+);
+
+// caregiver management routes
+/**
+ * @swagger
+ * /api/caregiver/patients:
+ *   get:
+ *     summary: Get all patients under caregiver's care
+ *     tags: [Caregiver]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Patients list retrieved successfully
+ *       403:
+ *         description: Access denied
+ */
+app.get(
+  "/api/caregiver/patients",
+  authenticateJWT,
+  caregiverController.getCaregiverPatients
+);
+
+/**
+ * @swagger
+ * /api/caregiver/patients/{patientId}/dashboard:
+ *   get:
+ *     summary: Get real-time medication compliance dashboard for a patient
+ *     tags: [Caregiver]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: patientId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Patient ID
+ *     responses:
+ *       200:
+ *         description: Patient dashboard data retrieved successfully
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: Patient not found
+ */
+app.get(
+  "/api/caregiver/patients/:patientId/dashboard",
+  authenticateJWT,
+  caregiverController.getCaregiverDashboard
+);
+
+/**
+ * @swagger
+ * /api/caregiver/patients/{patientId}/reports:
+ *   get:
+ *     summary: Get medication adherence reports for a patient
+ *     tags: [Caregiver]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: patientId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Patient ID
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [weekly, monthly]
+ *           default: weekly
+ *         description: Report period
+ *     responses:
+ *       200:
+ *         description: Adherence reports retrieved successfully
+ */
+app.get(
+  "/api/caregiver/patients/:patientId/reports",
+  authenticateJWT,
+  caregiverController.getAdherenceReports
+);
+
+/**
+ * @swagger
+ * /api/caregiver/relationships:
+ *   post:
+ *     summary: Add a new caregiver relationship
+ *     tags: [Caregiver]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - patientEmail
+ *               - relationship
+ *             properties:
+ *               patientEmail:
+ *                 type: string
+ *                 description: Patient's email address
+ *               relationship:
+ *                 type: string
+ *                 enum: [spouse, child, parent, sibling, relative, friend, caregiver]
+ *               accessLevel:
+ *                 type: string
+ *                 enum: [monitoring, alerts, full]
+ *                 default: monitoring
+ *     responses:
+ *       201:
+ *         description: Caregiver relationship added successfully
+ *       404:
+ *         description: Patient not found
+ *       409:
+ *         description: Relationship already exists
+ */
 app.post(
-  "/api/medications",
+  "/api/caregiver/relationships",
   authenticateJWT,
-  medicationController.createMedication
+  caregiverController.addCaregiverRelationship
 );
+
+/**
+ * @swagger
+ * /api/caregiver/alerts/missed-medication:
+ *   post:
+ *     summary: Send missed medication alert to emergency contacts
+ *     tags: [Caregiver]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - patientId
+ *             properties:
+ *               patientId:
+ *                 type: integer
+ *               medicationId:
+ *                 type: integer
+ *               alertLevel:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *                 default: 2
+ *     responses:
+ *       200:
+ *         description: Alert sent successfully
+ *       403:
+ *         description: Access denied
+ */
+app.post(
+  "/api/caregiver/alerts/missed-medication",
+  authenticateJWT,
+  caregiverController.sendMissedMedicationAlert
+);
+
+// emergency contacts routes
+/**
+ * @swagger
+ * /api/emergency-contacts:
+ *   get:
+ *     summary: Get all emergency contacts for the user
+ *     tags: [Emergency Contacts]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Emergency contacts retrieved successfully
+ *   post:
+ *     summary: Create a new emergency contact
+ *     tags: [Emergency Contacts]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - contactName
+ *               - relationship
+ *               - phoneNumber
+ *             properties:
+ *               contactName:
+ *                 type: string
+ *                 description: Full name of the emergency contact
+ *               relationship:
+ *                 type: string
+ *                 enum: [spouse, child, parent, sibling, relative, friend, neighbor, caregiver, doctor]
+ *               phoneNumber:
+ *                 type: string
+ *                 description: Phone number with country code
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               priority:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *                 default: 1
+ *               alertDelayHours:
+ *                 type: integer
+ *                 minimum: 0
+ *                 default: 0
+ *               isActive:
+ *                 type: boolean
+ *                 default: true
+ *     responses:
+ *       201:
+ *         description: Emergency contact created successfully
+ *       400:
+ *         description: Validation error
+ */
 app.get(
-  "/api/medications",
+  "/api/emergency-contacts",
   authenticateJWT,
-  medicationController.getUserMedications
+  emergencyContactsController.getUserEmergencyContacts
 );
-app.get(
-  "/api/medications/:id",
+
+app.post(
+  "/api/emergency-contacts",
   authenticateJWT,
-  medicationController.getMedicationById
+  emergencyContactsController.createEmergencyContact
 );
+
+/**
+ * @swagger
+ * /api/emergency-contacts/{contactId}:
+ *   put:
+ *     summary: Update an emergency contact
+ *     tags: [Emergency Contacts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: contactId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               contactName:
+ *                 type: string
+ *               relationship:
+ *                 type: string
+ *               phoneNumber:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               priority:
+ *                 type: integer
+ *               alertDelayHours:
+ *                 type: integer
+ *               isActive:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Emergency contact updated successfully
+ *       404:
+ *         description: Contact not found
+ *   delete:
+ *     summary: Delete an emergency contact
+ *     tags: [Emergency Contacts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: contactId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Emergency contact deleted successfully
+ *       404:
+ *         description: Contact not found
+ */
 app.put(
-  "/api/medications/:id",
+  "/api/emergency-contacts/:contactId",
   authenticateJWT,
-  medicationController.updateMedication
+  emergencyContactsController.updateEmergencyContact
 );
+
 app.delete(
-  "/api/medications/:id",
+  "/api/emergency-contacts/:contactId",
   authenticateJWT,
-  medicationController.deleteMedication
-);
-app.post(
-  "/api/medications/:id/taken",
-  authenticateJWT,
-  medicationController.markMedicationTaken
-);
-app.get(
-  "/api/medications/reminders/upcoming",
-  authenticateJWT,
-  medicationController.getUpcomingReminders
+  emergencyContactsController.deleteEmergencyContact
 );
 
-// Appointment routes
+/**
+ * @swagger
+ * /api/emergency-contacts/{contactId}/test:
+ *   post:
+ *     summary: Send test alert to emergency contact
+ *     tags: [Emergency Contacts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: contactId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Test alert sent successfully
+ *       404:
+ *         description: Contact not found
+ */
 app.post(
-  "/api/appointments",
+  "/api/emergency-contacts/:contactId/test",
   authenticateJWT,
-  appointmentController.createAppointment
-);
-app.get(
-  "/api/appointments",
-  authenticateJWT,
-  appointmentController.getUserAppointments
-);
-app.get(
-  "/api/appointments/:id",
-  authenticateJWT,
-  appointmentController.getAppointmentById
-);
-app.put(
-  "/api/appointments/:id",
-  authenticateJWT,
-  appointmentController.updateAppointment
-);
-app.delete(
-  "/api/appointments/:id",
-  authenticateJWT,
-  appointmentController.deleteAppointment
+  emergencyContactsController.testEmergencyContact
 );
 
-// Doctor routes
-app.get("/api/doctors", authenticateJWT, appointmentController.getAllDoctors);
-app.get(
-  "/api/doctors/search",
+/**
+ * @swagger
+ * /api/emergency-contacts/alerts/trigger:
+ *   post:
+ *     summary: Trigger emergency alerts for missed medications
+ *     tags: [Emergency Contacts]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - medicationId
+ *             properties:
+ *               medicationId:
+ *                 type: integer
+ *               alertLevel:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *                 default: 1
+ *     responses:
+ *       200:
+ *         description: Emergency alerts triggered successfully
+ *       404:
+ *         description: Medication not found
+ */
+app.post(
+  "/api/emergency-contacts/alerts/trigger",
   authenticateJWT,
-  appointmentController.searchDoctors
-);
-app.get(
-  "/api/doctors/:doctorId/availability",
-  authenticateJWT,
-  appointmentController.getDoctorAvailability
+  emergencyContactsController.triggerEmergencyAlert
 );
 
-// Appointment helper routes
-app.post(
-  "/api/appointments/:id/reminder",
+/**
+ * @swagger
+ * /api/emergency-contacts/alerts/history:
+ *   get:
+ *     summary: Get emergency alert history
+ *     tags: [Emergency Contacts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *         description: Maximum number of alerts to return
+ *     responses:
+ *       200:
+ *         description: Alert history retrieved successfully
+ */
+app.get(
+  "/api/emergency-contacts/alerts/history",
   authenticateJWT,
-  appointmentController.sendAppointmentReminder
-);
-app.post(
-  "/api/appointments/:id/directions",
-  authenticateJWT,
-  appointmentController.getDirections
+  emergencyContactsController.getEmergencyAlertHistory
 );
 
-app.get("/medicationManager", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/medicationManager.html"));
+
+// health metrics routes
+/**
+ * @swagger
+ * /api/health/dashboard:
+ *   get:
+ *     summary: Get comprehensive health dashboard data
+ *     tags: [Health Metrics]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Health dashboard data retrieved successfully
+ */
+app.get(
+  "/api/health/dashboard",
+  authenticateJWT,
+  healthMetricsController.getHealthDashboard
+);
+
+/**
+ * @swagger
+ * /api/health/metrics:
+ *   get:
+ *     summary: Get health metrics history
+ *     tags: [Health Metrics]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: metricType
+ *         schema:
+ *           type: string
+ *         description: Filter by metric type
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date for filtering
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date for filtering
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 100
+ *         description: Maximum number of records
+ *     responses:
+ *       200:
+ *         description: Health metrics retrieved successfully
+ *   post:
+ *     summary: Record a new health metric
+ *     tags: [Health Metrics]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - metricType
+ *               - value
+ *             properties:
+ *               metricType:
+ *                 type: string
+ *                 enum: [blood_pressure, weight, blood_sugar, heart_rate, temperature]
+ *               value:
+ *                 type: number
+ *               unit:
+ *                 type: string
+ *               notes:
+ *                 type: string
+ *               recordedAt:
+ *                 type: string
+ *                 format: date-time
+ *     responses:
+ *       201:
+ *         description: Health metric recorded successfully
+ *       400:
+ *         description: Validation error
+ */
+app.get(
+  "/api/health/metrics",
+  authenticateJWT,
+  healthMetricsController.getHealthMetrics
+);
+
+app.post(
+  "/api/health/metrics",
+  authenticateJWT,
+  healthMetricsController.recordHealthMetric
+);
+
+/**
+ * @swagger
+ * /api/health/reports/adherence:
+ *   get:
+ *     summary: Generate medication adherence report
+ *     tags: [Health Metrics]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [weekly, monthly, quarterly]
+ *           default: monthly
+ *         description: Report period
+ *       - in: query
+ *         name: format
+ *         schema:
+ *           type: string
+ *           enum: [json, pdf]
+ *           default: json
+ *         description: Report format
+ *     responses:
+ *       200:
+ *         description: Adherence report generated successfully
+ */
+app.get(
+  "/api/health/reports/adherence",
+  authenticateJWT,
+  healthMetricsController.generateAdherenceReport
+);
+
+/**
+ * @swagger
+ * /api/health/analytics/adherence:
+ *   get:
+ *     summary: Get medication adherence analytics and insights
+ *     tags: [Health Metrics]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Adherence analytics retrieved successfully
+ */
+app.get(
+  "/api/health/analytics/adherence",
+  authenticateJWT,
+  healthMetricsController.getAdherenceAnalytics
+);
+
+// static file routes
+// serve static HTML files for the medication manager module
+app.get("/caregiver-dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/medicationManager/caregiver-dashboard.html"));
 });
 
-app.post(
-  "/api/upload/:folder",
-  authenticateJWT,
-  upload.single("file"),
-  handleUpload
-);
+app.get("/emergency-contacts", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/medicationManager/emergency-contacts.html"));
+});
+
+app.get("/health-dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/medicationManager/health-dashboard.html"));
+});
 
 // Module 2: Community Events
 app.get("/groups/joined", authenticateJWT, (req, res) => {
