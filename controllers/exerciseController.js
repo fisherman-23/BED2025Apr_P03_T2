@@ -1,6 +1,13 @@
 const exerciseModel = require("../models/exerciseModel");
 
-// Get exercises based on user preferences or all exercises if no preferences are set
+/**
+ * Gets exercises based on user preferences, or all exercises if no preferences are set.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with 200 and exercises data, or 500 on error.
+ */
 async function getExercises(req, res) {
   try {
     const userId = req.user.id;
@@ -12,7 +19,14 @@ async function getExercises(req, res) {
   }
 }
 
-// Get steps for a specific exercise
+/**
+ * Gets the steps for a specific exercise.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.params.exerciseId`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with 200 and steps data, or 500 on error.
+ */
 async function getSteps(req, res) {
   const exerciseId = parseInt(req.params.exerciseId);
   try {
@@ -24,7 +38,14 @@ async function getSteps(req, res) {
   }
 }
 
-// Add user preferences for exercises
+/**
+ * Saves the user's preferred exercise categories.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.body.categoryIds`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with 201 on success, or 500 on error.
+ */
 async function personalisation(req, res) {
   const { categoryIds } = req.body;
   const userId = req.user.id;
@@ -41,7 +62,14 @@ async function personalisation(req, res) {
   }
 }
 
-// Get user preferences
+/**
+ * Gets the user's exercise category preferences.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with 200 and categoryIds or message, or 500 on error.
+ */
 async function getExercisePreferences(req, res) {
   try {
     const userId = req.user.id;
@@ -61,7 +89,14 @@ async function getExercisePreferences(req, res) {
   }
 }
 
-// Update user preferences
+/**
+ * Updates the user's exercise category preferences.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.body.categoryIds`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with 200 on success, or 500 on error.
+ */
 async function updateExercisePreferences(req, res) {
   const { categoryIds } = req.body;
   const userId = req.user.id;
@@ -74,7 +109,14 @@ async function updateExercisePreferences(req, res) {
   }
 }
 
-// Delete user preferences
+/**
+ * Deletes all exercise preferences for the user.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with 200 on success, or 500 on error.
+ */
 async function deleteExercisePreference(req, res) {
   const userId = req.user.id;
   try {
@@ -86,7 +128,14 @@ async function deleteExercisePreference(req, res) {
   }
 }
 
-// Get user statistic
+/**
+ * Gets statistics for the number exercise and goals the user has completed.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with 200 and statistics, or 500 on error.
+ */
 async function getUserStats(req, res) {
   const userID = req.user.id;
   try {
@@ -98,7 +147,14 @@ async function getUserStats(req, res) {
   }
 }
 
-// Log user exercise completion
+/**
+ * Logs an exercise as completed by the user.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.params.exerciseID`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with 201 on success, or 500 on error.
+ */
 async function logExerciseCompletion(req, res) {
   const userID = req.user.id;
   const exerciseID = req.params.exerciseID;
