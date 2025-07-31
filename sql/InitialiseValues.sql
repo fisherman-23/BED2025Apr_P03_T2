@@ -43,6 +43,252 @@ VALUES (
 
 SET IDENTITY_INSERT Users OFF;
 
+-- Module 1: Medication & appointment manager
+PRINT 'Starting InitialiseValues.sql for MODULE 1: Medication & Appointment Manager...';
+
+-- Ensure we have test users first (update the existing user to Ryan Yip)
+-- Update existing user with new name and additional fields
+UPDATE Users 
+SET Name = 'Ryan Yip',
+    firstName = 'Ryan', 
+    lastName = 'Yip',
+    Email = 'ryan.yip@gmail.com'
+WHERE ID = 1;
+
+-- Insert additional test users for comprehensive testing
+IF NOT EXISTS (SELECT 1 FROM Users WHERE Email = 'mary.tan@gmail.com')
+INSERT INTO Users (Email, Password, Name, firstName, lastName, PhoneNumber, DateOfBirth, AboutMe)
+VALUES ('mary.tan@gmail.com', '$2b$05$SuhzjSpTVmBZGh5poFUOzO.8v3pD1sRdPnIyJnGrrw0y8sIyxbNgC', 'Mary Tan', 'Mary', 'Tan', '87654321', '1965-03-15', 'Retired teacher who loves gardening');
+
+IF NOT EXISTS (SELECT 1 FROM Users WHERE Email = 'john.lim@gmail.com')
+INSERT INTO Users (Email, Password, Name, firstName, lastName, PhoneNumber, DateOfBirth, AboutMe)
+VALUES ('john.lim@gmail.com', '$2b$05$SuhzjSpTVmBZGh5poFUOzO.8v3pD1sRdPnIyJnGrrw0y8sIyxbNgC', 'John Lim', 'John', 'Lim', '98765432', '1958-07-22', 'Former engineer with diabetes and hypertension');
+
+IF NOT EXISTS (SELECT 1 FROM Users WHERE Email = 'sarah.wong@gmail.com')
+INSERT INTO Users (Email, Password, Name, firstName, lastName, PhoneNumber, DateOfBirth, AboutMe)
+VALUES ('sarah.wong@gmail.com', '$2b$05$SuhzjSpTVmBZGh5poFUOzO.8v3pD1sRdPnIyJnGrrw0y8sIyxbNgC', 'Sarah Wong', 'Sarah', 'Wong', '91234567', '1975-11-08', 'Caregiver daughter managing elderly parents healthcare');
+
+-- Insert realistic Medications for different users
+-- User 1 (Ryan Yip) - Complex medication regimen
+INSERT INTO Medications (userId, name, dosage, frequency, timing, startDate, instructions, prescribedBy, category, reminderEnabled, foodInstructions, sideEffects)
+VALUES 
+(1, 'Metformin', '500mg', 'Twice daily', '08:00:00', '2024-01-15', 'Take with meals to reduce stomach upset', 'Dr. Sarah Lim', 'Diabetes', 1, 'with_food', 'Nausea, diarrhea, metallic taste'),
+(1, 'Lisinopril', '10mg', 'Once daily', '07:00:00', '2024-01-15', 'Take at the same time each day', 'Dr. Michael Chen', 'Blood Pressure', 1, 'without_food', 'Dry cough, dizziness'),
+(1, 'Atorvastatin', '20mg', 'Once daily', '20:00:00', '2024-02-01', 'Take in the evening', 'Dr. Michael Chen', 'Cholesterol', 1, 'without_food', 'Muscle pain, fatigue'),
+(1, 'Aspirin', '81mg', 'Once daily', '07:30:00', '2024-01-15', 'Low-dose for heart protection', 'Dr. Michael Chen', 'Heart Health', 1, 'with_food', 'Stomach irritation');
+
+-- User 2 (Mary Tan) - Moderate medication needs
+INSERT INTO Medications (userId, name, dosage, frequency, timing, startDate, instructions, prescribedBy, category, reminderEnabled, foodInstructions)
+VALUES 
+(2, 'Amlodipine', '5mg', 'Once daily', '08:00:00', '2024-03-01', 'For blood pressure control', 'Dr. Sarah Lim', 'Blood Pressure', 1, 'without_food'),
+(2, 'Calcium Carbonate', '600mg', 'Twice daily', '09:00:00', '2024-03-01', 'Take with meals for better absorption', 'Dr. Sarah Lim', 'Supplement', 1, 'with_food'),
+(2, 'Vitamin D3', '1000IU', 'Once daily', '08:30:00', '2024-03-01', 'For bone health', 'Dr. Sarah Lim', 'Vitamin', 1, 'with_food');
+
+-- User 3 (John Lim) - Complex diabetes and heart condition
+INSERT INTO Medications (userId, name, dosage, frequency, timing, startDate, instructions, prescribedBy, category, reminderEnabled, foodInstructions, sideEffects)
+VALUES 
+(3, 'Insulin Glargine', '20 units', 'Once daily', '22:00:00', '2024-01-01', 'Long-acting insulin, inject at bedtime', 'Dr. Priya Patel', 'Diabetes', 1, 'without_food', 'Injection site reactions, hypoglycemia'),
+(3, 'Metformin', '850mg', 'Twice daily', '07:00:00', '2024-01-01', 'Extended release formulation', 'Dr. Priya Patel', 'Diabetes', 1, 'with_food', 'GI upset'),
+(3, 'Carvedilol', '6.25mg', 'Twice daily', '08:00:00', '2024-02-15', 'Take with food to reduce side effects', 'Dr. Michael Chen', 'Heart Health', 1, 'with_food', 'Dizziness, fatigue'),
+(3, 'Furosemide', '40mg', 'Once daily', '07:00:00', '2024-02-15', 'Water pill - take in morning', 'Dr. Michael Chen', 'Heart Health', 1, 'without_food', 'Frequent urination, dehydration');
+
+-- Insert MedicationLogs for adherence tracking (last 30 days)
+-- Generate realistic medication logs with varying compliance rates
+DECLARE @StartDate DATE = DATEADD(DAY, -30, GETDATE());
+DECLARE @CurrentDate DATE = @StartDate;
+DECLARE @MedId INT;
+DECLARE @UserId INT;
+DECLARE @ScheduledTime DATETIME2;
+DECLARE @Taken BIT;
+DECLARE @TakenTime DATETIME2;
+
+-- Create medication logs for User 1 (85% compliance)
+WHILE @CurrentDate <= GETDATE()
+BEGIN
+    -- Metformin (twice daily) - 8:00 AM and 8:00 PM
+    INSERT INTO MedicationLogs (medicationId, scheduledTime, taken, takenAt, missed, reminderSent)
+    VALUES 
+    (1, DATEADD(HOUR, 8, CAST(@CurrentDate AS DATETIME2)), 
+     CASE WHEN RAND() < 0.9 THEN 1 ELSE 0 END,
+     CASE WHEN RAND() < 0.9 THEN DATEADD(MINUTE, 15, DATEADD(HOUR, 8, CAST(@CurrentDate AS DATETIME2))) ELSE NULL END,
+     CASE WHEN RAND() < 0.9 THEN 0 ELSE 1 END, 1),
+    (1, DATEADD(HOUR, 20, CAST(@CurrentDate AS DATETIME2)),
+     CASE WHEN RAND() < 0.85 THEN 1 ELSE 0 END,
+     CASE WHEN RAND() < 0.85 THEN DATEADD(MINUTE, 10, DATEADD(HOUR, 20, CAST(@CurrentDate AS DATETIME2))) ELSE NULL END,
+     CASE WHEN RAND() < 0.85 THEN 0 ELSE 1 END, 1);
+    
+    -- Lisinopril (once daily) - 7:00 AM
+    INSERT INTO MedicationLogs (medicationId, scheduledTime, taken, takenAt, missed, reminderSent)
+    VALUES 
+    (2, DATEADD(HOUR, 7, CAST(@CurrentDate AS DATETIME2)),
+     CASE WHEN RAND() < 0.95 THEN 1 ELSE 0 END,
+     CASE WHEN RAND() < 0.95 THEN DATEADD(MINUTE, 8, DATEADD(HOUR, 7, CAST(@CurrentDate AS DATETIME2))) ELSE NULL END,
+     CASE WHEN RAND() < 0.95 THEN 0 ELSE 1 END, 1);
+    
+    -- Atorvastatin (once daily) - 8:00 PM
+    INSERT INTO MedicationLogs (medicationId, scheduledTime, taken, takenAt, missed, reminderSent)
+    VALUES 
+    (3, DATEADD(HOUR, 20, CAST(@CurrentDate AS DATETIME2)),
+     CASE WHEN RAND() < 0.80 THEN 1 ELSE 0 END,
+     CASE WHEN RAND() < 0.80 THEN DATEADD(MINUTE, 30, DATEADD(HOUR, 20, CAST(@CurrentDate AS DATETIME2))) ELSE NULL END,
+     CASE WHEN RAND() < 0.80 THEN 0 ELSE 1 END, 1);
+    
+    SET @CurrentDate = DATEADD(DAY, 1, @CurrentDate);
+END;
+
+-- Insert sample Appointments
+INSERT INTO Appointments (userId, doctorId, appointmentDate, reason, status, notes, duration)
+VALUES 
+-- Upcoming appointments
+(1, 1, DATEADD(HOUR, 10, DATEADD(DAY, 7, GETDATE())), 'Regular diabetes checkup', 'scheduled', 'Bring latest blood test results and medication list', 30),
+(1, 2, DATEADD(HOUR, 14, DATEADD(MINUTE, 30, DATEADD(DAY, 14, GETDATE()))), 'Cardiology follow-up', 'scheduled', 'Review current medications and blood pressure readings', 45),
+(2, 1, DATEADD(HOUR, 9, DATEADD(MINUTE, 30, DATEADD(DAY, 3, GETDATE()))), 'Annual health screening', 'scheduled', 'Fasting required - no food after midnight', 60),
+(3, 3, DATEADD(HOUR, 11, DATEADD(DAY, 10, GETDATE())), 'Diabetes management review', 'scheduled', 'Insulin dosage adjustment consultation', 30),
+
+-- Past appointments for history
+(1, 1, DATEADD(HOUR, 15, DATEADD(DAY, -30, GETDATE())), 'Initial diabetes consultation', 'completed', 'Started on Metformin. Follow up in 1 month.', 45),
+(2, 1, DATEADD(HOUR, 10, DATEADD(MINUTE, 30, DATEADD(DAY, -15, GETDATE()))), 'Hypertension consultation', 'completed', 'Blood pressure well controlled. Continue current medication.', 30),
+(3, 2, DATEADD(HOUR, 16, DATEADD(DAY, -45, GETDATE())), 'Heart failure consultation', 'completed', 'Added Carvedilol and Furosemide. Lifestyle counseling provided.', 60);
+
+-- Insert Emergency Contacts
+INSERT INTO EmergencyContacts (userId, contactName, relationship, phoneNumber, email, priority, alertDelayHours)
+VALUES 
+-- For User 1 (Ryan Yip)
+(1, 'Linda Yip', 'spouse', '+65 9123 4567', 'linda.yip@gmail.com', 1, 0),
+(1, 'David Yip', 'son', '+65 8765 4321', 'david.yip@gmail.com', 2, 2),
+(1, 'Dr. Sarah Lim Clinic', 'doctor', '+65 6123 4567', 'emergency@sarahlim.clinic', 3, 0),
+
+-- For User 2 (Mary)
+(2, 'Peter Tan', 'son', '+65 9876 5432', 'peter.tan@gmail.com', 1, 0),
+(2, 'Jenny Tan', 'daughter', '+65 8123 4567', 'jenny.tan@gmail.com', 2, 1),
+
+-- For User 3 (John)
+(3, 'Alice Lim', 'wife', '+65 9234 5678', 'alice.lim@gmail.com', 1, 0),
+(3, 'Michael Lim', 'son', '+65 8345 6789', 'michael.lim@gmail.com', 2, 2);
+
+-- Insert Caregiver Relationships
+INSERT INTO CaregiverRelationships (caregiverId, patientId, relationship, accessLevel)
+VALUES 
+-- Sarah Wong as caregiver for both elderly users
+(4, 2, 'daughter', 'full'),  -- Sarah caring for Mary (if Sarah is user 4)
+(4, 3, 'family_friend', 'alerts'), -- Sarah helping John's family
+
+-- Family member relationships
+(1, 2, 'friend', 'monitoring'),  -- Ryan and Mary are friends
+(2, 3, 'neighbor', 'monitoring'); -- Mary helps monitor John
+
+-- Insert some Health Metrics for tracking
+INSERT INTO HealthMetrics (userId, metricType, value, unit, notes, recordedAt)
+VALUES 
+-- User 1 recent metrics
+(1, 'blood_glucose', 145, 'mg/dL', 'Fasting glucose slightly elevated', DATEADD(DAY, -2, GETDATE())),
+(1, 'blood_pressure_systolic', 135, 'mmHg', 'Morning reading', DATEADD(DAY, -1, GETDATE())),
+(1, 'blood_pressure_diastolic', 85, 'mmHg', 'Morning reading', DATEADD(DAY, -1, GETDATE())),
+(1, 'weight', 78.5, 'kg', 'After breakfast', GETDATE()),
+
+-- User 2 metrics
+(2, 'blood_pressure_systolic', 128, 'mmHg', 'Well controlled', DATEADD(DAY, -3, GETDATE())),
+(2, 'blood_pressure_diastolic', 78, 'mmHg', 'Well controlled', DATEADD(DAY, -3, GETDATE())),
+(2, 'weight', 65, 'kg', 'Stable weight', DATEADD(DAY, -1, GETDATE())),
+
+-- User 3 metrics (diabetes + heart)
+(3, 'blood_glucose', 180, 'mg/dL', 'Post-meal reading, needs attention', DATEADD(DAY, -1, GETDATE())),
+(3, 'hba1c', 7.8, '%', 'Quarterly lab result', DATEADD(DAY, -7, GETDATE())),
+(3, 'weight', 82, 'kg', 'Gradual weight loss as recommended', GETDATE());
+
+-- Insert some CaregiverAlerts for demonstration
+INSERT INTO CaregiverAlerts (caregiverId, patientId, medicationId, alertType, alertMessage, severity)
+VALUES 
+(4, 2, 5, 'medication_missed', 'Mary Tan missed her Amlodipine dose at 8:00 AM', 'warning'),
+(4, 3, 8, 'medication_taken', 'John Lim took his Insulin Glargine at 10:15 PM (15 minutes late)', 'info'),
+(1, 2, NULL, 'health_concern', 'Blood pressure reading of 145/90 recorded - higher than usual', 'warning');
+
+-- Insert Drug Conflicts for testing conflict detection
+INSERT INTO DrugConflicts (medicationId, conflicting_medication, severity, description, resolved)
+VALUES 
+(1, 'Alcohol', 'moderate', 'Alcohol may increase the risk of lactic acidosis with Metformin', 0),
+(4, 'Ibuprofen', 'moderate', 'NSAIDs may increase bleeding risk when taken with Aspirin', 0);
+
+-- Insert Doctor Availability for remaining doctors
+INSERT INTO DoctorAvailability (doctorId, day_of_week, start_time, end_time, is_available)
+VALUES 
+-- Dr. Priya Patel (Endocrinologist) - specialized hours
+(3, 'Monday', '08:00:00', '16:00:00', 1),
+(3, 'Tuesday', '08:00:00', '16:00:00', 1),
+(3, 'Wednesday', '08:00:00', '12:00:00', 1),
+(3, 'Thursday', '08:00:00', '16:00:00', 1),
+(3, 'Friday', '08:00:00', '14:00:00', 1),
+
+-- Dr. James Wong (Geriatrician) - senior-friendly hours
+(4, 'Monday', '09:00:00', '17:00:00', 1),
+(4, 'Tuesday', '09:00:00', '17:00:00', 1),
+(4, 'Wednesday', '09:00:00', '17:00:00', 1),
+(4, 'Thursday', '09:00:00', '17:00:00', 1),
+(4, 'Friday', '09:00:00', '15:00:00', 1);
+
+-- Create some adherence reports for demonstration
+INSERT INTO AdherenceReports (userId, reportType, reportData, expiresAt)
+VALUES 
+(1, 'weekly', '{"adherence_rate": 87, "medications": [{"name": "Metformin", "taken": 12, "missed": 2}, {"name": "Lisinopril", "taken": 7, "missed": 0}], "generated": "2025-07-31"}', DATEADD(DAY, 7, GETDATE())),
+(2, 'monthly', '{"adherence_rate": 94, "medications": [{"name": "Amlodipine", "taken": 28, "missed": 2}], "generated": "2025-07-31"}', DATEADD(DAY, 30, GETDATE())),
+(3, 'weekly', '{"adherence_rate": 78, "medications": [{"name": "Insulin Glargine", "taken": 6, "missed": 1}, {"name": "Metformin", "taken": 11, "missed": 3}], "generated": "2025-07-31"}', DATEADD(DAY, 7, GETDATE()));
+
+-- Update medication categories for better organization
+UPDATE Medications SET category = 'Chronic Disease' WHERE name IN ('Metformin', 'Lisinopril', 'Insulin Glargine', 'Carvedilol');
+UPDATE Medications SET category = 'Preventive Care' WHERE name IN ('Aspirin', 'Atorvastatin');
+UPDATE Medications SET category = 'Supplements' WHERE name LIKE '%Vitamin%' OR name LIKE '%Calcium%';
+
+-- Create sample emergency alerts for testing
+INSERT INTO EmergencyAlerts (userId, contactId, alertType, alertMessage, sentVia, deliveryStatus, sentAt)
+VALUES 
+(1, 1, 'missed_medication', 'Ranen has missed 2 consecutive Metformin doses. Last dose: Yesterday 8:00 PM', 'sms', 'delivered', DATEADD(HOUR, -2, GETDATE())),
+(3, 7, 'health_concern', 'John Lim blood glucose reading of 280 mg/dL is critically high. Immediate attention needed.', 'email', 'delivered', DATEADD(HOUR, -6, GETDATE()));
+
+PRINT 'InitialiseValues.sql completed successfully!';
+PRINT 'Test data created for:';
+PRINT '- 4 Test users with different medical profiles';
+PRINT '- 10 Realistic medications with proper categories and instructions';
+PRINT '- 30 days of medication logs showing varying compliance rates';
+PRINT '- 7 Sample appointments (past, present, and future)';
+PRINT '- 8 Emergency contacts with different relationships and alert settings';
+PRINT '- 4 Caregiver relationships with different access levels';
+PRINT '- Health metrics tracking for all users';
+PRINT '- Sample alerts and notifications';
+PRINT '- Drug conflict detection examples';
+PRINT '- Doctor availability schedules';
+PRINT '- Adherence reports for testing dashboard features';
+PRINT '';
+PRINT 'Your MODULE 1 database is now ready for comprehensive testing and demonstration!';
+
+-- Verification queries to show what was created
+SELECT 'Total Users' as Metric, COUNT(*) as Count FROM Users
+UNION ALL
+SELECT 'Total Medications', COUNT(*) FROM Medications  
+UNION ALL
+SELECT 'Total Medication Logs', COUNT(*) FROM MedicationLogs
+UNION ALL
+SELECT 'Total Appointments', COUNT(*) FROM Appointments
+UNION ALL
+SELECT 'Total Emergency Contacts', COUNT(*) FROM EmergencyContacts
+UNION ALL
+SELECT 'Total Caregiver Relationships', COUNT(*) FROM CaregiverRelationships
+UNION ALL
+SELECT 'Total Health Metrics', COUNT(*) FROM HealthMetrics;
+
+-- Show adherence rates by user
+SELECT 
+    u.Name as UserName,
+    COUNT(ml.logId) as TotalDoses,
+    COUNT(CASE WHEN ml.taken = 1 THEN 1 END) as TakenDoses,
+    ROUND(COUNT(CASE WHEN ml.taken = 1 THEN 1 END) * 100.0 / COUNT(ml.logId), 1) as AdherenceRate
+FROM Users u
+JOIN Medications m ON u.ID = m.userId
+JOIN MedicationLogs ml ON m.medicationId = ml.medicationId
+WHERE ml.scheduledTime >= DATEADD(DAY, -30, GETDATE())
+GROUP BY u.ID, u.Name
+ORDER BY AdherenceRate DESC;
+
+
 -- Module 2: Community Events
 -- Sample data for community groups
 INSERT INTO Groups (Name, Description, GroupPicture, IsPrivate, CreatedAt, CreatedBy)

@@ -57,25 +57,114 @@ CREATE TABLE Users (
 CREATE UNIQUE INDEX idx_users_publicuuid ON Users(PublicUUID);
 
 
--- Module 1: Medication & Appointment Manager
--- Create Medications Table
+-- Module 1: Medication & appointment manager
+-- Drop views and procedures first
+IF OBJECT_ID('dbo.vw_CaregiverDashboard', 'V') IS NOT NULL
+    DROP VIEW dbo.vw_CaregiverDashboard;
+
+IF OBJECT_ID('dbo.vw_MedicationAdherence', 'V') IS NOT NULL
+    DROP VIEW dbo.vw_MedicationAdherence;
+
+IF OBJECT_ID('dbo.sp_GetMissedMedications', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.sp_GetMissedMedications;
+
+IF OBJECT_ID('dbo.sp_GetPatientAdherence', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.sp_GetPatientAdherence;
+
+IF OBJECT_ID('dbo.tr_MedicationLogs_Audit', 'TR') IS NOT NULL
+    DROP TRIGGER dbo.tr_MedicationLogs_Audit;
+
+-- Drop tables in correct order due to foreign key constraints
+IF OBJECT_ID('dbo.EmergencyAlerts', 'U') IS NOT NULL
+    DROP TABLE dbo.EmergencyAlerts;
+
+IF OBJECT_ID('dbo.CaregiverAlerts', 'U') IS NOT NULL
+    DROP TABLE dbo.CaregiverAlerts;
+
+IF OBJECT_ID('dbo.HealthMetrics', 'U') IS NOT NULL
+    DROP TABLE dbo.HealthMetrics;
+
+IF OBJECT_ID('dbo.AdherenceReports', 'U') IS NOT NULL
+    DROP TABLE dbo.AdherenceReports;
+
+IF OBJECT_ID('dbo.MedicationLogs', 'U') IS NOT NULL
+    DROP TABLE dbo.MedicationLogs;
+
+IF OBJECT_ID('dbo.DrugConflicts', 'U') IS NOT NULL
+    DROP TABLE dbo.DrugConflicts;
+
+IF OBJECT_ID('dbo.DoctorAvailability', 'U') IS NOT NULL
+    DROP TABLE dbo.DoctorAvailability;
+
+IF OBJECT_ID('dbo.Appointments', 'U') IS NOT NULL
+    DROP TABLE dbo.Appointments;
+
+IF OBJECT_ID('dbo.CaregiverRelationships', 'U') IS NOT NULL
+    DROP TABLE dbo.CaregiverRelationships;
+
+IF OBJECT_ID('dbo.EmergencyContacts', 'U') IS NOT NULL
+    DROP TABLE dbo.EmergencyContacts;
+
+IF OBJECT_ID('dbo.Medications', 'U') IS NOT NULL
+    DROP TABLE dbo.Medications;
+
+IF OBJECT_ID('dbo.Doctors', 'U') IS NOT NULL
+    DROP TABLE dbo.Doctors; 
+
+IF OBJECT_ID('dbo.DrugInteractions', 'U') IS NOT NULL
+    DROP TABLE dbo.DrugInteractions;
+
+-- Check if Users table exists, if not create basic structure
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Users')
+BEGIN
+    CREATE TABLE Users (
+        ID INT PRIMARY KEY IDENTITY(1,1),
+        PublicUUID UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+        Email VARCHAR(100) UNIQUE NOT NULL,
+        Password VARCHAR(100) NOT NULL,
+        Name VARCHAR(30) NOT NULL,
+        AboutMe VARCHAR(200) NULL,
+        PhoneNumber CHAR(8) NOT NULL,
+        DateOfBirth DATE NOT NULL,
+        ProfilePicture VARCHAR(500) NULL,
+        CreatedAt DATETIME DEFAULT GETDATE(),
+        UpdatedAt DATETIME DEFAULT GETDATE(),
+        IsActive BIT DEFAULT 1
+    );
+    
+    CREATE UNIQUE INDEX idx_users_publicuuid ON Users(PublicUUID);
+END
+
+-- Add firstName and lastName columns if they don't exist
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'firstName')
+    ALTER TABLE Users ADD firstName VARCHAR(30) NULL;
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'lastName')
+    ALTER TABLE Users ADD lastName VARCHAR(30) NULL;
+
+-- Create Medications Table with ALL required columns
 CREATE TABLE Medications (
     medicationId INT IDENTITY(1,1) PRIMARY KEY,
     userId INT NOT NULL,
     name NVARCHAR(255) NOT NULL,
+    medicationName AS name, -- Computed column for compatibility
     dosage NVARCHAR(100) NOT NULL,
-    frequency NVARCHAR(50) NOT NULL, -- 'Once daily', 'Twice daily', 'Three times daily', etc.
+    frequency NVARCHAR(50) NOT NULL, -- 'Once daily', 'Twice daily', etc.
     timing TIME NOT NULL, -- Time to take medication
     startDate DATE NOT NULL,
     endDate DATE NULL, -- NULL means ongoing
     instructions NVARCHAR(MAX) NULL,
     prescribedBy NVARCHAR(255) NOT NULL,
     active BIT DEFAULT 1, -- 1 = active, 0 = discontinued
-    qrCode NVARCHAR(255) NULL, -- QR code for pill bottle verification
-    category NVARCHAR(100) NULL, -- 'Heart Health', 'Diabetes', 'Blood Pressure', etc.
+    qrCode NVARCHAR(255) NULL,
+    category NVARCHAR(100) NULL, -- Category field
+    reminderEnabled BIT NOT NULL DEFAULT 1, -- Reminder settings
+    reminderTimes NVARCHAR(200) NULL, -- JSON array of reminder times
+    sideEffects NVARCHAR(500) NULL, -- Side effects
+    foodInstructions NVARCHAR(200) NULL, -- with_food, without_food, empty_stomach
     createdAt DATETIME2 DEFAULT GETDATE(),
-    updatedAt DATETIME2 DEFAULT GETDATE()
-    -- FOREIGN KEY (userId) REFERENCES Users(id) -- Add this after Users table exists
+    updatedAt DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (userId) REFERENCES Users(ID)
 );
 GO
 
@@ -86,9 +175,9 @@ CREATE TABLE Doctors (
     specialty NVARCHAR(255) NOT NULL,
     phone NVARCHAR(20) NOT NULL,
     email NVARCHAR(255) NOT NULL,
-    location NVARCHAR(255) NOT NULL, -- General area/district
-    address NVARCHAR(500) NOT NULL, -- Full address for directions
-    rating DECIMAL(3,2) DEFAULT 4.5, -- Rating out of 5
+    location NVARCHAR(255) NOT NULL,
+    address NVARCHAR(500) NOT NULL,
+    rating DECIMAL(3,2) DEFAULT 4.5,
     availability_notes NVARCHAR(MAX) NULL,
     created_at DATETIME2 DEFAULT GETDATE()
 );
@@ -100,32 +189,40 @@ CREATE TABLE Appointments (
     userId INT NOT NULL,
     doctorId INT NOT NULL,
     appointmentDate DATETIME2 NOT NULL,
-    duration INT DEFAULT 30, -- Duration in minutes
+    duration INT DEFAULT 30,
     reason NVARCHAR(500) NOT NULL,
-    status NVARCHAR(50) DEFAULT 'scheduled', -- 'scheduled', 'completed', 'cancelled', 'no-show'
-    notes NVARCHAR(MAX) NULL, -- Preparation notes or post-visit notes
+    status NVARCHAR(50) DEFAULT 'scheduled',
+    notes NVARCHAR(MAX) NULL,
     reminderSent BIT DEFAULT 0,
     followUpNeeded BIT DEFAULT 0,
     createdAt DATETIME2 DEFAULT GETDATE(),
-    updatedAt DATETIME2 DEFAULT GETDATE()
-    -- FOREIGN KEY (userId) REFERENCES Users(id), -- Add after Users table exists
-    -- FOREIGN KEY (doctorId) REFERENCES Doctors(doctorId) -- Add after confirming structure
+    updatedAt DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (userId) REFERENCES Users(ID),
+    FOREIGN KEY (doctorId) REFERENCES Doctors(doctorId)
 );
 GO
 
--- Create MedicationLogs Table for tracking medication adherence
+-- Create MedicationLogs Table with column names
 CREATE TABLE MedicationLogs (
     logId INT IDENTITY(1,1) PRIMARY KEY,
-    medication_id INT NOT NULL,
-    taken_at DATETIME2 NOT NULL,
-    missed BIT DEFAULT 0, -- 0 = taken, 1 = missed
+    medicationId INT NOT NULL,
+    medication_id AS medicationId, -- Computed column for backward compatibility
+    scheduledTime DATETIME2 NOT NULL,
+    taken BIT DEFAULT 0, -- 0 = not taken, 1 = taken
+    -- Keep both taken_at and takenAt for compatibility
+    taken_at DATETIME2 NULL,
+    takenAt DATETIME2 NULL,
+    missed BIT DEFAULT 0, -- 0 = not missed, 1 = missed
     notes NVARCHAR(255) NULL,
-    created_at DATETIME2 DEFAULT GETDATE()
-    -- FOREIGN KEY (medication_id) REFERENCES Medications(medicationId) -- Add after confirming structure
+    reminderSent BIT NOT NULL DEFAULT 0, -- Reminder tracking
+    reminderSentAt DATETIME2 NULL, -- When reminder was sent
+    created_at DATETIME2 DEFAULT GETDATE(),
+    updatedAt DATETIME2 NULL, -- Update tracking
+    FOREIGN KEY (medicationId) REFERENCES Medications(medicationId)
 );
 GO
 
--- Create DrugInteractions Table for checking drug conflicts
+-- Create DrugInteractions Table
 CREATE TABLE DrugInteractions (
     interactionId INT IDENTITY(1,1) PRIMARY KEY,
     drug1 NVARCHAR(255) NOT NULL,
@@ -136,7 +233,7 @@ CREATE TABLE DrugInteractions (
 );
 GO
 
--- Create DrugConflicts Table for user-specific conflicts
+-- Create DrugConflicts Table
 CREATE TABLE DrugConflicts (
     conflictId INT IDENTITY(1,1) PRIMARY KEY,
     medicationId INT NOT NULL,
@@ -144,333 +241,100 @@ CREATE TABLE DrugConflicts (
     severity NVARCHAR(50) NOT NULL,
     description NVARCHAR(MAX) NOT NULL,
     resolved BIT DEFAULT 0,
-    created_at DATETIME2 DEFAULT GETDATE()
-    -- FOREIGN KEY (medicationId) REFERENCES Medications(medicationId) -- Add after confirming structure
+    created_at DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (medicationId) REFERENCES Medications(medicationId)
 );
 GO
 
--- Create DoctorAvailability Table for appointment booking
+-- Create DoctorAvailability Table
 CREATE TABLE DoctorAvailability (
     availabilityId INT IDENTITY(1,1) PRIMARY KEY,
     doctorId INT NOT NULL,
-    day_of_week NVARCHAR(20) NOT NULL, -- 'Monday', 'Tuesday', etc.
+    day_of_week NVARCHAR(20) NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     is_available BIT DEFAULT 1,
-    created_at DATETIME2 DEFAULT GETDATE()
-    -- FOREIGN KEY (doctorId) REFERENCES Doctors(doctorId) -- Add after confirming structure
+    created_at DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (doctorId) REFERENCES Doctors(doctorId)
 );
 GO
 
--- Add foreign key for Medications (if Users table exists)
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Users')
-BEGIN
-    ALTER TABLE Medications 
-    ADD CONSTRAINT FK_Medications_Users 
-    FOREIGN KEY (userId) REFERENCES Users(id);
-END
-GO
-
--- Add foreign key for Appointments to Users (if Users table exists)
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Users')
-BEGIN
-    ALTER TABLE Appointments 
-    ADD CONSTRAINT FK_Appointments_Users 
-    FOREIGN KEY (userId) REFERENCES Users(id);
-END
-GO
-
--- Add foreign key for Appointments to Doctors
-ALTER TABLE Appointments 
-ADD CONSTRAINT FK_Appointments_Doctors 
-FOREIGN KEY (doctorId) REFERENCES Doctors(doctorId);
-GO
-
--- Add foreign key for MedicationLogs
-ALTER TABLE MedicationLogs 
-ADD CONSTRAINT FK_MedicationLogs_Medications 
-FOREIGN KEY (medication_id) REFERENCES Medications(medicationId);
-GO
-
--- Add foreign key for DrugConflicts
-ALTER TABLE DrugConflicts 
-ADD CONSTRAINT FK_DrugConflicts_Medications 
-FOREIGN KEY (medicationId) REFERENCES Medications(medicationId);
-GO
-
--- Add foreign key for DoctorAvailability
-ALTER TABLE DoctorAvailability 
-ADD CONSTRAINT FK_DoctorAvailability_Doctors 
-FOREIGN KEY (doctorId) REFERENCES Doctors(doctorId);
-GO
-
--- Insert Sample Doctors
-INSERT INTO Doctors (name, specialty, phone, email, location, address, rating) VALUES
-('Dr. Sarah Lim', 'General Practitioner', '+65 6123 4567', 'sarah.lim@clinic.com', 'Buona Vista', '123 North Buona Vista Road, Singapore 138888', 4.8),
-('Dr. Michael Chen', 'Cardiologist', '+65 6234 5678', 'michael.chen@heart.com', 'Jurong East', '456 Jurong Gateway Road, Singapore 608532', 4.9),
-('Dr. Priya Kumar', 'Endocrinologist', '+65 6345 6789', 'priya.kumar@diabetes.com', 'Tampines', '789 Tampines Avenue 4, Singapore 529681', 4.7),
-('Dr. James Wong', 'Orthopedic Surgeon', '+65 6456 7890', 'james.wong@ortho.com', 'Raffles Place', '321 Robinson Road, Singapore 068903', 4.6),
-('Dr. Lisa Tan', 'Dermatologist', '+65 6567 8901', 'lisa.tan@skin.com', 'Orchard', '654 Orchard Road, Singapore 238859', 4.5),
-('Dr. Ahmed Hassan', 'Neurologist', '+65 6678 9012', 'ahmed.hassan@neuro.com', 'Clementi', '987 Clementi Road, Singapore 129834', 4.7),
-('Dr. Maria Rodriguez', 'Psychiatrist', '+65 6789 0123', 'maria.rodriguez@mind.com', 'Toa Payoh', '654 Lorong 1 Toa Payoh, Singapore 319762', 4.6);
-GO
-
--- Insert Doctor Availability (Monday to Friday, 9 AM to 5 PM)
-DECLARE @doctorId INT = 1;
-WHILE @doctorId <= 7
-BEGIN
-    INSERT INTO DoctorAvailability (doctorId, day_of_week, start_time, end_time) VALUES
-    (@doctorId, 'Monday', '09:00:00', '17:00:00'),
-    (@doctorId, 'Tuesday', '09:00:00', '17:00:00'),
-    (@doctorId, 'Wednesday', '09:00:00', '17:00:00'),
-    (@doctorId, 'Thursday', '09:00:00', '17:00:00'),
-    (@doctorId, 'Friday', '09:00:00', '17:00:00');
-    SET @doctorId = @doctorId + 1;
-END;
-GO
-
--- Insert Sample Drug Interactions
-INSERT INTO DrugInteractions (drug1, drug2, severity, description) VALUES
-('Aspirin', 'Warfarin', 'severe', 'Increased risk of bleeding when taken together'),
-('Metformin', 'Alcohol', 'moderate', 'May increase risk of lactic acidosis'),
-('Lisinopril', 'Potassium supplements', 'moderate', 'May cause elevated potassium levels'),
-('Atorvastatin', 'Grapefruit juice', 'mild', 'Grapefruit may increase medication levels'),
-('Simvastatin', 'Amlodipine', 'moderate', 'Increased risk of muscle problems'),
-('Digoxin', 'Furosemide', 'moderate', 'May increase digoxin levels'),
-('Insulin', 'Beta-blockers', 'moderate', 'May mask signs of low blood sugar'),
-('Lithium', 'Diuretics', 'severe', 'May increase lithium toxicity');
-GO
-
--- Index on userId for faster queries
-CREATE INDEX IX_Medications_UserId ON Medications(userId);
-CREATE INDEX IX_Appointments_UserId ON Appointments(userId);
-CREATE INDEX IX_MedicationLogs_MedicationId ON MedicationLogs(medication_id);
-GO
-
--- Index on appointment dates for calendar functionality
-CREATE INDEX IX_Appointments_Date ON Appointments(appointmentDate);
-GO
-
--- Index on active medications
-CREATE INDEX IX_Medications_Active ON Medications(active) WHERE active = 1;
-GO
-
--- Index on doctor availability
-CREATE INDEX IX_DoctorAvailability_DoctorDay ON DoctorAvailability(doctorId, day_of_week);
-GO
-
--- Index on drug interactions for conflict checking
-CREATE INDEX IX_DrugInteractions_Drugs ON DrugInteractions(drug1, drug2);
-GO
-
--- Procedure to get medication compliance rate for a user
-CREATE PROCEDURE GetMedicationCompliance
-    @userId INT
-AS
-BEGIN
-    SELECT 
-        m.medicationId,
-        m.name,
-        COUNT(ml.logId) as total_doses,
-        COUNT(CASE WHEN ml.missed = 0 THEN 1 END) as taken_doses,
-        COUNT(CASE WHEN ml.missed = 1 THEN 1 END) as missed_doses,
-        CASE 
-            WHEN COUNT(ml.logId) > 0 THEN 
-                ROUND((CAST(COUNT(CASE WHEN ml.missed = 0 THEN 1 END) AS FLOAT) / COUNT(ml.logId)) * 100, 2)
-            ELSE 0 
-        END as compliance_rate
-    FROM Medications m
-    LEFT JOIN MedicationLogs ml ON m.medicationId = ml.medication_id
-        AND ml.taken_at >= DATEADD(MONTH, -1, GETDATE())
-    WHERE m.userId = @userId AND m.active = 1
-    GROUP BY m.medicationId, m.name
-    ORDER BY m.name;
-END;
-GO
-
--- Procedure to check upcoming appointments
-CREATE PROCEDURE GetUpcomingAppointments
-    @userId INT,
-    @days INT = 7
-AS
-BEGIN
-    SELECT 
-        a.*,
-        d.name as doctorName,
-        d.specialty,
-        d.location,
-        d.address,
-        DATEDIFF(DAY, GETDATE(), a.appointmentDate) as days_until_appointment
-    FROM Appointments a
-    INNER JOIN Doctors d ON a.doctorId = d.doctorId
-    WHERE a.userId = @userId 
-        AND a.appointmentDate > GETDATE()
-        AND a.appointmentDate <= DATEADD(DAY, @days, GETDATE())
-        AND a.status = 'scheduled'
-    ORDER BY a.appointmentDate ASC;
-END;
-GO
-
--- Procedure to check for drug interactions
-CREATE PROCEDURE CheckDrugInteractions
-    @userId INT
-AS
-BEGIN
-    SELECT DISTINCT
-        m1.name as medication1,
-        m2.name as medication2,
-        di.severity,
-        di.description
-    FROM Medications m1
-    INNER JOIN Medications m2 ON m1.userId = m2.userId AND m1.medicationId != m2.medicationId
-    INNER JOIN DrugInteractions di ON 
-        (LOWER(m1.name) = LOWER(di.drug1) AND LOWER(m2.name) = LOWER(di.drug2))
-        OR (LOWER(m1.name) = LOWER(di.drug2) AND LOWER(m2.name) = LOWER(di.drug1))
-    WHERE m1.userId = @userId 
-        AND m1.active = 1 
-        AND m2.active = 1
-    ORDER BY di.severity DESC, m1.name;
-END;
-GO
-
--- View for medication summary with compliance
-CREATE VIEW MedicationSummary AS
-SELECT 
-    m.*,
-    COALESCE(
-        ROUND(
-            (CAST(COUNT(CASE WHEN ml.missed = 0 THEN 1 END) AS FLOAT) / 
-             NULLIF(COUNT(ml.logId), 0)) * 100, 0
-        ), 0
-    ) as compliance_rate,
-    COUNT(CASE WHEN ml.missed = 1 THEN 1 END) as missed_doses_last_month,
-    MAX(CASE WHEN ml.missed = 0 THEN ml.taken_at END) as last_taken
-FROM Medications m
-LEFT JOIN MedicationLogs ml ON m.medicationId = ml.medication_id
-    AND ml.taken_at >= DATEADD(MONTH, -1, GETDATE())
-WHERE m.active = 1
-GROUP BY 
-    m.medicationId, m.userId, m.name, m.dosage, m.frequency, 
-    m.timing, m.startDate, m.endDate, m.instructions, 
-    m.prescribedBy, m.active, m.qrCode, m.category,
-    m.createdAt, m.updatedAt;
-GO
-
--- View for appointment details with doctor info
-CREATE VIEW AppointmentDetails AS
-SELECT 
-    a.*,
-    d.name as doctorName,
-    d.specialty,
-    d.phone as doctorPhone,
-    d.email as doctorEmail,
-    d.location,
-    d.address,
-    d.rating,
-    CASE 
-        WHEN a.appointmentDate < GETDATE() THEN 'past'
-        WHEN CAST(a.appointmentDate AS DATE) = CAST(GETDATE() AS DATE) THEN 'today'
-        ELSE 'upcoming'
-    END as appointment_status,
-    DATEDIFF(DAY, GETDATE(), a.appointmentDate) as days_until_appointment
-FROM Appointments a
-INNER JOIN Doctors d ON a.doctorId = d.doctorId;
-GO
-
-PRINT 'Database tables, indexes, procedures, and views created successfully!';
-PRINT 'Sample data inserted for Doctors and Drug Interactions.';
-PRINT 'Ready for Module 1: Medication & Appointment Manager testing.';
-
--- Show created tables
-SELECT 'Tables Created:' as Status, TABLE_NAME as Name 
-FROM INFORMATION_SCHEMA.TABLES 
-WHERE TABLE_SCHEMA = 'dbo' 
-AND TABLE_NAME IN ('Medications', 'Doctors', 'Appointments', 'MedicationLogs', 'DrugInteractions', 'DrugConflicts', 'DoctorAvailability');
-
 -- Create CaregiverRelationships table
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CaregiverRelationships' AND xtype='U')
 CREATE TABLE CaregiverRelationships (
     relationshipId INT IDENTITY(1,1) PRIMARY KEY,
     caregiverId INT NOT NULL,
     patientId INT NOT NULL,
-    relationship NVARCHAR(50) NOT NULL, -- spouse, child, parent, sibling, relative, friend, caregiver
+    relationship NVARCHAR(50) NOT NULL, -- spouse, child, parent, etc.
     accessLevel NVARCHAR(20) NOT NULL DEFAULT 'monitoring', -- monitoring, alerts, full
     createdAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     updatedAt DATETIME2 NULL,
-    FOREIGN KEY (caregiverId) REFERENCES Users(userId) ON DELETE CASCADE,
-    FOREIGN KEY (patientId) REFERENCES Users(userId) ON DELETE NO ACTION,
+    FOREIGN KEY (caregiverId) REFERENCES Users(ID) ON DELETE CASCADE,
+    FOREIGN KEY (patientId) REFERENCES Users(ID) ON DELETE NO ACTION,
     UNIQUE(caregiverId, patientId)
 );
 
 -- Create EmergencyContacts table
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='EmergencyContacts' AND xtype='U')
 CREATE TABLE EmergencyContacts (
     contactId INT IDENTITY(1,1) PRIMARY KEY,
     userId INT NOT NULL,
     contactName NVARCHAR(100) NOT NULL,
-    relationship NVARCHAR(50) NOT NULL, -- spouse, child, parent, sibling, relative, friend, neighbor, caregiver, doctor
+    relationship NVARCHAR(50) NOT NULL, -- spouse, child, parent, friend, etc.
     phoneNumber NVARCHAR(20) NOT NULL,
-    email NVARCHAR(100) NULL,
-    priority INT NOT NULL DEFAULT 1, -- 1 (highest) to 5 (lowest)
-    alertDelayHours INT NOT NULL DEFAULT 0, -- 0 = immediate, 1, 2, 4, 24
+    email NVARCHAR(255) NULL,
+    priority INT NOT NULL DEFAULT 1, -- 1 = primary, 2 = secondary, etc.
     isActive BIT NOT NULL DEFAULT 1,
-    lastAlertSent DATETIME2 NULL,
+    alertDelayHours INT NOT NULL DEFAULT 0, -- Hours to wait before alerting this contact
     createdAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     updatedAt DATETIME2 NULL,
-    FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
+    FOREIGN KEY (userId) REFERENCES Users(ID) ON DELETE CASCADE
 );
 
 -- Create CaregiverAlerts table
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CaregiverAlerts' AND xtype='U')
 CREATE TABLE CaregiverAlerts (
     alertId INT IDENTITY(1,1) PRIMARY KEY,
     caregiverId INT NOT NULL,
     patientId INT NOT NULL,
     medicationId INT NULL,
-    alertType NVARCHAR(50) NOT NULL, -- missed_medication, adherence_concern, emergency
+    alertType NVARCHAR(50) NOT NULL, -- medication_missed, medication_taken, emergency, etc.
     alertMessage NVARCHAR(500) NOT NULL,
+    severity NVARCHAR(20) NOT NULL DEFAULT 'info', -- info, warning, critical
+    isRead BIT NOT NULL DEFAULT 0,
     sentAt DATETIME2 NOT NULL DEFAULT GETDATE(),
-    acknowledged BIT NOT NULL DEFAULT 0,
-    acknowledgedAt DATETIME2 NULL,
-    FOREIGN KEY (caregiverId) REFERENCES Users(userId) ON DELETE CASCADE,
-    FOREIGN KEY (patientId) REFERENCES Users(userId) ON DELETE NO ACTION,
+    readAt DATETIME2 NULL,
+    FOREIGN KEY (caregiverId) REFERENCES Users(ID) ON DELETE CASCADE,
+    FOREIGN KEY (patientId) REFERENCES Users(ID) ON DELETE NO ACTION,
     FOREIGN KEY (medicationId) REFERENCES Medications(medicationId) ON DELETE SET NULL
 );
 
 -- Create EmergencyAlerts table
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='EmergencyAlerts' AND xtype='U')
 CREATE TABLE EmergencyAlerts (
     alertId INT IDENTITY(1,1) PRIMARY KEY,
     userId INT NOT NULL,
     contactId INT NOT NULL,
-    medicationId INT NULL,
-    alertLevel INT NOT NULL DEFAULT 1, -- 1-5, higher = more urgent
+    alertType NVARCHAR(50) NOT NULL, -- missed_medication, emergency_button, health_concern
     alertMessage NVARCHAR(500) NOT NULL,
+    sentVia NVARCHAR(20) NOT NULL, -- sms, email, call
+    deliveryStatus NVARCHAR(20) NOT NULL DEFAULT 'pending', -- pending, sent, delivered, failed
     sentAt DATETIME2 NOT NULL DEFAULT GETDATE(),
-    deliveryStatus NVARCHAR(20) DEFAULT 'sent', -- sent, delivered, failed
-    responseReceived BIT NOT NULL DEFAULT 0,
-    responseTime DATETIME2 NULL,
-    FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE,
-    FOREIGN KEY (contactId) REFERENCES EmergencyContacts(contactId) ON DELETE CASCADE,
-    FOREIGN KEY (medicationId) REFERENCES Medications(medicationId) ON DELETE SET NULL
+    deliveredAt DATETIME2 NULL,
+    FOREIGN KEY (userId) REFERENCES Users(ID) ON DELETE CASCADE,
+    FOREIGN KEY (contactId) REFERENCES EmergencyContacts(contactId) ON DELETE NO ACTION
 );
 
 -- Create HealthMetrics table
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='HealthMetrics' AND xtype='U')
 CREATE TABLE HealthMetrics (
     metricId INT IDENTITY(1,1) PRIMARY KEY,
     userId INT NOT NULL,
-    metricType NVARCHAR(50) NOT NULL, -- blood_pressure, weight, blood_sugar, heart_rate, temperature, etc.
+    metricType NVARCHAR(50) NOT NULL, -- weight, blood_pressure, heart_rate, temperature, etc.
     value DECIMAL(10,2) NOT NULL,
     unit NVARCHAR(20) NULL, -- mmHg, kg, mg/dL, bpm, °C, etc.
     notes NVARCHAR(200) NULL,
     recordedAt DATETIME2 NOT NULL,
     createdAt DATETIME2 NOT NULL DEFAULT GETDATE(),
-    FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
+    FOREIGN KEY (userId) REFERENCES Users(ID) ON DELETE CASCADE
 );
 
--- Create AdherenceReports table for caching report data
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='AdherenceReports' AND xtype='U')
+-- Create AdherenceReports table
 CREATE TABLE AdherenceReports (
     reportId INT IDENTITY(1,1) PRIMARY KEY,
     userId INT NOT NULL,
@@ -478,78 +342,33 @@ CREATE TABLE AdherenceReports (
     reportData NVARCHAR(MAX) NOT NULL, -- JSON data
     generatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     expiresAt DATETIME2 NOT NULL,
-    FOREIGN KEY (userId) REFERENCES Users(userId) ON DELETE CASCADE
+    FOREIGN KEY (userId) REFERENCES Users(ID) ON DELETE CASCADE
 );
 
--- Add new columns to existing Medications table if they don't exist
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Medications') AND name = 'category')
-    ALTER TABLE Medications ADD category NVARCHAR(50) NULL; -- chronic, acute, supplement, vitamin, etc.
-
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Medications') AND name = 'reminderEnabled')
-    ALTER TABLE Medications ADD reminderEnabled BIT NOT NULL DEFAULT 1;
-
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Medications') AND name = 'reminderTimes')
-    ALTER TABLE Medications ADD reminderTimes NVARCHAR(200) NULL; -- JSON array of reminder times
-
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Medications') AND name = 'sideEffects')
-    ALTER TABLE Medications ADD sideEffects NVARCHAR(500) NULL;
-
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Medications') AND name = 'foodInstructions')
-    ALTER TABLE Medications ADD foodInstructions NVARCHAR(200) NULL; -- with_food, without_food, empty_stomach
-
--- Add new columns to existing MedicationLogs table if they don't exist
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('MedicationLogs') AND name = 'notes')
-    ALTER TABLE MedicationLogs ADD notes NVARCHAR(200) NULL;
-
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('MedicationLogs') AND name = 'takenAt')
-    ALTER TABLE MedicationLogs ADD takenAt DATETIME2 NULL;
-
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('MedicationLogs') AND name = 'reminderSent')
-    ALTER TABLE MedicationLogs ADD reminderSent BIT NOT NULL DEFAULT 0;
-
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('MedicationLogs') AND name = 'reminderSentAt')
-    ALTER TABLE MedicationLogs ADD reminderSentAt DATETIME2 NULL;
-
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('MedicationLogs') AND name = 'updatedAt')
-    ALTER TABLE MedicationLogs ADD updatedAt DATETIME2 NULL;
-
 -- Create indexes for better performance
-CREATE NONCLUSTERED INDEX IX_CaregiverRelationships_CaregiverId 
-ON CaregiverRelationships(caregiverId) INCLUDE (patientId, relationship, accessLevel);
+CREATE NONCLUSTERED INDEX IX_Medications_UserId ON Medications(userId, active);
+CREATE NONCLUSTERED INDEX IX_MedicationLogs_MedicationId ON MedicationLogs(medicationId, scheduledTime);
+CREATE NONCLUSTERED INDEX IX_MedicationLogs_Scheduling ON MedicationLogs(scheduledTime, taken) WHERE taken = 0;
+CREATE NONCLUSTERED INDEX IX_CaregiverRelations_Caregiver ON CaregiverRelationships(caregiverId);
+CREATE NONCLUSTERED INDEX IX_CaregiverRelations_Patient ON CaregiverRelationships(patientId);
+CREATE NONCLUSTERED INDEX IX_CaregiverAlerts_Caregiver ON CaregiverAlerts(caregiverId, sentAt DESC);
 
-CREATE NONCLUSTERED INDEX IX_CaregiverRelationships_PatientId 
-ON CaregiverRelationships(patientId) INCLUDE (caregiverId, relationship);
+-- Insert Sample Doctors Data
+INSERT INTO Doctors (name, specialty, phone, email, location, address, rating) VALUES
+('Dr. Sarah Lim', 'General Practitioner', '+65 6123 4567', 'sarah.lim@clinic.com', 'Buona Vista', '123 North Buona Vista Road, Singapore 138888', 4.8),
+('Dr. Michael Chen', 'Cardiologist', '+65 6234 5678', 'michael.chen@heart.com', 'Jurong East', '456 Jurong Gateway Road, Singapore 608532', 4.9),
+('Dr. Priya Patel', 'Endocrinologist', '+65 6345 6789', 'priya.patel@diabetes.com', 'Tampines', '789 Tampines Central, Singapore 529509', 4.7),
+('Dr. James Wong', 'Geriatrician', '+65 6456 7890', 'james.wong@senior.com', 'Clementi', '321 Clementi Avenue, Singapore 129588', 4.6);
 
-CREATE NONCLUSTERED INDEX IX_EmergencyContacts_UserId 
-ON EmergencyContacts(userId) INCLUDE (priority, isActive, alertDelayHours);
+-- Insert Sample Drug Interactions
+INSERT INTO DrugInteractions (drug1, drug2, severity, description) VALUES
+('Warfarin', 'Aspirin', 'severe', 'Increased risk of bleeding when taken together'),
+('Metformin', 'Alcohol', 'moderate', 'Alcohol may increase risk of lactic acidosis'),
+('Lisinopril', 'Potassium Supplements', 'moderate', 'May cause dangerously high potassium levels');
 
-CREATE NONCLUSTERED INDEX IX_EmergencyContacts_Priority 
-ON EmergencyContacts(userId, priority, isActive);
-
-CREATE NONCLUSTERED INDEX IX_CaregiverAlerts_CaregiverId 
-ON CaregiverAlerts(caregiverId, sentAt DESC);
-
-CREATE NONCLUSTERED INDEX IX_EmergencyAlerts_UserId 
-ON EmergencyAlerts(userId, sentAt DESC);
-
-CREATE NONCLUSTERED INDEX IX_EmergencyAlerts_ContactId 
-ON EmergencyAlerts(contactId, sentAt DESC);
-
-CREATE NONCLUSTERED INDEX IX_HealthMetrics_UserId 
-ON HealthMetrics(userId, recordedAt DESC);
-
-CREATE NONCLUSTERED INDEX IX_HealthMetrics_Type 
-ON HealthMetrics(userId, metricType, recordedAt DESC);
-
-CREATE NONCLUSTERED INDEX IX_MedicationLogs_Scheduling 
-ON MedicationLogs(medicationId, scheduledTime) INCLUDE (taken, takenAt);
-
-CREATE NONCLUSTERED INDEX IX_MedicationLogs_Reminders 
-ON MedicationLogs(scheduledTime, reminderSent) WHERE taken = 0;
-
--- Create views for common queries
+-- Create Views with column references
 GO
-CREATE OR ALTER VIEW vw_MedicationAdherence AS
+CREATE VIEW vw_MedicationAdherence AS
 SELECT 
     m.userId,
     m.medicationId,
@@ -572,14 +391,15 @@ LEFT JOIN MedicationLogs ml ON m.medicationId = ml.medicationId
     AND ml.scheduledTime >= DATEADD(MONTH, -1, GETDATE())
 WHERE m.active = 1
 GROUP BY m.userId, m.medicationId, m.medicationName, m.dosage, m.frequency, m.category;
-
 GO
+
+-- Caregiver Dashboard View
 CREATE OR ALTER VIEW vw_CaregiverDashboard AS
 SELECT 
     cr.caregiverId,
     cr.patientId,
-    u.firstName + ' ' + u.lastName as patientName,
-    u.email as patientEmail,
+    COALESCE(NULLIF(u.firstName, '') + ' ' + NULLIF(u.lastName, ''), u.Name) as patientName,
+    u.Email as patientEmail,
     cr.relationship,
     cr.accessLevel,
     COUNT(DISTINCT m.medicationId) as activeMedications,
@@ -587,44 +407,14 @@ SELECT
     COUNT(CASE WHEN ma.adherenceRate < 80 THEN 1 END) as concerningMedications,
     MAX(ca.sentAt) as lastAlertSent
 FROM CaregiverRelationships cr
-JOIN Users u ON cr.patientId = u.userId
+JOIN Users u ON cr.patientId = u.ID
 LEFT JOIN Medications m ON cr.patientId = m.userId AND m.active = 1
 LEFT JOIN vw_MedicationAdherence ma ON m.medicationId = ma.medicationId
 LEFT JOIN CaregiverAlerts ca ON cr.caregiverId = ca.caregiverId AND cr.patientId = ca.patientId
-GROUP BY cr.caregiverId, cr.patientId, u.firstName, u.lastName, u.email, cr.relationship, cr.accessLevel;
-
--- Insert sample data for development/testing
-INSERT INTO EmergencyContacts (userId, contactName, relationship, phoneNumber, email, priority, alertDelayHours)
-SELECT 1, 'John Doe', 'spouse', '+65 9123 4567', 'john.doe@example.com', 1, 0
-WHERE NOT EXISTS (SELECT 1 FROM EmergencyContacts WHERE userId = 1 AND contactName = 'John Doe');
-
-INSERT INTO EmergencyContacts (userId, contactName, relationship, phoneNumber, email, priority, alertDelayHours)
-SELECT 1, 'Mary Smith', 'child', '+65 8765 4321', 'mary.smith@example.com', 2, 1
-WHERE NOT EXISTS (SELECT 1 FROM EmergencyContacts WHERE userId = 1 AND contactName = 'Mary Smith');
-
-INSERT INTO HealthMetrics (userId, metricType, value, unit, recordedAt)
-SELECT 1, 'weight', 65.5, 'kg', GETDATE()
-WHERE NOT EXISTS (SELECT 1 FROM HealthMetrics WHERE userId = 1 AND metricType = 'weight' AND CAST(recordedAt AS DATE) = CAST(GETDATE() AS DATE));
-
-INSERT INTO HealthMetrics (userId, metricType, value, unit, recordedAt)
-SELECT 1, 'blood_pressure', 120, 'mmHg', GETDATE()
-WHERE NOT EXISTS (SELECT 1 FROM HealthMetrics WHERE userId = 1 AND metricType = 'blood_pressure' AND CAST(recordedAt AS DATE) = CAST(GETDATE() AS DATE));
-
--- Update existing medications with new fields
-UPDATE Medications 
-SET category = 'chronic', 
-    reminderEnabled = 1,
-    foodInstructions = 'with_food'
-WHERE category IS NULL AND medicationName LIKE '%blood pressure%';
-
-UPDATE Medications 
-SET category = 'supplement', 
-    reminderEnabled = 1,
-    foodInstructions = 'empty_stomach'
-WHERE category IS NULL AND medicationName LIKE '%vitamin%';
-
--- Create stored procedures for common operations
+GROUP BY cr.caregiverId, cr.patientId, u.firstName, u.lastName, u.Name, u.Email, cr.relationship, cr.accessLevel;
 GO
+
+-- Create Stored Procedures
 CREATE OR ALTER PROCEDURE sp_GetPatientAdherence
     @PatientId INT,
     @Days INT = 30
@@ -636,7 +426,7 @@ BEGIN
         m.frequency,
         COUNT(ml.logId) as totalDoses,
         COUNT(CASE WHEN ml.taken = 1 THEN 1 END) as takenDoses,
-        ROUND(COUNT(CASE WHEN ml.taken = 1 THEN 1 END) * 100.0 / COUNT(ml.logId), 2) as adherenceRate
+        ROUND(COUNT(CASE WHEN ml.taken = 1 THEN 1 END) * 100.0 / NULLIF(COUNT(ml.logId), 0), 2) as adherenceRate
     FROM Medications m
     LEFT JOIN MedicationLogs ml ON m.medicationId = ml.medicationId 
         AND ml.scheduledTime >= DATEADD(DAY, -@Days, GETDATE())
@@ -644,8 +434,9 @@ BEGIN
     GROUP BY m.medicationId, m.medicationName, m.dosage, m.frequency
     ORDER BY adherenceRate ASC;
 END;
-
 GO
+
+-- Missed Medications Procedure
 CREATE OR ALTER PROCEDURE sp_GetMissedMedications
     @UserId INT,
     @HoursThreshold INT = 2
@@ -666,9 +457,9 @@ BEGIN
     AND ml.scheduledTime < DATEADD(HOUR, -@HoursThreshold, GETDATE())
     ORDER BY ml.scheduledTime ASC;
 END;
-
--- Create triggers for audit logging
 GO
+
+-- Audit Trigger
 CREATE OR ALTER TRIGGER tr_MedicationLogs_Audit
 ON MedicationLogs
 AFTER UPDATE
@@ -685,7 +476,7 @@ BEGIN
             m.userId,
             i.medicationId,
             'medication_taken',
-            'Patient has taken ' + m.medicationName + ' (' + m.dosage + ') at ' + FORMAT(i.takenAt, 'yyyy-MM-dd HH:mm')
+            'Patient has taken ' + m.medicationName + ' (' + m.dosage + ') at ' + FORMAT(COALESCE(i.takenAt, i.taken_at, GETDATE()), 'yyyy-MM-dd HH:mm')
         FROM inserted i
         JOIN deleted d ON i.logId = d.logId
         JOIN Medications m ON i.medicationId = m.medicationId
@@ -694,13 +485,24 @@ BEGIN
         AND cr.accessLevel IN ('alerts', 'full');
     END;
 END;
+GO
 
-PRINT 'Database initialization completed successfully for Medication Manager Sprint 3';
-PRINT 'Tables created: CaregiverRelationships, EmergencyContacts, CaregiverAlerts, EmergencyAlerts, HealthMetrics, AdherenceReports';
+-- Show what was created
+PRINT 'Database initialization completed successfully for MODULE 1: Medication & Appointment Manager';
+PRINT 'Tables created: Medications, Doctors, Appointments, MedicationLogs, DrugInteractions, DrugConflicts, DoctorAvailability';
+PRINT 'Enhanced tables: CaregiverRelationships, EmergencyContacts, CaregiverAlerts, EmergencyAlerts, HealthMetrics, AdherenceReports';
 PRINT 'Views created: vw_MedicationAdherence, vw_CaregiverDashboard';
-PRINT 'Stored procedures created: sp_GetPatientAdherence, sp_GetMissedMedications';
-PRINT 'Indexes and triggers created for optimal performance';
-PRINT 'Sample data inserted for development/testing';
+PRINT 'Stored procedures: sp_GetPatientAdherence, sp_GetMissedMedications';
+PRINT 'Triggers and indexes created for optimal performance';
+PRINT 'Sample data inserted for Doctors and Drug Interactions';
+
+-- Verify tables exist
+SELECT 'Tables Created' as Status, TABLE_NAME as TableName 
+FROM INFORMATION_SCHEMA.TABLES 
+WHERE TABLE_SCHEMA = 'dbo' 
+AND TABLE_NAME IN ('Medications', 'Doctors', 'Appointments', 'MedicationLogs', 'DrugInteractions', 'DrugConflicts', 'DoctorAvailability', 'CaregiverRelationships', 'EmergencyContacts', 'CaregiverAlerts', 'EmergencyAlerts', 'HealthMetrics', 'AdherenceReports')
+ORDER BY TABLE_NAME;
+
 
 
 -- Module 2: Community events
