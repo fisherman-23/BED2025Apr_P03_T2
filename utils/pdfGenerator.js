@@ -2,50 +2,70 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * PDF Generator Utility
+ * Generates PDF reports for medication adherence and health metrics
+ * Provides professional formatting for sharing with doctors and caregivers
+ */
 class PDFGenerator {
     constructor() {
-        this.primaryColor = '#7161E9';
-        this.secondaryColor = '#D7E961';
-        this.accentColor = '#78B5D3';
-        this.lightColor = '#C1E3F4';
+        this.companyName = 'CircleAge - Senior Care Platform';
+        this.colors = {
+            primary: '#4F46E5',
+            secondary: '#10B981', 
+            danger: '#EF4444',
+            warning: '#F59E0B',
+            text: '#374151',
+            light: '#F9FAFB'
+        };
     }
 
     /**
      * Generates medication adherence report PDF
      * @param {Object} reportData - adherence report data
-     * @param {string} outputPath - optional output file path
-     * @returns {Promise<Buffer>} - PDF buffer
+     * @param {string} outputPath - output file path
+     * @returns {Promise<string>} - path to generated PDF
      */
     async generateAdherenceReport(reportData, outputPath = null) {
         return new Promise((resolve, reject) => {
             try {
                 const doc = new PDFDocument({ margin: 50 });
-                const buffers = [];
+                const filename = outputPath || `adherence_report_${Date.now()}.pdf`;
+                const stream = fs.createWriteStream(filename);
+                
+                doc.pipe(stream);
 
-                // collect PDF data
-                doc.on('data', buffers.push.bind(buffers));
-                doc.on('end', () => {
-                    const pdfData = Buffer.concat(buffers);
-                    
-                    // save to file if path provided
-                    if (outputPath) {
-                        fs.writeFileSync(outputPath, pdfData);
-                    }
-                    
-                    resolve(pdfData);
-                });
-
-                // generate report content
-                this.addAdherenceReportHeader(doc, reportData);
-                this.addPatientInfo(doc, reportData);
-                this.addAdherenceSummary(doc, reportData);
-                this.addMedicationDetails(doc, reportData);
-                this.addAdherenceChart(doc, reportData);
-                this.addRecommendations(doc, reportData);
+                // Header
+                this.addHeader(doc, 'Medication Adherence Report');
+                
+                // Patient Information
+                this.addPatientInfo(doc, reportData.patientInfo);
+                
+                // Summary Statistics
+                this.addSummaryStats(doc, reportData.summary);
+                
+                // Medications List with Adherence
+                this.addMedicationsList(doc, reportData.medications);
+                
+                // Charts and Graphs (text-based for simplicity)
+                this.addAdherenceTrends(doc, reportData.trends);
+                
+                // Recommendations
+                this.addRecommendations(doc, reportData.recommendations);
+                
+                // Footer
                 this.addFooter(doc);
-
+                
                 doc.end();
-
+                
+                stream.on('finish', () => {
+                    resolve(filename);
+                });
+                
+                stream.on('error', (error) => {
+                    reject(error);
+                });
+                
             } catch (error) {
                 reject(error);
             }
@@ -55,639 +75,467 @@ class PDFGenerator {
     /**
      * Generates health metrics report PDF
      * @param {Object} healthData - health metrics data
-     * @param {string} outputPath - optional output file path
-     * @returns {Promise<Buffer>} - PDF buffer
+     * @param {string} outputPath - output file path
+     * @returns {Promise<string>} - path to generated PDF
      */
-    async generateHealthReport(healthData, outputPath = null) {
+    async generateHealthMetricsReport(healthData, outputPath = null) {
         return new Promise((resolve, reject) => {
             try {
                 const doc = new PDFDocument({ margin: 50 });
-                const buffers = [];
-
-                doc.on('data', buffers.push.bind(buffers));
-                doc.on('end', () => {
-                    const pdfData = Buffer.concat(buffers);
-                    
-                    if (outputPath) {
-                        fs.writeFileSync(outputPath, pdfData);
-                    }
-                    
-                    resolve(pdfData);
-                });
-
-                // generate health report content
-                this.addHealthReportHeader(doc, healthData);
-                this.addPatientInfo(doc, healthData);
-                this.addHealthMetricsSummary(doc, healthData);
-                this.addHealthTrends(doc, healthData);
-                this.addHealthInsights(doc, healthData);
-                this.addFooter(doc);
-
-                doc.end();
-
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    /**
-     * Generates comprehensive patient report PDF
-     * @param {Object} patientData - complete patient data
-     * @param {string} outputPath - optional output file path
-     * @returns {Promise<Buffer>} - PDF buffer
-     */
-    async generateComprehensiveReport(patientData, outputPath = null) {
-        return new Promise((resolve, reject) => {
-            try {
-                const doc = new PDFDocument({ margin: 50 });
-                const buffers = [];
-
-                doc.on('data', buffers.push.bind(buffers));
-                doc.on('end', () => {
-                    const pdfData = Buffer.concat(buffers);
-                    
-                    if (outputPath) {
-                        fs.writeFileSync(outputPath, pdfData);
-                    }
-                    
-                    resolve(pdfData);
-                });
-
-                // generate comprehensive report
-                this.addComprehensiveHeader(doc, patientData);
-                this.addPatientInfo(doc, patientData);
+                const filename = outputPath || `health_metrics_${Date.now()}.pdf`;
+                const stream = fs.createWriteStream(filename);
                 
-                // medication section
-                if (patientData.medicationData) {
-                    this.addSectionHeader(doc, 'Medication Adherence');
-                    this.addAdherenceSummary(doc, patientData.medicationData);
-                    this.addMedicationDetails(doc, patientData.medicationData);
-                }
+                doc.pipe(stream);
 
-                // health metrics section
-                if (patientData.healthData) {
-                    this.addSectionHeader(doc, 'Health Metrics');
-                    this.addHealthMetricsSummary(doc, patientData.healthData);
-                    this.addHealthTrends(doc, patientData.healthData);
+                // Header
+                this.addHeader(doc, 'Health Metrics Report');
+                
+                // Patient Information
+                this.addPatientInfo(doc, healthData.patientInfo);
+                
+                // Health Metrics Summary
+                this.addHealthMetricsSummary(doc, healthData.metrics);
+                
+                // Trends Analysis
+                this.addHealthTrends(doc, healthData.trends);
+                
+                // Alert History
+                if (healthData.alerts) {
+                    this.addAlertHistory(doc, healthData.alerts);
                 }
-
-                // appointments section
-                if (patientData.appointmentData) {
-                    this.addSectionHeader(doc, 'Appointments');
-                    this.addAppointmentSummary(doc, patientData.appointmentData);
-                }
-
+                
+                // Footer
                 this.addFooter(doc);
+                
                 doc.end();
-
+                
+                stream.on('finish', () => {
+                    resolve(filename);
+                });
+                
+                stream.on('error', (error) => {
+                    reject(error);
+                });
+                
             } catch (error) {
                 reject(error);
             }
         });
     }
 
-    // Header generators
     /**
-     * Adds adherence report header
-     * @private
+     * Adds header to PDF document
+     * @param {PDFDocument} doc - PDF document
+     * @param {string} title - report title
      */
-    addAdherenceReportHeader(doc, reportData) {
-        // header background
-        doc.rect(0, 0, doc.page.width, 100)
-           .fill(this.primaryColor);
-
-        // title
-        doc.fillColor('white')
-           .fontSize(24)
-           .font('Helvetica-Bold')
-           .text('Medication Adherence Report', 50, 30);
-
-        // date
+    addHeader(doc, title) {
+        doc.fontSize(20)
+           .fillColor(this.colors.primary)
+           .text(this.companyName, 50, 50);
+           
+        doc.fontSize(16)
+           .fillColor(this.colors.text)
+           .text(title, 50, 80);
+           
         doc.fontSize(12)
-           .font('Helvetica')
-           .text(`Generated: ${new Date().toLocaleDateString('en-SG')}`, 50, 60);
-
-        doc.moveDown(3);
-        doc.fillColor('black');
-    }
-
-    /**
-     * Adds health report header
-     * @private
-     */
-    addHealthReportHeader(doc, healthData) {
-        doc.rect(0, 0, doc.page.width, 100)
-           .fill(this.accentColor);
-
-        doc.fillColor('white')
-           .fontSize(24)
-           .font('Helvetica-Bold')
-           .text('Health Metrics Report', 50, 30);
-
-        doc.fontSize(12)
-           .font('Helvetica')
-           .text(`Generated: ${new Date().toLocaleDateString('en-SG')}`, 50, 60);
-
-        doc.moveDown(3);
-        doc.fillColor('black');
-    }
-
-    /**
-     * Adds comprehensive report header
-     * @private
-     */
-    addComprehensiveHeader(doc, patientData) {
-        doc.rect(0, 0, doc.page.width, 100)
-           .fill(this.secondaryColor);
-
-        doc.fillColor('black')
-           .fontSize(24)
-           .font('Helvetica-Bold')
-           .text('Comprehensive Health Report', 50, 30);
-
-        doc.fontSize(12)
-           .font('Helvetica')
-           .text(`Generated: ${new Date().toLocaleDateString('en-SG')}`, 50, 60);
-
-        doc.moveDown(3);
+           .text(`Generated on: ${new Date().toLocaleDateString()}`, 50, 110);
+           
+        // Add line separator
+        doc.strokeColor(this.colors.primary)
+           .lineWidth(2)
+           .moveTo(50, 130)
+           .lineTo(550, 130)
+           .stroke();
+           
+        doc.moveDown(2);
     }
 
     /**
      * Adds patient information section
-     * @private
+     * @param {PDFDocument} doc - PDF document
+     * @param {Object} patientInfo - patient information
      */
-    addPatientInfo(doc, data) {
-        doc.fontSize(16)
-           .font('Helvetica-Bold')
-           .text('Patient Information', { underline: true });
-
-        doc.moveDown(0.5);
-
-        doc.fontSize(12)
-           .font('Helvetica')
-           .text(`Name: ${data.patientName || 'N/A'}`)
-           .text(`Email: ${data.patientEmail || 'N/A'}`)
-           .text(`Report Period: ${data.reportPeriod || 'Last 30 days'}`)
-           .text(`Report Date: ${new Date().toLocaleDateString('en-SG')}`);
-
-        doc.moveDown(1);
-    }
-
-    /**
-     * Adds adherence summary section
-     * @private
-     */
-    addAdherenceSummary(doc, reportData) {
-        doc.fontSize(16)
-           .font('Helvetica-Bold')
-           .text('Adherence Summary', { underline: true });
-
-        doc.moveDown(0.5);
-
-        // overall adherence
-        const adherenceColor = this.getAdherenceColor(reportData.overallAdherence);
+    addPatientInfo(doc, patientInfo) {
         doc.fontSize(14)
-           .font('Helvetica-Bold')
-           .fillColor(adherenceColor)
-           .text(`Overall Adherence: ${reportData.overallAdherence || 0}%`);
-
-        doc.fillColor('black')
-           .fontSize(12)
-           .font('Helvetica');
-
-        // statistics
-        const stats = [
-            `Total Medications: ${reportData.totalMedications || 0}`,
-            `Total Doses Scheduled: ${reportData.totalDoses || 0}`,
-            `Doses Taken: ${reportData.takenDoses || 0}`,
-            `Missed Doses: ${reportData.missedDoses || 0}`,
-            `Adherence Rating: ${this.getAdherenceRating(reportData.overallAdherence)}`
-        ];
-
-        stats.forEach(stat => {
-            doc.text(stat);
-        });
-
-        doc.moveDown(1);
+           .fillColor(this.colors.primary)
+           .text('Patient Information', 50, doc.y);
+           
+        doc.fontSize(12)
+           .fillColor(this.colors.text)
+           .text(`Name: ${patientInfo.firstName} ${patientInfo.lastName}`, 50, doc.y + 10)
+           .text(`Email: ${patientInfo.email}`, 50, doc.y + 5)
+           .text(`Phone: ${patientInfo.phoneNumber}`, 50, doc.y + 5)
+           .text(`Date of Birth: ${new Date(patientInfo.dateOfBirth).toLocaleDateString()}`, 50, doc.y + 5);
+           
+        doc.moveDown(1.5);
     }
 
     /**
-     * Adds medication details section
-     * @private
+     * Adds summary statistics
+     * @param {PDFDocument} doc - PDF document
+     * @param {Object} summary - summary statistics
      */
-    addMedicationDetails(doc, reportData) {
-        doc.fontSize(16)
-           .font('Helvetica-Bold')
-           .text('Medication Details', { underline: true });
-
-        doc.moveDown(0.5);
-
-        if (reportData.medications && reportData.medications.length > 0) {
-            reportData.medications.forEach((med, index) => {
-                doc.fontSize(14)
-                   .font('Helvetica-Bold')
-                   .text(`${index + 1}. ${med.medicationName}`);
-
-                doc.fontSize(12)
-                   .font('Helvetica')
-                   .text(`   Dosage: ${med.dosage}`)
-                   .text(`   Frequency: ${med.frequency}`)
-                   .text(`   Adherence: ${med.adherenceRate || 0}%`)
-                   .text(`   Category: ${med.category || 'General'}`);
-
-                if (med.notes) {
-                    doc.text(`   Notes: ${med.notes}`);
-                }
-
-                doc.moveDown(0.5);
-            });
-        } else {
-            doc.fontSize(12)
-               .font('Helvetica')
-               .text('No medication data available.');
-        }
-
-        doc.moveDown(1);
+    addSummaryStats(doc, summary) {
+        doc.fontSize(14)
+           .fillColor(this.colors.primary)
+           .text('Summary Statistics', 50, doc.y);
+           
+        doc.fontSize(12)
+           .fillColor(this.colors.text)
+           .text(`Overall Adherence Rate: ${summary.overallAdherence}%`, 50, doc.y + 10)
+           .text(`Total Medications: ${summary.totalMedications}`, 50, doc.y + 5)
+           .text(`Active Medications: ${summary.activeMedications}`, 50, doc.y + 5)
+           .text(`Doses Taken: ${summary.dosesTaken}/${summary.totalDoses}`, 50, doc.y + 5)
+           .text(`Missed Doses: ${summary.missedDoses}`, 50, doc.y + 5)
+           .text(`Report Period: ${summary.reportPeriod}`, 50, doc.y + 5);
+           
+        doc.moveDown(1.5);
     }
 
     /**
-     * Adds simple adherence chart representation
-     * @private
+     * Adds medications list with adherence rates
+     * @param {PDFDocument} doc - PDF document
+     * @param {Array} medications - medications data
      */
-    addAdherenceChart(doc, reportData) {
-        doc.fontSize(16)
-           .font('Helvetica-Bold')
-           .text('Adherence Trend', { underline: true });
-
+    addMedicationsList(doc, medications) {
+        doc.fontSize(14)
+           .fillColor(this.colors.primary)
+           .text('Medication Details', 50, doc.y);
+           
         doc.moveDown(0.5);
-
-        if (reportData.adherenceTrend && reportData.adherenceTrend.length > 0) {
-            // simple bar chart representation
-            const chartWidth = 400;
-            const chartHeight = 150;
-            const startX = 80;
-            const startY = doc.y + 20;
-
-            // draw chart background
-            doc.rect(startX, startY, chartWidth, chartHeight)
-               .stroke();
-
-            // draw bars
-            const barWidth = chartWidth / reportData.adherenceTrend.length;
+        
+        medications.forEach((med, index) => {
+            const adherenceColor = med.adherenceRate >= 80 ? this.colors.secondary : 
+                                 med.adherenceRate >= 60 ? this.colors.warning : this.colors.danger;
             
-            reportData.adherenceTrend.forEach((dataPoint, index) => {
-                const barHeight = (dataPoint.adherence / 100) * chartHeight;
-                const barX = startX + (index * barWidth);
-                const barY = startY + chartHeight - barHeight;
-
-                // color based on adherence level
-                const barColor = this.getAdherenceColor(dataPoint.adherence);
-                doc.rect(barX + 2, barY, barWidth - 4, barHeight)
-                   .fill(barColor);
-
-                // add label
-                doc.fillColor('black')
-                   .fontSize(8)
-                   .text(dataPoint.period || `Week ${index + 1}`, barX, startY + chartHeight + 5, {
-                       width: barWidth,
-                       align: 'center'
-                   });
-            });
-
-            doc.y = startY + chartHeight + 30;
-        } else {
             doc.fontSize(12)
-               .font('Helvetica')
-               .text('No trend data available.');
-        }
-
+               .fillColor(this.colors.text)
+               .text(`${index + 1}. ${med.medicationName}`, 50, doc.y + 10)
+               .text(`   Dosage: ${med.dosage}`, 70, doc.y + 5)
+               .text(`   Frequency: ${med.frequency}`, 70, doc.y + 5)
+               .text(`   Prescribed by: ${med.prescribedBy}`, 70, doc.y + 5);
+               
+            doc.fillColor(adherenceColor)
+               .text(`   Adherence Rate: ${med.adherenceRate}% (${med.takenDoses}/${med.totalDoses})`, 70, doc.y + 5);
+               
+            if (med.lastMissed) {
+                doc.fillColor(this.colors.danger)
+                   .text(`   Last Missed: ${new Date(med.lastMissed).toLocaleDateString()}`, 70, doc.y + 5);
+            }
+            
+            doc.moveDown(0.5);
+        });
+        
         doc.moveDown(1);
     }
 
     /**
-     * Adds health metrics summary
-     * @private
+     * Adds adherence trends section
+     * @param {PDFDocument} doc - PDF document
+     * @param {Object} trends - trends data
      */
-    addHealthMetricsSummary(doc, healthData) {
-        doc.fontSize(16)
-           .font('Helvetica-Bold')
-           .text('Health Metrics Summary', { underline: true });
-
-        doc.moveDown(0.5);
-
-        if (healthData.metrics && healthData.metrics.length > 0) {
-            healthData.metrics.forEach(metric => {
-                doc.fontSize(14)
-                   .font('Helvetica-Bold')
-                   .text(metric.type.replace('_', ' ').toUpperCase());
-
-                doc.fontSize(12)
-                   .font('Helvetica')
-                   .text(`   Latest Value: ${metric.latestValue} ${metric.unit || ''}`)
-                   .text(`   Average: ${metric.average} ${metric.unit || ''}`)
-                   .text(`   Range: ${metric.min} - ${metric.max} ${metric.unit || ''}`)
-                   .text(`   Status: ${metric.status || 'Normal'}`);
-
-                doc.moveDown(0.5);
-            });
-        } else {
-            doc.fontSize(12)
-               .font('Helvetica')
-               .text('No health metrics data available.');
+    addAdherenceTrends(doc, trends) {
+        doc.fontSize(14)
+           .fillColor(this.colors.primary)
+           .text('Adherence Trends', 50, doc.y);
+           
+        doc.fontSize(12)
+           .fillColor(this.colors.text)
+           .text(`Weekly Average: ${trends.weeklyAverage}%`, 50, doc.y + 10)
+           .text(`Monthly Average: ${trends.monthlyAverage}%`, 50, doc.y + 5)
+           .text(`Best Week: ${trends.bestWeek}% (Week of ${trends.bestWeekDate})`, 50, doc.y + 5)
+           .text(`Worst Week: ${trends.worstWeek}% (Week of ${trends.worstWeekDate})`, 50, doc.y + 5);
+           
+        if (trends.improvements) {
+            doc.fillColor(this.colors.secondary)
+               .text(`Improvement Trend: ${trends.improvements}`, 50, doc.y + 5);
         }
-
-        doc.moveDown(1);
-    }
-
-    /**
-     * Adds health trends section
-     * @private
-     */
-    addHealthTrends(doc, healthData) {
-        doc.fontSize(16)
-           .font('Helvetica-Bold')
-           .text('Health Trends', { underline: true });
-
-        doc.moveDown(0.5);
-
-        if (healthData.trends && Object.keys(healthData.trends).length > 0) {
-            Object.entries(healthData.trends).forEach(([metricType, trend]) => {
-                doc.fontSize(14)
-                   .font('Helvetica-Bold')
-                   .text(metricType.replace('_', ' ').toUpperCase());
-
-                const trendIcon = trend.direction === 'up' ? '↗' : 
-                                trend.direction === 'down' ? '↘' : '→';
-                
-                doc.fontSize(12)
-                   .font('Helvetica')
-                   .text(`   Trend: ${trendIcon} ${trend.description || 'Stable'}`)
-                   .text(`   Change: ${trend.change || '0'}% over period`);
-
-                doc.moveDown(0.5);
-            });
-        } else {
-            doc.fontSize(12)
-               .font('Helvetica')
-               .text('No trend data available.');
-        }
-
-        doc.moveDown(1);
-    }
-
-    /**
-     * Adds health insights and recommendations
-     * @private
-     */
-    addHealthInsights(doc, healthData) {
-        doc.fontSize(16)
-           .font('Helvetica-Bold')
-           .text('Health Insights', { underline: true });
-
-        doc.moveDown(0.5);
-
-        if (healthData.insights && healthData.insights.length > 0) {
-            healthData.insights.forEach((insight, index) => {
-                doc.fontSize(12)
-                   .font('Helvetica')
-                   .text(`${index + 1}. ${insight}`);
-            });
-        } else {
-            const defaultInsights = [
-                'Continue taking medications as prescribed',
-                'Regular monitoring shows stable health metrics',
-                'Maintain current lifestyle and medication routine'
-            ];
-
-            defaultInsights.forEach((insight, index) => {
-                doc.fontSize(12)
-                   .font('Helvetica')
-                   .text(`${index + 1}. ${insight}`);
-            });
-        }
-
-        doc.moveDown(1);
+        
+        doc.moveDown(1.5);
     }
 
     /**
      * Adds recommendations section
-     * @private
+     * @param {PDFDocument} doc - PDF document
+     * @param {Array} recommendations - recommendations list
      */
-    addRecommendations(doc, reportData) {
-        doc.fontSize(16)
-           .font('Helvetica-Bold')
-           .text('Recommendations', { underline: true });
-
-        doc.moveDown(0.5);
-
-        const adherence = reportData.overallAdherence || 0;
-        let recommendations = [];
-
-        if (adherence >= 90) {
-            recommendations = [
-                'Excellent medication adherence! Continue current routine.',
-                'Consider sharing success strategies with others.',
-                'Maintain regular check-ups with healthcare provider.'
-            ];
-        } else if (adherence >= 70) {
-            recommendations = [
-                'Good adherence with room for improvement.',
-                'Consider setting more frequent reminders.',
-                'Discuss any barriers with healthcare provider.',
-                'Review medication timing and routine.'
-            ];
-        } else {
-            recommendations = [
-                'Low adherence requires immediate attention.',
-                'Schedule urgent consultation with healthcare provider.',
-                'Consider pill organizer or automated dispensing system.',
-                'Involve family members or caregivers for support.',
-                'Review medication side effects and concerns.'
-            ];
-        }
-
-        recommendations.forEach((rec, index) => {
-            doc.fontSize(12)
-               .font('Helvetica')
-               .text(`${index + 1}. ${rec}`);
-        });
-
-        doc.moveDown(1);
-    }
-
-    /**
-     * Adds appointment summary section
-     * @private
-     */
-    addAppointmentSummary(doc, appointmentData) {
+    addRecommendations(doc, recommendations) {
         doc.fontSize(14)
-           .font('Helvetica-Bold')
-           .text('Recent Appointments');
-
-        doc.moveDown(0.5);
-
-        if (appointmentData.appointments && appointmentData.appointments.length > 0) {
-            appointmentData.appointments.forEach(apt => {
-                doc.fontSize(12)
-                   .font('Helvetica')
-                   .text(`Date: ${new Date(apt.appointmentDate).toLocaleDateString('en-SG')}`)
-                   .text(`Doctor: ${apt.doctorName}`)
-                   .text(`Specialty: ${apt.specialty}`)
-                   .text(`Status: ${apt.status}`)
-                   .text(`Notes: ${apt.notes || 'No notes'}`);
-
-                doc.moveDown(0.5);
-            });
-        } else {
-            doc.fontSize(12)
-               .font('Helvetica')
-               .text('No recent appointments.');
-        }
-
-        doc.moveDown(1);
+           .fillColor(this.colors.primary)
+           .text('Recommendations', 50, doc.y);
+           
+        doc.fontSize(12)
+           .fillColor(this.colors.text);
+           
+        recommendations.forEach((rec, index) => {
+            const priority = rec.priority || 'medium';
+            const priorityColor = priority === 'high' ? this.colors.danger :
+                                priority === 'medium' ? this.colors.warning : this.colors.text;
+            
+            doc.fillColor(priorityColor)
+               .text(`${index + 1}. [${priority.toUpperCase()}] ${rec.title}`, 50, doc.y + 10);
+               
+            doc.fillColor(this.colors.text)
+               .text(`   ${rec.description}`, 70, doc.y + 5);
+        });
+        
+        doc.moveDown(1.5);
     }
 
     /**
-     * Adds section header
-     * @private
+     * Adds health metrics summary
+     * @param {PDFDocument} doc - PDF document
+     * @param {Object} metrics - health metrics data
      */
-    addSectionHeader(doc, title) {
-        // add page break if needed
-        if (doc.y > 650) {
-            doc.addPage();
+    addHealthMetricsSummary(doc, metrics) {
+        doc.fontSize(14)
+           .fillColor(this.colors.primary)
+           .text('Recent Health Metrics', 50, doc.y);
+           
+        Object.keys(metrics).forEach(metricType => {
+            const metric = metrics[metricType];
+            if (metric.latest) {
+                doc.fontSize(12)
+                   .fillColor(this.colors.text)
+                   .text(`${this.formatMetricName(metricType)}:`, 50, doc.y + 10)
+                   .text(`   Latest: ${metric.latest.value} ${metric.latest.unit || ''}`, 70, doc.y + 5)
+                   .text(`   Date: ${new Date(metric.latest.recordedAt).toLocaleDateString()}`, 70, doc.y + 5);
+                   
+                if (metric.trend) {
+                    const trendColor = metric.trend === 'improving' ? this.colors.secondary :
+                                     metric.trend === 'worsening' ? this.colors.danger : this.colors.text;
+                    doc.fillColor(trendColor)
+                       .text(`   Trend: ${metric.trend}`, 70, doc.y + 5);
+                }
+            }
+        });
+        
+        doc.moveDown(1.5);
+    }
+
+    /**
+     * Adds health trends analysis
+     * @param {PDFDocument} doc - PDF document
+     * @param {Object} trends - health trends data
+     */
+    addHealthTrends(doc, trends) {
+        doc.fontSize(14)
+           .fillColor(this.colors.primary)
+           .text('Health Trends Analysis', 50, doc.y);
+           
+        doc.fontSize(12)
+           .fillColor(this.colors.text);
+           
+        if (trends.bloodPressure) {
+            doc.text('Blood Pressure Trend:', 50, doc.y + 10)
+               .text(`   Average: ${trends.bloodPressure.average}`, 70, doc.y + 5)
+               .text(`   Range: ${trends.bloodPressure.min} - ${trends.bloodPressure.max}`, 70, doc.y + 5);
         }
+        
+        if (trends.weight) {
+            doc.text('Weight Trend:', 50, doc.y + 10)
+               .text(`   Current: ${trends.weight.current} kg`, 70, doc.y + 5)
+               .text(`   Change: ${trends.weight.change > 0 ? '+' : ''}${trends.weight.change} kg`, 70, doc.y + 5);
+        }
+        
+        doc.moveDown(1.5);
+    }
 
-        doc.fontSize(18)
-           .font('Helvetica-Bold')
-           .fillColor(this.primaryColor)
-           .text(title, { underline: true });
-
-        doc.fillColor('black');
+    /**
+     * Adds alert history section
+     * @param {PDFDocument} doc - PDF document
+     * @param {Array} alerts - alert history
+     */
+    addAlertHistory(doc, alerts) {
+        doc.fontSize(14)
+           .fillColor(this.colors.primary)
+           .text('Recent Alerts', 50, doc.y);
+           
+        doc.fontSize(10)
+           .fillColor(this.colors.text);
+           
+        alerts.slice(0, 10).forEach(alert => {
+            const alertColor = alert.severity === 'critical' ? this.colors.danger :
+                             alert.severity === 'warning' ? this.colors.warning : this.colors.text;
+            
+            doc.fillColor(alertColor)
+               .text(`${new Date(alert.sentAt).toLocaleDateString()} - ${alert.alertType}: ${alert.alertMessage}`, 50, doc.y + 8);
+        });
+        
         doc.moveDown(1);
     }
 
     /**
-     * Adds footer to the document
-     * @private
+     * Adds footer to PDF document
+     * @param {PDFDocument} doc - PDF document
      */
     addFooter(doc) {
-        const pages = doc.bufferedPageRange();
+        const pageHeight = doc.page.height;
         
+        doc.fontSize(10)
+           .fillColor(this.colors.text)
+           .text('This report is generated automatically by CircleAge platform.', 50, pageHeight - 80)
+           .text('For medical decisions, please consult with your healthcare provider.', 50, pageHeight - 65)
+           .text(`Report ID: RPT-${Date.now()}`, 50, pageHeight - 50);
+           
+        // Add page numbers
+        const pages = doc.bufferedPageRange();
         for (let i = 0; i < pages.count; i++) {
             doc.switchToPage(i);
-            
-            // footer line
-            doc.moveTo(50, doc.page.height - 50)
-               .lineTo(doc.page.width - 50, doc.page.height - 50)
-               .stroke();
-
-            // footer text
             doc.fontSize(10)
-               .font('Helvetica')
-               .fillColor('gray')
-               .text(
-                   'CircleAge - Your Health Companion | Generated automatically',
-                   50,
-                   doc.page.height - 40,
-                   { align: 'left' }
-               );
-
-            // page number
-            doc.text(
-                `Page ${i + 1} of ${pages.count}`,
-                50,
-                doc.page.height - 40,
-                { align: 'right' }
-            );
+               .fillColor(this.colors.text)
+               .text(`Page ${i + 1} of ${pages.count}`, 500, pageHeight - 50);
         }
     }
 
-    // Utility methods
     /**
-     * Gets color based on adherence percentage
-     * @private
+     * Formats metric type names for display
+     * @param {string} metricType - raw metric type
+     * @returns {string} - formatted name
      */
-    getAdherenceColor(adherence) {
-        if (adherence >= 90) return '#10b981'; // green
-        if (adherence >= 70) return '#f59e0b'; // yellow
-        return '#ef4444'; // red
+    formatMetricName(metricType) {
+        const names = {
+            'blood_pressure': 'Blood Pressure',
+            'weight': 'Weight',
+            'blood_sugar': 'Blood Sugar',
+            'heart_rate': 'Heart Rate',
+            'temperature': 'Temperature',
+            'cholesterol': 'Cholesterol',
+            'bmi': 'BMI'
+        };
+        
+        return names[metricType] || metricType.replace('_', ' ').toUpperCase();
     }
 
     /**
-     * Gets adherence rating text
-     * @private
+     * Generates caregiver dashboard PDF report
+     * @param {Object} dashboardData - caregiver dashboard data
+     * @param {string} outputPath - output file path
+     * @returns {Promise<string>} - path to generated PDF
      */
-    getAdherenceRating(adherence) {
-        if (adherence >= 90) return 'Excellent';
-        if (adherence >= 80) return 'Good';
-        if (adherence >= 70) return 'Fair';
-        if (adherence >= 60) return 'Poor';
-        return 'Critical';
-    }
-
-    /**
-     * Generates quick summary report
-     * @param {Object} summaryData - summary data
-     * @returns {Promise<Buffer>} - PDF buffer
-     */
-    async generateQuickSummary(summaryData) {
+    async generateCaregiverReport(dashboardData, outputPath = null) {
         return new Promise((resolve, reject) => {
             try {
-                const doc = new PDFDocument({ margin: 50, size: 'A4' });
-                const buffers = [];
-
-                doc.on('data', buffers.push.bind(buffers));
-                doc.on('end', () => {
-                    resolve(Buffer.concat(buffers));
-                });
-
-                // quick summary header
-                doc.fontSize(20)
-                   .font('Helvetica-Bold')
-                   .fillColor(this.primaryColor)
-                   .text('Quick Health Summary', { align: 'center' });
-
-                doc.moveDown(1);
-                doc.fillColor('black');
-
-                // patient info
-                doc.fontSize(14)
-                   .font('Helvetica-Bold')
-                   .text(`Patient: ${summaryData.patientName}`);
-
-                doc.fontSize(12)
-                   .font('Helvetica')
-                   .text(`Date: ${new Date().toLocaleDateString('en-SG')}`);
-
-                doc.moveDown(1);
-
-                // key metrics
-                const metrics = [
-                    `Medication Adherence: ${summaryData.adherence || 0}%`,
-                    `Active Medications: ${summaryData.activeMedications || 0}`,
-                    `Upcoming Appointments: ${summaryData.upcomingAppointments || 0}`,
-                    `Last Health Check: ${summaryData.lastHealthCheck || 'N/A'}`
-                ];
-
-                metrics.forEach(metric => {
-                    doc.text(`• ${metric}`);
-                });
-
-                doc.moveDown(1);
-
-                // status
-                const status = summaryData.adherence >= 80 ? 'Good' : 
-                              summaryData.adherence >= 60 ? 'Needs Attention' : 'Critical';
+                const doc = new PDFDocument({ margin: 50 });
+                const filename = outputPath || `caregiver_report_${Date.now()}.pdf`;
+                const stream = fs.createWriteStream(filename);
                 
-                doc.fontSize(14)
-                   .font('Helvetica-Bold')
-                   .fillColor(this.getAdherenceColor(summaryData.adherence))
-                   .text(`Overall Status: ${status}`);
+                doc.pipe(stream);
 
+                // Header
+                this.addHeader(doc, 'Caregiver Monitoring Report');
+                
+                // Caregiver Information
+                doc.fontSize(14)
+                   .fillColor(this.colors.primary)
+                   .text('Caregiver Information', 50, doc.y);
+                   
+                doc.fontSize(12)
+                   .fillColor(this.colors.text)
+                   .text(`Caregiver: ${dashboardData.caregiverInfo.name}`, 50, doc.y + 10)
+                   .text(`Patients Under Care: ${dashboardData.patients.length}`, 50, doc.y + 5);
+                
+                doc.moveDown(1);
+                
+                // Patients Overview
+                dashboardData.patients.forEach(patient => {
+                    doc.fontSize(13)
+                       .fillColor(this.colors.primary)
+                       .text(`Patient: ${patient.firstName} ${patient.lastName}`, 50, doc.y + 10);
+                       
+                    doc.fontSize(12)
+                       .fillColor(this.colors.text)
+                       .text(`Overall Compliance: ${patient.overallCompliance}%`, 70, doc.y + 5)
+                       .text(`Active Medications: ${patient.activeMedications}`, 70, doc.y + 5)
+                       .text(`Recent Alerts: ${patient.recentAlerts}`, 70, doc.y + 5);
+                       
+                    if (patient.lastMissedMedication) {
+                        doc.fillColor(this.colors.danger)
+                           .text(`Last Missed: ${patient.lastMissedMedication}`, 70, doc.y + 5);
+                    }
+                    
+                    doc.moveDown(0.5);
+                });
+                
+                // Footer
+                this.addFooter(doc);
+                
+                doc.end();
+                
+                stream.on('finish', () => {
+                    resolve(filename);
+                });
+                
+                stream.on('error', (error) => {
+                    reject(error);
+                });
+                
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
+     * Cleans up generated PDF files (optional cleanup utility)
+     * @param {string} filePath - path to PDF file
+     */
+    async cleanupPDF(filePath) {
+        try {
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+                console.log(`PDF file cleaned up: ${filePath}`);
+            }
+        } catch (error) {
+            console.error('Error cleaning up PDF:', error);
+        }
+    }
+
+    /**
+     * Gets PDF file as buffer for direct response
+     * @param {Object} reportData - report data
+     * @param {string} reportType - type of report ('adherence', 'health', 'caregiver')
+     * @returns {Promise<Buffer>} - PDF buffer
+     */
+    async generatePDFBuffer(reportData, reportType = 'adherence') {
+        return new Promise((resolve, reject) => {
+            try {
+                const doc = new PDFDocument({ margin: 50 });
+                const chunks = [];
+                
+                doc.on('data', (chunk) => {
+                    chunks.push(chunk);
+                });
+                
+                doc.on('end', () => {
+                    const buffer = Buffer.concat(chunks);
+                    resolve(buffer);
+                });
+                
+                // Generate content based on report type
+                switch (reportType) {
+                    case 'adherence':
+                        this.addHeader(doc, 'Medication Adherence Report');
+                        this.addPatientInfo(doc, reportData.patientInfo);
+                        this.addSummaryStats(doc, reportData.summary);
+                        this.addMedicationsList(doc, reportData.medications);
+                        break;
+                    case 'health':
+                        this.addHeader(doc, 'Health Metrics Report');
+                        this.addPatientInfo(doc, reportData.patientInfo);
+                        this.addHealthMetricsSummary(doc, reportData.metrics);
+                        break;
+                    case 'caregiver':
+                        this.addHeader(doc, 'Caregiver Monitoring Report');
+                        // Add caregiver-specific content
+                        break;
+                    default:
+                        throw new Error('Invalid report type');
+                }
+                
                 this.addFooter(doc);
                 doc.end();
-
+                
             } catch (error) {
                 reject(error);
             }

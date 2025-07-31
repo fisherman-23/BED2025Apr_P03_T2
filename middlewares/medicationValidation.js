@@ -1,57 +1,83 @@
+/**
+ * Medication Validation Middleware
+ * Validates medication-related requests with comprehensive error handling
+ * Ensures data integrity for medication management system
+ */
+
+/**
+ * Validates medication data for creation and updates
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object  
+ * @param {Function} next - Express next middleware function
+ */
 const validateMedicationData = (req, res, next) => {
-    const { name, dosage, frequency, timing, startDate } = req.body;
+    const { medicationName, dosage, frequency, timing, prescribedBy, startDate, endDate, category } = req.body;
     const errors = [];
 
-    // medication name validation
-    if (!name || typeof name !== 'string' || name.trim().length < 2) {
-        errors.push('Medication name is required and must be at least 2 characters long');
+    // Medication name validation
+    if (!medicationName || typeof medicationName !== 'string' || medicationName.trim().length === 0) {
+        errors.push('Medication name is required and must be a valid string');
+    } else if (medicationName.length > 255) {
+        errors.push('Medication name must not exceed 255 characters');
     }
 
-    // dosage validation
-    if (!dosage || typeof dosage !== 'string' || dosage.trim().length < 1) {
-        errors.push('Dosage is required (e.g., "10mg", "1 tablet")');
+    // Dosage validation
+    if (!dosage || typeof dosage !== 'string' || dosage.trim().length === 0) {
+        errors.push('Dosage is required and must be a valid string');
+    } else if (dosage.length > 100) {
+        errors.push('Dosage must not exceed 100 characters');
     }
 
-    // frequency validation
-    const validFrequencies = ['once daily', 'twice daily', 'three times daily', 'four times daily', 'every 2 hours', 'every 4 hours', 'every 6 hours', 'every 8 hours', 'every 12 hours', 'as needed', 'weekly', 'monthly'];
-    if (!frequency || !validFrequencies.some(f => f.toLowerCase() === frequency.toLowerCase())) {
-        errors.push('Invalid frequency. Must be one of: ' + validFrequencies.join(', '));
+    // Frequency validation
+    const validFrequencies = ['once_daily', 'twice_daily', 'three_times_daily', 'four_times_daily', 'as_needed'];
+    if (!frequency || !validFrequencies.includes(frequency)) {
+        errors.push('Valid frequency is required. Options: ' + validFrequencies.join(', '));
     }
 
-    // timing validation (should be in HH:MM format or multiple times separated by commas)
+    // Timing validation
     if (!timing || typeof timing !== 'string') {
-        errors.push('Timing is required (e.g., "08:00" or "08:00,20:00")');
+        errors.push('Timing is required and must be a valid time string');
     } else {
-        const times = timing.split(',');
-        const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-        
-        for (let time of times) {
-            if (!timeRegex.test(time.trim())) {
-                errors.push('Invalid time format. Use HH:MM format (e.g., "08:00")');
-                break;
-            }
+        // Validate time format (HH:MM)
+        const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        if (!timeRegex.test(timing)) {
+            errors.push('Timing must be in HH:MM format (e.g., 08:30)');
         }
     }
 
-    // start date validation
-    if (!startDate) {
-        errors.push('Start date is required');
-    } else {
+    // Prescribing doctor validation
+    if (!prescribedBy || typeof prescribedBy !== 'string' || prescribedBy.trim().length === 0) {
+        errors.push('Prescribing doctor is required');
+    } else if (prescribedBy.length > 255) {
+        errors.push('Prescribing doctor name must not exceed 255 characters');
+    }
+
+    // Date validations
+    if (startDate) {
         const start = new Date(startDate);
         if (isNaN(start.getTime())) {
             errors.push('Invalid start date format');
         }
     }
 
-    // end date validation (optional but if provided must be valid)
-    if (req.body.endDate) {
-        const end = new Date(req.body.endDate);
-        const start = new Date(startDate);
+    if (endDate) {
+        const end = new Date(endDate);
         if (isNaN(end.getTime())) {
             errors.push('Invalid end date format');
-        } else if (end <= start) {
-            errors.push('End date must be after start date');
         }
+        
+        if (startDate && !isNaN(new Date(startDate).getTime())) {
+            if (new Date(endDate) <= new Date(startDate)) {
+                errors.push('End date must be after start date');
+            }
+        }
+    }
+
+    // Category validation (optional)
+    if (category && typeof category !== 'string') {
+        errors.push('Category must be a string');
+    } else if (category && category.length > 100) {
+        errors.push('Category must not exceed 100 characters');
     }
 
     if (errors.length > 0) {
@@ -65,9 +91,15 @@ const validateMedicationData = (req, res, next) => {
     next();
 };
 
+/**
+ * Validates medication ID parameter
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
 const validateMedicationId = (req, res, next) => {
     const { medicationId } = req.params;
-    
+
     if (!medicationId || isNaN(parseInt(medicationId))) {
         return res.status(400).json({
             status: 'error',
@@ -75,15 +107,22 @@ const validateMedicationId = (req, res, next) => {
         });
     }
 
+    req.medicationId = parseInt(medicationId);
     next();
 };
 
+/**
+ * Validates medication update data (allows partial updates)
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
 const validateMedicationUpdate = (req, res, next) => {
     const updateData = req.body;
     const errors = [];
 
-    // check if at least one field is provided for update
-    const allowedFields = ['name', 'dosage', 'frequency', 'timing', 'instructions', 'prescribedBy', 'active', 'endDate'];
+    // Check if at least one field is provided for update
+    const allowedFields = ['medicationName', 'dosage', 'frequency', 'timing', 'startDate', 'endDate', 'instructions', 'prescribedBy', 'category', 'active'];
     const providedFields = Object.keys(updateData).filter(field => allowedFields.includes(field));
     
     if (providedFields.length === 0) {
@@ -94,43 +133,64 @@ const validateMedicationUpdate = (req, res, next) => {
         });
     }
 
-    // validate provided fields
-    if (updateData.name && (typeof updateData.name !== 'string' || updateData.name.trim().length < 2)) {
-        errors.push('Medication name must be at least 2 characters long');
-    }
-
-    if (updateData.dosage && (typeof updateData.dosage !== 'string' || updateData.dosage.trim().length < 1)) {
-        errors.push('Dosage cannot be empty');
-    }
-
-    if (updateData.frequency) {
-        const validFrequencies = ['once daily', 'twice daily', 'three times daily', 'four times daily', 'every 2 hours', 'every 4 hours', 'every 6 hours', 'every 8 hours', 'every 12 hours', 'as needed', 'weekly', 'monthly'];
-        if (!validFrequencies.some(f => f.toLowerCase() === updateData.frequency.toLowerCase())) {
-            errors.push('Invalid frequency. Must be one of: ' + validFrequencies.join(', '));
+    // Validate each provided field
+    if (updateData.medicationName !== undefined) {
+        if (!updateData.medicationName || typeof updateData.medicationName !== 'string' || updateData.medicationName.trim().length === 0) {
+            errors.push('Medication name must be a valid string');
+        } else if (updateData.medicationName.length > 255) {
+            errors.push('Medication name must not exceed 255 characters');
         }
     }
 
-    if (updateData.timing) {
-        const times = updateData.timing.split(',');
-        const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-        
-        for (let time of times) {
-            if (!timeRegex.test(time.trim())) {
-                errors.push('Invalid time format. Use HH:MM format (e.g., "08:00")');
-                break;
-            }
+    if (updateData.dosage !== undefined) {
+        if (!updateData.dosage || typeof updateData.dosage !== 'string' || updateData.dosage.trim().length === 0) {
+            errors.push('Dosage must be a valid string');
+        } else if (updateData.dosage.length > 100) {
+            errors.push('Dosage must not exceed 100 characters');
         }
     }
 
-    if (updateData.endDate) {
+    if (updateData.frequency !== undefined) {
+        const validFrequencies = ['once_daily', 'twice_daily', 'three_times_daily', 'four_times_daily', 'as_needed'];
+        if (!validFrequencies.includes(updateData.frequency)) {
+            errors.push('Valid frequency is required. Options: ' + validFrequencies.join(', '));
+        }
+    }
+
+    if (updateData.timing !== undefined) {
+        const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        if (!updateData.timing || !timeRegex.test(updateData.timing)) {
+            errors.push('Timing must be in HH:MM format');
+        }
+    }
+
+    if (updateData.prescribedBy !== undefined) {
+        if (!updateData.prescribedBy || typeof updateData.prescribedBy !== 'string' || updateData.prescribedBy.trim().length === 0) {
+            errors.push('Prescribing doctor is required');
+        } else if (updateData.prescribedBy.length > 255) {
+            errors.push('Prescribing doctor name must not exceed 255 characters');
+        }
+    }
+
+    // Date validations
+    if (updateData.startDate !== undefined) {
+        const start = new Date(updateData.startDate);
+        if (isNaN(start.getTime())) {
+            errors.push('Invalid start date format');
+        }
+    }
+
+    if (updateData.endDate !== undefined) {
         const end = new Date(updateData.endDate);
         if (isNaN(end.getTime())) {
             errors.push('Invalid end date format');
         }
     }
 
-    if (updateData.active !== undefined && typeof updateData.active !== 'boolean') {
-        errors.push('Active status must be boolean (true/false)');
+    if (updateData.active !== undefined) {
+        if (typeof updateData.active !== 'boolean') {
+            errors.push('Active status must be a boolean value');
+        }
     }
 
     if (errors.length > 0) {
@@ -144,42 +204,67 @@ const validateMedicationUpdate = (req, res, next) => {
     next();
 };
 
+/**
+ * Validates mark as taken request
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
 const validateMarkAsTaken = (req, res, next) => {
-    const { logId } = req.params;
-    const { notes } = req.body;
+    const { takenAt, notes } = req.body;
+    const errors = [];
 
-    if (!logId || isNaN(parseInt(logId))) {
-        return res.status(400).json({
-            status: 'error',
-            message: 'Invalid medication log ID'
-        });
+    // Validate taken time (optional, defaults to current time)
+    if (takenAt) {
+        const takenTime = new Date(takenAt);
+        if (isNaN(takenTime.getTime())) {
+            errors.push('Invalid taken time format');
+        } else if (takenTime > new Date()) {
+            errors.push('Taken time cannot be in the future');
+        }
     }
 
-    // notes are optional but if provided should be reasonable length
-    if (notes && (typeof notes !== 'string' || notes.length > 500)) {
+    // Validate notes (optional)
+    if (notes && typeof notes !== 'string') {
+        errors.push('Notes must be a string');
+    } else if (notes && notes.length > 500) {
+        errors.push('Notes must not exceed 500 characters');
+    }
+
+    if (errors.length > 0) {
         return res.status(400).json({
             status: 'error',
-            message: 'Notes must be a string with maximum 500 characters'
+            message: 'Validation failed',
+            errors
         });
     }
 
     next();
 };
 
+/**
+ * Validates reminder request parameters
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
 const validateReminderRequest = (req, res, next) => {
-    const { medicationId, reminderTime } = req.body;
+    const { hours, limit } = req.query;
     const errors = [];
 
-    if (!medicationId || isNaN(parseInt(medicationId))) {
-        errors.push('Valid medication ID is required');
+    // Validate hours parameter
+    if (hours) {
+        const hoursNum = parseInt(hours);
+        if (isNaN(hoursNum) || hoursNum < 1 || hoursNum > 168) { // Max 1 week
+            errors.push('Hours must be between 1 and 168 (1 week)');
+        }
     }
 
-    if (reminderTime) {
-        const reminderDate = new Date(reminderTime);
-        if (isNaN(reminderDate.getTime())) {
-            errors.push('Invalid reminder time format');
-        } else if (reminderDate <= new Date()) {
-            errors.push('Reminder time must be in the future');
+    // Validate limit parameter
+    if (limit) {
+        const limitNum = parseInt(limit);
+        if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
+            errors.push('Limit must be between 1 and 100');
         }
     }
 
@@ -194,19 +279,25 @@ const validateReminderRequest = (req, res, next) => {
     next();
 };
 
+/**
+ * Validates analytics request parameters
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
 const validateAnalyticsRequest = (req, res, next) => {
-    const { period, startDate, endDate } = req.query;
+    const { period, startDate, endDate, medicationId } = req.query;
     const errors = [];
 
-    // validate period if provided
+    // Validate period parameter
     if (period) {
-        const validPeriods = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'];
+        const validPeriods = ['daily', 'weekly', 'monthly', 'yearly'];
         if (!validPeriods.includes(period)) {
-            errors.push('Invalid period. Must be one of: ' + validPeriods.join(', '));
+            errors.push('Period must be one of: ' + validPeriods.join(', '));
         }
     }
 
-    // validate date range if provided
+    // Validate date range if provided
     if (startDate || endDate) {
         if (startDate && isNaN(new Date(startDate).getTime())) {
             errors.push('Invalid start date format');
@@ -217,6 +308,11 @@ const validateAnalyticsRequest = (req, res, next) => {
         if (startDate && endDate && new Date(startDate) >= new Date(endDate)) {
             errors.push('Start date must be before end date');
         }
+    }
+
+    // Validate medication ID if provided
+    if (medicationId && isNaN(parseInt(medicationId))) {
+        errors.push('Medication ID must be a valid number');
     }
 
     if (errors.length > 0) {
