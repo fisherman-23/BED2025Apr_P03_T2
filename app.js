@@ -553,7 +553,7 @@ app.post(
   "/api/emergency-contacts",
   authenticateJWT,
   validateEmergencyContactData,
-  emergencyContactsController.addEmergencyContact
+  emergencyContactsController.createEmergencyContact
 );
 
 /**
@@ -599,10 +599,10 @@ app.delete(
  *       - bearerAuth: []
  */
 app.post(
-  "/api/emergency-contacts/test-alert/:contactId",
+  "/api/emergency-contacts/:contactId/test",
   authenticateJWT,
   validateContactId,
-  emergencyContactsController.testEmergencyAlert
+  emergencyContactsController.testEmergencyContact
 );
 
 /**
@@ -620,10 +620,6 @@ app.get(
   validateAlertHistoryRequest,
   emergencyContactsController.getEmergencyAlertHistory
 );
-
-// =============================================================================
-// HEALTH METRICS ROUTES - TRACKING AND ANALYTICS
-// =============================================================================
 
 /**
  * @swagger
