@@ -349,6 +349,19 @@ createBtn.addEventListener("click", async () => {
     }
 
     toastSuccess("Announcement posted!");
+    
+    document.getElementById("annTitle").value = "";
+    document.getElementById("annContent").value = "";
+    imageInput.value = "";
+    imagePreview.src = 'communityEvents/assets/plus-icon.svg';
+    imagePreview.classList.remove(
+      'w-24','h-24',
+      'object-contain',
+      'rounded-md',
+      'max-w-full','max-h-full','rounded-lg','p-2'
+    );
+    imagePreview.classList.add('w-6','h-6');
+    
     closeAnnouncementModal();
     loadAnnouncements(); 
   } catch (err) {

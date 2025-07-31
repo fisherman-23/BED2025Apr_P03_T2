@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Contacts - CircleAge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/medicationManager/style.css">
+    
+    <style>
+        .navbar {
+            background: linear-gradient(to right, #D7E961, #78B5D3);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-icons {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .nav-icons img {
+            width: 2.5rem;
+            height: 2.5rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-icons img:hover {
+            transform: scale(1.1);
+        }
+        
+        .team-card {
+            background: #FFFFFF;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-team-primary {
+            background: linear-gradient(to right, #D7E961, #78B5D3);
+            color: #000000;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-team-secondary {
+            background-color: #7161E9;
+            color: #FFFFFF;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-team-tertiary {
+            background-color: #C1E3F4;
+            color: #000000;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-danger {
+            background-color: #ef4444;
+            color: #FFFFFF;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-card {
+            border-left: 4px solid #7161E9;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-card.inactive {
+            opacity: 0.6;
+            border-left-color: #9ca3af;
+        }
+        
+        .priority-1 { border-left-color: #ef4444; }
+        .priority-2 { border-left-color: #f59e0b; }
+        .priority-3 { border-left-color: #10b981; }
+        .priority-4 { border-left-color: #3b82f6; }
+        .priority-5 { border-left-color: #8b5cf6; }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #78B5D3;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #78B5D3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="flex flex-col h-screen">
+        <nav class="navbar">
+            <img src="/assets/Logo.svg" alt="Logo">
+            <div class="nav-icons">
+                <a onclick="window.location.href='index.html';"><img src="/assets/icons/NAV-House.svg" alt="home"></a>
+                <a onclick="window.location.href='medicationManager.html';"><img src="/assets/icons/NAV-Hospital.svg" alt="medical"></a>
+                <a onclick="window.location.href='facilities.html';"><img src="/assets/icons/NAV-Tram.svg" alt="transport"></a>
+                <a><img src="/assets/icons/NAV-exercise.svg" alt="exercise"></a>
+                <a><img src="/assets/icons/NAV-Community.svg" alt="community"></a>
+                <a><img src="/assets/icons/NAV-Chat.svg" alt="chat"></a>
+                <div class="profile-icon">
+                    <img src="/assets/images/elderlyPFP.png" alt="Profile" onclick="window.location.href='account.html';">
+                </div>
+            </div>
+        </nav>
+
+        <div class="flex-1 overflow-auto">
+            <div class="max-w-6xl mx-auto p-6">
+                <!-- Header -->
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl font-bold text-gray-800 mb-4">Emergency Contacts</h1>
+                    <p class="text-xl text-gray-600">Manage your emergency contacts for medication and health alerts</p>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-2xl font-bold text-gray-800" id="totalContacts">0</p>
+                                <p class="text-gray-600">Total Contacts</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-2xl font-bold text-green-600" id="activeContacts">0</p>
+                                <p class="text-gray-600">Active Contacts</p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-2xl font-bold text-orange-600" id="alertsSent">0</p>
+                                <p class="text-gray-600">Alerts Sent</p>
+                            </div>
+                            <div class="bg-orange-100 p-3 rounded-full">
+                                <svg class="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 2L3 7v11a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V7l-7-5z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-2xl font-bold text-purple-600" id="responseRate">0%</p>
+                                <p class="text-gray-600">Response Rate</p>
+                            </div>
+                            <div class="bg-purple-100 p-3 rounded-full">
+                                <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="team-card">
+                    <!-- Action Buttons -->
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Your Emergency Contacts</h2>
+                        <div class="flex gap-3">
+                            <button onclick="openAddContactModal()" class="btn-team-primary flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+                                </svg>
+                                Add Contact
+                            </button>
+                            <button onclick="viewAlertHistory()" class="btn-team-secondary flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                </svg>
+                                Alert History
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Contacts List -->
+                    <div id="contactsList" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Contacts will be loaded here -->
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="loadingState" class="text-center py-12">
+                        <div class="loading mx-auto mb-4"></div>
+                        <p class="text-gray-600">Loading emergency contacts...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Contact Modal -->
+    <div id="contactModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800" id="modalTitle">Add Emergency Contact</h3>
+                <button onclick="closeContactModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="contactForm" onsubmit="handleContactSubmit(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Contact Name *</label>
+                        <input type="text" name="contactName" required maxlength="100" class="form-input" 
+                               placeholder="e.g., John Doe">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Relationship *</label>
+                        <select name="relationship" required class="form-input">
+                            <option value="">Select relationship</option>
+                            <option value="spouse">Spouse</option>
+                            <option value="child">Child</option>
+                            <option value="parent">Parent</option>
+                            <option value="sibling">Sibling</option>
+                            <option value="relative">Relative</option>
+                            <option value="friend">Friend</option>
+                            <option value="neighbor">Neighbor</option>
+                            <option value="caregiver">Caregiver</option>
+                            <option value="doctor">Doctor</option>
+                            <option value="nurse">Nurse</option>
+                            <option value="social_worker">Social Worker</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                        <input type="tel" name="phoneNumber" required class="form-input" 
+                               placeholder="+65 9123 4567" pattern="(\+65)?[689]\d{7}">
+                        <p class="text-xs text-gray-500 mt-1">Singapore format: +65 9123 4567 or 91234567</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email (Optional)</label>
+                        <input type="email" name="email" class="form-input" 
+                               placeholder="john.doe@example.com">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Priority *</label>
+                        <select name="priority" required class="form-input">
+                            <option value="">Select priority</option>
+                            <option value="1">1 - Highest (Primary contact)</option>
+                            <option value="2">2 - High</option>
+                            <option value="3">3 - Medium</option>
+                            <option value="4">4 - Low</option>
+                            <option value="5">5 - Lowest</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Alert Delay</label>
+                        <select name="alertDelayHours" class="form-input">
+                            <option value="0">Immediate</option>
+                            <option value="1">After 1 hour</option>
+                            <option value="2">After 2 hours</option>
+                            <option value="4">After 4 hours</option>
+                            <option value="24">After 24 hours</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="isActive" checked class="mr-2">
+                        <span class="text-sm text-gray-700">Active (will receive alerts)</span>
+                    </label>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-8">
+                    <button type="button" onclick="closeContactModal()" class="btn-team-tertiary">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-team-primary">
+                        <span id="submitButtonText">Add Contact</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content max-w-md">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Confirm Delete</h3>
+            <p class="text-gray-600 mb-6">Are you sure you want to delete this emergency contact? This action cannot be undone.</p>
+            
+            <div class="flex justify-end gap-3">
+                <button onclick="closeDeleteModal()" class="btn-team-tertiary">Cancel</button>
+                <button onclick="confirmDelete()" class="btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert History Modal -->
+    <div id="alertHistoryModal" class="modal">
+        <div class="modal-content max-w-4xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Alert History</h3>
+                <button onclick="closeAlertHistoryModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="alertHistoryContent" class="max-h-96 overflow-y-auto">
+                <!-- Alert history will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/medicationManager/emergency-contacts-script.js"></script>
+</body>
+</html>

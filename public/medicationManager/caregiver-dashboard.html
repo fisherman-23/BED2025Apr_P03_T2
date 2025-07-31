@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caregiver Dashboard - Senior Care</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/medicationManager/style.css">
+    
+    <style>
+        .navbar {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-icons {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        
+        .nav-icons a {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .nav-icons a:hover {
+            transform: scale(1.1);
+        }
+        
+        .profile-icon img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #D7E961 0%, #78B5D3 100%);
+        }
+        
+        .team-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .team-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .team-purple { background-color: #7161E9; }
+        .team-green { background-color: #D7E961; }
+        .team-blue { background-color: #78B5D3; }
+        .team-light-blue { background-color: #C1E3F4; }
+        
+        .btn-team-primary {
+            background: linear-gradient(to right, #D7E961, #78B5D3);
+            color: #000000;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-team-secondary {
+            background-color: #7161E9;
+            color: #FFFFFF;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .alert-high { 
+            background: linear-gradient(to right, #ef4444, #f87171);
+            color: white;
+        }
+        .alert-medium { 
+            background: linear-gradient(to right, #f59e0b, #fbbf24);
+            color: white;
+        }
+        .alert-low { 
+            background: linear-gradient(to right, #10b981, #34d399);
+            color: white;
+        }
+        
+        .patient-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .patient-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .compliance-bar {
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="flex flex-col h-screen">
+        <nav class="navbar">
+            <a href="index.html"><img src="/assets/Logo.svg" alt="Logo"></a>
+            <div class="nav-icons">
+                <a href="index.html"><img src="/assets/icons/NAV-House.svg" alt="home"></a>
+                <a href="medicationManager.html"><img src="/assets/icons/NAV-Hospital.svg" alt="medical"></a>
+                <a href="facilities.html"><img src="/assets/icons/NAV-Tram.svg" alt="transport"></a>
+                <a href="exercise.html"><img src="/assets/icons/NAV-exercise.svg" alt="exercise"></a>
+                <a href="events.html"><img src="/assets/icons/NAV-calendar.svg" alt="events"></a>
+                <a href="chat.html"><img src="/assets/icons/NAV-users.svg" alt="user"></a>
+            </div>
+            <div class="profile-icon">
+                <a href="account.html"><img src="/assets/images/elderlyPFP.png" alt="Profile Picture"></a>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <div class="flex-1 overflow-y-auto">
+            <!-- Header section -->
+            <div class="gradient-bg text-black py-12">
+                <div class="max-w-7xl mx-auto px-6">
+                    <div class="text-center">
+                        <h1 class="text-4xl font-bold mb-4">Caregiver Dashboard</h1>
+                        <p class="text-xl opacity-90">Monitor your family members' medication adherence in real-time</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard content -->
+            <div class="max-w-7xl mx-auto px-6 py-8">
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="team-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-2xl font-bold text-team-purple" id="totalPatients">0</p>
+                                <p class="text-gray-600">Patients Under Care</p>
+                            </div>
+                            <div class="team-purple p-3 rounded-full">
+                                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-2xl font-bold text-green-600" id="avgCompliance">0%</p>
+                                <p class="text-gray-600">Average Compliance</p>
+                            </div>
+                            <div class="team-green p-3 rounded-full">
+                                <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-2xl font-bold text-red-600" id="activeAlerts">0</p>
+                                <p class="text-gray-600">Active Alerts</p>
+                            </div>
+                            <div class="bg-red-500 p-3 rounded-full">
+                                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-2xl font-bold text-team-blue" id="lastUpdate">--</p>
+                                <p class="text-gray-600">Last Update</p>
+                            </div>
+                            <div class="team-blue p-3 rounded-full">
+                                <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Patient Button -->
+                <div class="mb-8">
+                    <button onclick="openAddPatientModal()" class="btn-team-primary">
+                        <span class="flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            Add Patient to Monitor
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Patients List -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold mb-6">Patients Under Your Care</h2>
+                    <div id="patientsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Patient cards will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Recent Alerts -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold mb-6">Recent Alerts</h2>
+                    <div class="team-card">
+                        <div id="recentAlerts" class="space-y-4">
+                            <!-- Alerts will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Patient Modal -->
+    <div id="addPatientModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Add Patient to Monitor</h2>
+                <button onclick="closeAddPatientModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="addPatientForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Patient Email Address</label>
+                    <input type="email" name="patientEmail" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="patient@example.com">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Your Relationship</label>
+                    <select name="relationship" required 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Select relationship...</option>
+                        <option value="spouse">Spouse</option>
+                        <option value="child">Child</option>
+                        <option value="parent">Parent</option>
+                        <option value="sibling">Sibling</option>
+                        <option value="relative">Other Relative</option>
+                        <option value="friend">Friend</option>
+                        <option value="caregiver">Professional Caregiver</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Access Level</label>
+                    <select name="accessLevel" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="monitoring">Monitoring Only</option>
+                        <option value="alerts">Monitoring + Alerts</option>
+                        <option value="full">Full Access</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-4 pt-6">
+                    <button type="submit" class="btn-team-primary flex-1">Add Patient</button>
+                    <button type="button" onclick="closeAddPatientModal()" class="btn-team-secondary flex-1">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Patient Detail Modal -->
+    <div id="patientDetailModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold" id="patientDetailTitle">Patient Details</h2>
+                <button onclick="closePatientDetailModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="patientDetailContent">
+                <!-- Patient details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/medicationManager/caregiver-script.js"></script>
+</body>
+</html>
