@@ -13,8 +13,10 @@ const friendController = require("./controllers/friendController.js");
 const matchController = require("./controllers/matchController.js");
 const chatController = require("./controllers/chatController.js");
 
+const medicationController = require("./controllers/medicationController.js");
+const appointmentController = require("./controllers/appointmentController.js");
 const caregiverController = require("./controllers/caregiverController.js");
-const emergencyContactsController = require("./controllers/emergencyContactsController.js");
+const emergencyContactsController = require("./controllers/emergencyContactController.js");
 const healthMetricsController = require("./controllers/healthMetricsController.js");
 
 const eventsController = require("./controllers/eventsController.js");
@@ -28,8 +30,6 @@ const navigationController = require("./controllers/navigationController.js");
 const reportController = require("./controllers/reportController.js");
 
 const exerciseController = require("./controllers/exerciseController.js");
-const medicationController = require("./controllers/medicationController.js");
-const appointmentController = require("./controllers/appointmentController.js");
 const goalController = require("./controllers/goalController.js");
 const weatherController = require("./controllers/weatherController.js");
 
