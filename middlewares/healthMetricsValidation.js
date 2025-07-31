@@ -1,143 +1,106 @@
-const validateHealthMetricData = (req, res, next) => {
-    const { 
-        metricType, 
-        value, 
-        unit, 
-        notes, 
-        recordedAt,
-        systolic,
-        diastolic
-    } = req.body;
-    
+/**
+ * Health Metrics Validation Middleware
+ * Validates health tracking and metrics requests
+ * Ensures data integrity for health monitoring system
+ */
+
+/**
+ * Validates health metric recording data
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
+const validateHealthMetric = (req, res, next) => {
+    const { metricType, value, unit, notes, recordedAt } = req.body;
     const errors = [];
 
-    // metric type validation
-    const validMetricTypes = [
-        'blood_pressure', 'weight', 'blood_sugar', 'heart_rate', 
-        'temperature', 'oxygen_saturation', 'steps', 'sleep_hours',
-        'pain_level', 'mood_score', 'medication_adherence'
-    ];
-    
+    // Metric type validation
+    const validMetricTypes = ['blood_pressure', 'weight', 'blood_sugar', 'heart_rate', 'temperature', 'cholesterol', 'bmi'];
     if (!metricType || !validMetricTypes.includes(metricType)) {
         errors.push('Valid metric type is required. Options: ' + validMetricTypes.join(', '));
     }
 
-    // value validation based on metric type
+    // Value validation
     if (value === undefined || value === null) {
-        if (metricType !== 'blood_pressure') { // blood pressure uses systolic/diastolic
-            errors.push('Value is required for this metric type');
-        }
+        errors.push('Metric value is required');
+    } else if (isNaN(parseFloat(value))) {
+        errors.push('Metric value must be a valid number');
     } else {
-        if (typeof value !== 'number' || isNaN(value)) {
-            errors.push('Value must be a valid number');
-        } else {
-            // validate value ranges based on metric type
-            switch (metricType) {
-                case 'weight':
-                    if (value < 20 || value > 300) {
-                        errors.push('Weight must be between 20 and 300 kg');
+        const numValue = parseFloat(value);
+        
+        // Specific validation based on metric type
+        switch (metricType) {
+            case 'blood_pressure':
+                // Expecting format like "120/80" or separate systolic value
+                if (typeof value === 'string' && value.includes('/')) {
+                    const parts = value.split('/');
+                    if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) {
+                        errors.push('Blood pressure must be in format "120/80"');
+                    } else {
+                        const systolic = parseInt(parts[0]);
+                        const diastolic = parseInt(parts[1]);
+                        if (systolic < 50 || systolic > 300 || diastolic < 30 || diastolic > 200) {
+                            errors.push('Blood pressure values are out of valid range');
+                        }
                     }
-                    break;
-                case 'blood_sugar':
-                    if (value < 2 || value > 30) {
-                        errors.push('Blood sugar must be between 2 and 30 mmol/L');
-                    }
-                    break;
-                case 'heart_rate':
-                    if (value < 30 || value > 220) {
-                        errors.push('Heart rate must be between 30 and 220 bpm');
-                    }
-                    break;
-                case 'temperature':
-                    if (value < 35 || value > 42) {
-                        errors.push('Temperature must be between 35 and 42 degrees Celsius');
-                    }
-                    break;
-                case 'oxygen_saturation':
-                    if (value < 70 || value > 100) {
-                        errors.push('Oxygen saturation must be between 70 and 100%');
-                    }
-                    break;
-                case 'steps':
-                    if (value < 0 || value > 100000) {
-                        errors.push('Steps must be between 0 and 100,000');
-                    }
-                    break;
-                case 'sleep_hours':
-                    if (value < 0 || value > 24) {
-                        errors.push('Sleep hours must be between 0 and 24');
-                    }
-                    break;
-                case 'pain_level':
-                    if (value < 0 || value > 10) {
-                        errors.push('Pain level must be between 0 and 10');
-                    }
-                    break;
-                case 'mood_score':
-                    if (value < 1 || value > 10) {
-                        errors.push('Mood score must be between 1 and 10');
-                    }
-                    break;
-                case 'medication_adherence':
-                    if (value < 0 || value > 100) {
-                        errors.push('Medication adherence must be between 0 and 100%');
-                    }
-                    break;
-            }
+                } else if (numValue < 50 || numValue > 300) {
+                    errors.push('Blood pressure value is out of valid range (50-300)');
+                }
+                break;
+            case 'weight':
+                if (numValue < 20 || numValue > 300) {
+                    errors.push('Weight must be between 20 and 300 kg');
+                }
+                break;
+            case 'blood_sugar':
+                if (numValue < 20 || numValue > 600) {
+                    errors.push('Blood sugar must be between 20 and 600 mg/dL');
+                }
+                break;
+            case 'heart_rate':
+                if (numValue < 30 || numValue > 250) {
+                    errors.push('Heart rate must be between 30 and 250 bpm');
+                }
+                break;
+            case 'temperature':
+                if (numValue < 30 || numValue > 45) {
+                    errors.push('Temperature must be between 30 and 45°C');
+                }
+                break;
+            case 'cholesterol':
+                if (numValue < 100 || numValue > 500) {
+                    errors.push('Cholesterol must be between 100 and 500 mg/dL');
+                }
+                break;
+            case 'bmi':
+                if (numValue < 10 || numValue > 60) {
+                    errors.push('BMI must be between 10 and 60');
+                }
+                break;
         }
     }
 
-    // blood pressure specific validation
-    if (metricType === 'blood_pressure') {
-        if (!systolic || !diastolic) {
-            errors.push('Both systolic and diastolic values are required for blood pressure');
-        } else {
-            if (typeof systolic !== 'number' || typeof diastolic !== 'number') {
-                errors.push('Systolic and diastolic values must be numbers');
-            } else {
-                if (systolic < 70 || systolic > 250) {
-                    errors.push('Systolic pressure must be between 70 and 250 mmHg');
-                }
-                if (diastolic < 40 || diastolic > 150) {
-                    errors.push('Diastolic pressure must be between 40 and 150 mmHg');
-                }
-                if (systolic <= diastolic) {
-                    errors.push('Systolic pressure must be higher than diastolic pressure');
-                }
-            }
-        }
-    }
-
-    // unit validation
+    // Unit validation
     if (unit && typeof unit !== 'string') {
         errors.push('Unit must be a string');
+    } else if (unit && unit.length > 20) {
+        errors.push('Unit must not exceed 20 characters');
     }
 
-    // notes validation
-    if (notes) {
-        if (typeof notes !== 'string') {
-            errors.push('Notes must be a string');
-        } else if (notes.length > 1000) {
-            errors.push('Notes must not exceed 1000 characters');
-        }
+    // Notes validation
+    if (notes && typeof notes !== 'string') {
+        errors.push('Notes must be a string');
+    } else if (notes && notes.length > 500) {
+        errors.push('Notes must not exceed 500 characters');
     }
 
-    // recorded time validation
+    // Recorded time validation
     if (recordedAt) {
-        const recordedDate = new Date(recordedAt);
-        if (isNaN(recordedDate.getTime())) {
+        const recordedTime = new Date(recordedAt);
+        if (isNaN(recordedTime.getTime())) {
             errors.push('Invalid recorded time format');
-        } else {
-            // check if recorded time is not in the future
-            if (recordedDate > new Date()) {
-                errors.push('Recorded time cannot be in the future');
-            }
-            // check if recorded time is not too far in the past (1 year)
-            const oneYearAgo = new Date();
-            oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-            if (recordedDate < oneYearAgo) {
-                errors.push('Recorded time cannot be more than 1 year ago');
-            }
+        } else if (recordedTime > new Date()) {
+            errors.push('Recorded time cannot be in the future');
         }
     }
 
@@ -152,31 +115,25 @@ const validateHealthMetricData = (req, res, next) => {
     next();
 };
 
+/**
+ * Validates health metrics retrieval parameters
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
 const validateHealthMetricsQuery = (req, res, next) => {
-    const { 
-        metricType, 
-        startDate, 
-        endDate, 
-        limit, 
-        sortBy, 
-        sortOrder 
-    } = req.query;
-    
+    const { metricType, startDate, endDate, limit } = req.query;
     const errors = [];
 
-    // metric type validation
+    // Metric type validation (optional filter)
     if (metricType) {
-        const validMetricTypes = [
-            'blood_pressure', 'weight', 'blood_sugar', 'heart_rate', 
-            'temperature', 'oxygen_saturation', 'steps', 'sleep_hours',
-            'pain_level', 'mood_score', 'medication_adherence'
-        ];
+        const validMetricTypes = ['blood_pressure', 'weight', 'blood_sugar', 'heart_rate', 'temperature', 'cholesterol', 'bmi'];
         if (!validMetricTypes.includes(metricType)) {
             errors.push('Invalid metric type. Options: ' + validMetricTypes.join(', '));
         }
     }
 
-    // date range validation
+    // Date range validation
     if (startDate || endDate) {
         if (startDate && isNaN(new Date(startDate).getTime())) {
             errors.push('Invalid start date format');
@@ -189,26 +146,11 @@ const validateHealthMetricsQuery = (req, res, next) => {
         }
     }
 
-    // limit validation
+    // Limit validation
     if (limit) {
         const limitNum = parseInt(limit);
         if (isNaN(limitNum) || limitNum < 1 || limitNum > 1000) {
-            errors.push('Limit must be an integer between 1 and 1000');
-        }
-    }
-
-    // sort validation
-    if (sortBy) {
-        const validSortFields = ['recordedAt', 'metricType', 'value', 'createdAt'];
-        if (!validSortFields.includes(sortBy)) {
-            errors.push('Invalid sort field. Options: ' + validSortFields.join(', '));
-        }
-    }
-
-    if (sortOrder) {
-        const validSortOrders = ['asc', 'desc'];
-        if (!validSortOrders.includes(sortOrder.toLowerCase())) {
-            errors.push('Invalid sort order. Options: ' + validSortOrders.join(', '));
+            errors.push('Limit must be between 1 and 1000');
         }
     }
 
@@ -223,52 +165,81 @@ const validateHealthMetricsQuery = (req, res, next) => {
     next();
 };
 
-const validateMetricId = (req, res, next) => {
-    const { metricId } = req.params;
+/**
+ * Validates adherence report generation parameters
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
+const validateAdherenceReportParams = (req, res, next) => {
+    const { period, format, includeCharts } = req.query;
+    const errors = [];
 
-    if (!metricId || isNaN(parseInt(metricId))) {
+    // Period validation
+    if (period) {
+        const validPeriods = ['weekly', 'monthly', 'quarterly'];
+        if (!validPeriods.includes(period)) {
+            errors.push('Period must be one of: ' + validPeriods.join(', '));
+        }
+    }
+
+    // Format validation
+    if (format) {
+        const validFormats = ['json', 'pdf'];
+        if (!validFormats.includes(format)) {
+            errors.push('Format must be one of: ' + validFormats.join(', '));
+        }
+    }
+
+    // Include charts validation
+    if (includeCharts && !['true', 'false'].includes(includeCharts.toLowerCase())) {
+        errors.push('Include charts must be true or false');
+    }
+
+    if (errors.length > 0) {
         return res.status(400).json({
             status: 'error',
-            message: 'Invalid metric ID'
+            message: 'Validation failed',
+            errors
         });
     }
 
     next();
 };
 
-const validateHealthReportRequest = (req, res, next) => {
-    const { period, format, includeCharts, metricTypes } = req.query;
+/**
+ * Validates health analytics request parameters
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
+const validateHealthAnalyticsParams = (req, res, next) => {
+    const { timeframe, includeComparisons, metricTypes } = req.query;
     const errors = [];
 
-    // period validation
-    const validPeriods = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'];
-    if (period && !validPeriods.includes(period)) {
-        errors.push('Invalid period. Options: ' + validPeriods.join(', '));
+    // Timeframe validation
+    if (timeframe) {
+        const validTimeframes = ['7days', '30days', '90days', '1year'];
+        if (!validTimeframes.includes(timeframe)) {
+            errors.push('Timeframe must be one of: ' + validTimeframes.join(', '));
+        }
     }
 
-    // format validation
-    const validFormats = ['json', 'pdf', 'csv'];
-    if (format && !validFormats.includes(format)) {
-        errors.push('Invalid format. Options: ' + validFormats.join(', '));
+    // Include comparisons validation
+    if (includeComparisons && !['true', 'false'].includes(includeComparisons.toLowerCase())) {
+        errors.push('Include comparisons must be true or false');
     }
 
-    // include charts validation
-    if (includeCharts && !['true', 'false'].includes(includeCharts)) {
-        errors.push('includeCharts must be true or false');
-    }
-
-    // metric types validation (comma-separated list)
+    // Metric types validation (comma-separated list)
     if (metricTypes) {
-        const types = metricTypes.split(',').map(t => t.trim());
-        const validMetricTypes = [
-            'blood_pressure', 'weight', 'blood_sugar', 'heart_rate', 
-            'temperature', 'oxygen_saturation', 'steps', 'sleep_hours',
-            'pain_level', 'mood_score', 'medication_adherence'
-        ];
+        const validMetricTypes = ['blood_pressure', 'weight', 'blood_sugar', 'heart_rate', 'temperature', 'cholesterol', 'bmi'];
+        const requestedTypes = metricTypes.split(',').map(type => type.trim());
         
-        const invalidTypes = types.filter(type => !validMetricTypes.includes(type));
-        if (invalidTypes.length > 0) {
-            errors.push('Invalid metric types: ' + invalidTypes.join(', '));
+        for (const type of requestedTypes) {
+            if (!validMetricTypes.includes(type)) {
+                errors.push(`Invalid metric type: ${type}. Valid options: ` + validMetricTypes.join(', '));
+                break;
+            }
         }
     }
 
@@ -283,110 +254,32 @@ const validateHealthReportRequest = (req, res, next) => {
     next();
 };
 
-const validateHealthAnalyticsRequest = (req, res, next) => {
-    const { 
-        analysisType, 
-        timeRange, 
-        correlationMetrics,
-        includeProjections 
-    } = req.query;
-    
+/**
+ * Validates health dashboard request parameters
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
+const validateHealthDashboardParams = (req, res, next) => {
+    const { includeRecentMetrics, includeTrends, daysBack } = req.query;
     const errors = [];
 
-    // analysis type validation
-    if (analysisType) {
-        const validAnalysisTypes = ['trends', 'correlations', 'patterns', 'alerts', 'summary'];
-        if (!validAnalysisTypes.includes(analysisType)) {
-            errors.push('Invalid analysis type. Options: ' + validAnalysisTypes.join(', '));
+    // Include recent metrics validation
+    if (includeRecentMetrics && !['true', 'false'].includes(includeRecentMetrics.toLowerCase())) {
+        errors.push('Include recent metrics must be true or false');
+    }
+
+    // Include trends validation
+    if (includeTrends && !['true', 'false'].includes(includeTrends.toLowerCase())) {
+        errors.push('Include trends must be true or false');
+    }
+
+    // Days back validation
+    if (daysBack) {
+        const daysNum = parseInt(daysBack);
+        if (isNaN(daysNum) || daysNum < 1 || daysNum > 365) {
+            errors.push('Days back must be between 1 and 365');
         }
-    }
-
-    // time range validation
-    if (timeRange) {
-        const validTimeRanges = ['7days', '30days', '90days', '6months', '1year'];
-        if (!validTimeRanges.includes(timeRange)) {
-            errors.push('Invalid time range. Options: ' + validTimeRanges.join(', '));
-        }
-    }
-
-    // correlation metrics validation
-    if (correlationMetrics) {
-        const metrics = correlationMetrics.split(',').map(m => m.trim());
-        const validMetricTypes = [
-            'blood_pressure', 'weight', 'blood_sugar', 'heart_rate', 
-            'temperature', 'oxygen_saturation', 'steps', 'sleep_hours',
-            'pain_level', 'mood_score', 'medication_adherence'
-        ];
-        
-        const invalidMetrics = metrics.filter(metric => !validMetricTypes.includes(metric));
-        if (invalidMetrics.length > 0) {
-            errors.push('Invalid correlation metrics: ' + invalidMetrics.join(', '));
-        }
-        
-        if (metrics.length < 2) {
-            errors.push('At least 2 metrics required for correlation analysis');
-        }
-    }
-
-    // include projections validation
-    if (includeProjections && !['true', 'false'].includes(includeProjections)) {
-        errors.push('includeProjections must be true or false');
-    }
-
-    if (errors.length > 0) {
-        return res.status(400).json({
-            status: 'error',
-            message: 'Validation failed',
-            errors
-        });
-    }
-
-    next();
-};
-
-const validateHealthGoalData = (req, res, next) => {
-    const { 
-        metricType, 
-        targetValue, 
-        targetOperator, 
-        timeframe, 
-        description 
-    } = req.body;
-    
-    const errors = [];
-
-    // metric type validation
-    const validMetricTypes = [
-        'weight', 'blood_sugar', 'heart_rate', 'steps', 'sleep_hours',
-        'pain_level', 'mood_score', 'medication_adherence'
-    ];
-    
-    if (!metricType || !validMetricTypes.includes(metricType)) {
-        errors.push('Valid metric type is required. Options: ' + validMetricTypes.join(', '));
-    }
-
-    // target value validation
-    if (targetValue === undefined || targetValue === null) {
-        errors.push('Target value is required');
-    } else if (typeof targetValue !== 'number' || isNaN(targetValue)) {
-        errors.push('Target value must be a valid number');
-    }
-
-    // target operator validation
-    const validOperators = ['greater_than', 'less_than', 'equal_to', 'between'];
-    if (!targetOperator || !validOperators.includes(targetOperator)) {
-        errors.push('Valid target operator is required. Options: ' + validOperators.join(', '));
-    }
-
-    // timeframe validation
-    const validTimeframes = ['daily', 'weekly', 'monthly', 'quarterly'];
-    if (!timeframe || !validTimeframes.includes(timeframe)) {
-        errors.push('Valid timeframe is required. Options: ' + validTimeframes.join(', '));
-    }
-
-    // description validation
-    if (description && (typeof description !== 'string' || description.length > 500)) {
-        errors.push('Description must be a string with maximum 500 characters');
     }
 
     if (errors.length > 0) {
@@ -401,10 +294,9 @@ const validateHealthGoalData = (req, res, next) => {
 };
 
 module.exports = {
-    validateHealthMetricData,
+    validateHealthMetric,
     validateHealthMetricsQuery,
-    validateMetricId,
-    validateHealthReportRequest,
-    validateHealthAnalyticsRequest,
-    validateHealthGoalData
+    validateAdherenceReportParams,
+    validateHealthAnalyticsParams,
+    validateHealthDashboardParams
 };
