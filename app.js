@@ -1316,15 +1316,11 @@ app.post("/smart-reply", authenticateJWT, (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
-app.post(
-  "/api/upload/:folder",
-  upload.single("file"),
-  handleUpload
-);
+app.post("/api/upload/:folder", upload.single("file"), handleUpload);
 if (require.main === module) {
   app.listen(port, async () => {
     console.log(`Server running on port ${port}`);
-    
+
     // Initialize database (auto-populate facilities if database is empty)
     await initializeDatabase();
   });

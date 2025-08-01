@@ -67,7 +67,7 @@ class HealthTrackingManager {
 
   async loadDashboardData() {
     try {
-      const response = await fetch("/api/health-dashboard", {
+      const response = await fetch("/api/health/dashboard", {
         method: "GET",
         credentials: "include",
       });
@@ -104,7 +104,7 @@ class HealthTrackingManager {
 
   async loadHealthMetrics() {
     try {
-      const response = await fetch("/api/health-metrics?limit=50", {
+      const response = await fetch("/api/health/metrics?limit=50", {
         method: "GET",
         credentials: "include",
       });
