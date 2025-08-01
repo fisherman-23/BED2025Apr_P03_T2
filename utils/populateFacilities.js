@@ -1,5 +1,5 @@
-require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
-const { saveFacility } = require('../../models/facilitiesModel.js');
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
+const { saveFacility } = require('../models/facilitiesModel.js');
 
 const googleMapsClient = require('@google/maps').createClient({
   key: process.env.GOOGLE_MAPS_API_KEY,
@@ -203,4 +203,11 @@ async function populateAllFacilities() {
   }
 }
 
-populateAllFacilities();
+module.exports = {
+    populateAllFacilities
+};
+
+// Only run if this file is executed directly
+if (require.main === module) {
+    populateAllFacilities();
+}

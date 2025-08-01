@@ -1,4 +1,32 @@
 const facilitiesModel = require("../models/facilitiesModel.js");
+
+/**
+ * Manually triggers facility population from Google Places API.
+ * Should only be used for development or maintenance purposes.
+ *
+ * @async
+ * @function populateFacilities
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @returns {Object} 200 OK with success message if facilities populated or 500 on error.
+ */
+async function populateFacilities(req, res) {
+    try {
+        console.log("Manual facility population triggered...");
+        const { populateAllFacilities } = require("../utils/populateFacilities.js");
+        await populateAllFacilities();
+        
+        res.status(200).json({ 
+            message: "Facilities populated successfully",
+        });
+    } catch (error) {
+        console.error("Error in manual facility population:", error);
+        res.status(500).json({ 
+            error: "Error populating facilities",
+            details: error.message 
+        });
+    }
+}
 /**
  * Handles location access for the user and returns location data.
  *
@@ -102,4 +130,5 @@ module.exports = {
     getFacilities,
     getFacilityById,
     getFacilitiesByType,
+    populateFacilities,
 };

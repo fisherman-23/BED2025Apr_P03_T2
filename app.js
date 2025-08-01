@@ -24,6 +24,7 @@ const announcementsController = require("./controllers/announcementsController.j
 const meetingsController = require("./controllers/meetingsController.js");
 
 const facilitiesController = require("./controllers/facilitiesController.js");
+const { initializeDatabase } = require("./utils/initializeDatabase.js");
 const bookmarkController = require("./controllers/bookmarkController.js");
 const reviewController = require("./controllers/reviewController.js");
 const navigationController = require("./controllers/navigationController.js");
@@ -1322,8 +1323,11 @@ app.post(
   handleUpload
 );
 if (require.main === module) {
-  app.listen(port, () => {
+  app.listen(port, async () => {
     console.log(`Server running on port ${port}`);
+    
+    // Initialize database (auto-populate facilities if database is empty)
+    await initializeDatabase();
   });
 }
 process.on("SIGINT", async () => {

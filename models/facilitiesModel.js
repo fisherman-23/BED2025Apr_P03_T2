@@ -234,6 +234,34 @@ async function saveFacility(facilityData) {
     }
 }
 
+/**
+ * Checks if any facilities exist in the database.
+ *
+ * @function checkFacilitiesExist
+ * @returns {boolean} - True if facilities exist, false otherwise.
+ * @throws Will throw if the database query fails.
+ */
+async function checkFacilitiesExist() {
+    let connection;
+    try {
+        connection = await sql.connect(dbConfig);
+        const result = await connection.request()
+            .query("SELECT COUNT(*) as count FROM Facilities");
+        return result.recordset[0].count > 0;
+    } catch (error) {
+        console.error("Error checking if facilities exist:", error);
+        throw error;
+    } finally {
+        if (connection) {
+            try {
+                await connection.close();
+            } catch (err) {
+                console.error("Error closing database connection:", err);
+            }
+        }
+    }
+}
+
 module.exports = {
     handleLocationAccess,
     getNearbyFacilities,
@@ -241,4 +269,5 @@ module.exports = {
     getFacilityById,
     getFacilitiesByType,
     saveFacility,
+    checkFacilitiesExist,
 };
