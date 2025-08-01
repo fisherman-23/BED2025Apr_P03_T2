@@ -75,8 +75,11 @@ class HealthTrackingManager {
       if (response.ok) {
         const data = await response.json();
         this.dashboardData = data.data;
+      } else if (response.status === 401) {
+        console.log("Authentication required, redirecting to login");
+        window.location.href = "/login.html";
       } else {
-        console.error("Failed to load dashboard data");
+        console.error("Failed to load dashboard data:", response.status, response.statusText);
       }
     } catch (error) {
       console.error("Error loading dashboard data:", error);
@@ -85,17 +88,20 @@ class HealthTrackingManager {
 
   async loadComplianceData() {
     try {
-      const response = await fetch("/api/medication-compliance?period=week", {
+      const response = await fetch("/api/medication-compliance?period=weekly", {
         method: "GET",
         credentials: "include",
       });
 
       if (response.ok) {
         const data = await response.json();
-        this.complianceData = data.data.compliance;
+        this.complianceData = data.data.analytics;
         this.renderMedicationCompliance();
+      } else if (response.status === 401) {
+        console.log("Authentication required, redirecting to login");
+        window.location.href = "/login.html";
       } else {
-        console.error("Failed to load compliance data");
+        console.error("Failed to load compliance data:", response.status, response.statusText);
       }
     } catch (error) {
       console.error("Error loading compliance data:", error);
@@ -113,8 +119,11 @@ class HealthTrackingManager {
         const data = await response.json();
         this.healthMetrics = data.data.metrics;
         this.renderHealthMetrics();
+      } else if (response.status === 401) {
+        console.log("Authentication required, redirecting to login");
+        window.location.href = "/login.html";
       } else {
-        console.error("Failed to load health metrics");
+        console.error("Failed to load health metrics:", response.status, response.statusText);
       }
     } catch (error) {
       console.error("Error loading health metrics:", error);
@@ -132,8 +141,11 @@ class HealthTrackingManager {
         const data = await response.json();
         this.trendsData = data.data.trends;
         this.renderTrendAnalysis();
+      } else if (response.status === 401) {
+        console.log("Authentication required, redirecting to login");
+        window.location.href = "/login.html";
       } else {
-        console.error("Failed to load trends data");
+        console.error("Failed to load trends data:", response.status, response.statusText);
       }
     } catch (error) {
       console.error("Error loading trends data:", error);
@@ -182,9 +194,9 @@ class HealthTrackingManager {
 
       // calculate compliance for this day (simplified)
       const avgCompliance =
-        this.complianceData.length > 0
+        this.complianceData && this.complianceData.length > 0
           ? this.complianceData.reduce(
-              (acc, med) => acc + med.complianceRate,
+              (acc, med) => acc + (med.adherenceRate || 0),
               0
             ) / this.complianceData.length
           : 0;
@@ -289,7 +301,7 @@ class HealthTrackingManager {
   renderMedicationCompliance() {
     const container = document.getElementById("medicationCompliance");
 
-    if (this.complianceData.length === 0) {
+    if (!this.complianceData || this.complianceData.length === 0) {
       container.innerHTML = `
                 <div class="text-center py-8 text-gray-500">
                     <p>No medication compliance data available.</p>
@@ -300,34 +312,37 @@ class HealthTrackingManager {
 
     container.innerHTML = this.complianceData
       .map((med) => {
+        const complianceRate = med.adherenceRate || 0;
         const complianceClass =
-          med.complianceRate >= 80
+          complianceRate >= 80
             ? "compliance-high"
-            : med.complianceRate >= 60
+            : complianceRate >= 60
               ? "compliance-medium"
               : "compliance-low";
+
+        const complianceLevel = complianceRate >= 80 ? 'high' : complianceRate >= 60 ? 'medium' : 'low';
 
         return `
                 <div class="border border-gray-200 rounded-lg p-4">
                     <div class="flex justify-between items-center mb-2">
-                        <h4 class="font-semibold text-gray-800">${this.escapeHtml(med.name)}</h4>
+                        <h4 class="font-semibold text-gray-800">${this.escapeHtml(med.medicationName)}</h4>
                         <span class="text-2xl font-bold ${
-                          med.complianceRate >= 80
+                          complianceRate >= 80
                             ? "text-green-600"
-                            : med.complianceRate >= 60
+                            : complianceRate >= 60
                               ? "text-yellow-600"
                               : "text-red-600"
                         }">
-                            ${Math.round(med.complianceRate)}%
+                            ${Math.round(complianceRate)}%
                         </span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
                         <div class="${complianceClass} h-3 rounded-full transition-all duration-500" 
-                             style="width: ${med.complianceRate}%"></div>
+                             style="width: ${complianceRate}%"></div>
                     </div>
                     <div class="flex justify-between text-sm text-gray-600">
-                        <span>${med.takenCount}/${med.scheduledCount} doses taken</span>
-                        <span class="capitalize">${med.complianceLevel} compliance</span>
+                        <span>${med.takenDoses}/${med.totalDoses} doses taken</span>
+                        <span class="capitalize">${complianceLevel} compliance</span>
                     </div>
                 </div>
             `;

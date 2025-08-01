@@ -506,6 +506,95 @@ class HealthMetricsController {
       });
     }
   }
+
+  // gets health trends data for analytics
+  async getHealthTrends(req, res) {
+    try {
+      const { period = 'month' } = req.query;
+      
+      let dateFilter = '';
+      switch(period) {
+        case 'week':
+          dateFilter = 'AND hm.recordedAt >= DATEADD(WEEK, -1, GETDATE())';
+          break;
+        case 'month':
+        default:
+          dateFilter = 'AND hm.recordedAt >= DATEADD(MONTH, -1, GETDATE())';
+          break;
+        case 'quarter':
+          dateFilter = 'AND hm.recordedAt >= DATEADD(MONTH, -3, GETDATE())';
+          break;
+      }
+
+      const pool = await sql.connect(dbConfig);
+
+      // Get trends for different health metrics
+      const trendsQuery = `
+        SELECT 
+          hm.metricType,
+          hm.value,
+          hm.unit,
+          hm.recordedAt,
+          CAST(hm.recordedAt as DATE) as date
+        FROM HealthMetrics hm
+        WHERE hm.userId = @userId ${dateFilter}
+        ORDER BY hm.metricType, hm.recordedAt DESC
+      `;
+
+      const trendsResult = await pool
+        .request()
+        .input("userId", sql.Int, req.user.id)
+        .query(trendsQuery);
+
+      // Group by metric type and calculate trends
+      const trendsByType = {};
+      trendsResult.recordset.forEach(record => {
+        if (!trendsByType[record.metricType]) {
+          trendsByType[record.metricType] = [];
+        }
+        trendsByType[record.metricType].push(record);
+      });
+
+      // Calculate trend direction for each metric
+      const trends = Object.keys(trendsByType).map(metricType => {
+        const data = trendsByType[metricType];
+        let trendDirection = 'stable';
+        
+        if (data.length >= 2) {
+          const recent = parseFloat(data[0].value);
+          const previous = parseFloat(data[1].value);
+          
+          if (recent > previous) {
+            trendDirection = 'up';
+          } else if (recent < previous) {
+            trendDirection = 'down';
+          }
+        }
+
+        return {
+          metricType,
+          data: data.slice(0, 10), // Last 10 readings
+          trendDirection,
+          latestValue: data.length > 0 ? data[0].value : null,
+          latestUnit: data.length > 0 ? data[0].unit : null,
+          dataPoints: data.length
+        };
+      });
+
+      res.status(200).json({
+        status: "success",
+        data: { trends }
+      });
+
+    } catch (error) {
+      console.error("Error fetching health trends:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Failed to retrieve health trends",
+        error: error.message,
+      });
+    }
+  }
 }
 
 module.exports = new HealthMetricsController();
