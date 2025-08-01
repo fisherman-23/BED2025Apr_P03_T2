@@ -1315,7 +1315,12 @@ app.post("/smart-reply", authenticateJWT, (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
-
+app.post(
+  "/api/upload/:folder",
+  authenticateJWT,
+  upload.single("file"),
+  handleUpload
+);
 if (require.main === module) {
   app.listen(port, () => {
     console.log(`Server running on port ${port}`);
