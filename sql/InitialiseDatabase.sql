@@ -882,18 +882,17 @@ CREATE TABLE MatchInteractions (
 CREATE TABLE Conversations (
     ID INT PRIMARY KEY IDENTITY(1,1),
 
-    -- Store consistent user pairing: User1ID < User2ID
     User1ID INT NOT NULL,
     User2ID INT NOT NULL,
 
     CreatedAt DATETIME2 DEFAULT SYSUTCDATETIME(),
 
     CONSTRAINT FK_Conversation_User1 FOREIGN KEY (User1ID) REFERENCES Users(ID) ON DELETE CASCADE,
-    CONSTRAINT FK_Conversation_User2 FOREIGN KEY (User2ID) REFERENCES Users(ID) ON DELETE CASCADE,
+    CONSTRAINT FK_Conversation_User2 FOREIGN KEY (User2ID) REFERENCES Users(ID) ON DELETE NO ACTION,
 
-    -- Prevent duplicate conversations between same two users
     CONSTRAINT UQ_UserPair UNIQUE (User1ID, User2ID)
 );
+
 
 CREATE TABLE Messages (
     ID INT PRIMARY KEY IDENTITY(1,1),
@@ -910,6 +909,7 @@ CREATE TABLE Messages (
     CONSTRAINT FK_Message_Conversation FOREIGN KEY (ConversationID) REFERENCES Conversations(ID) ON DELETE CASCADE,
     CONSTRAINT FK_Message_Sender FOREIGN KEY (SenderID) REFERENCES Users(ID) ON DELETE NO ACTION
 );
+
 
 
 

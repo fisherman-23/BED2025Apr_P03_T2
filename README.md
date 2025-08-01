@@ -66,22 +66,16 @@ The website consists of 5 specialized modules.
 
 ### Module 2: Community Events & Meetings
 
-| Feature | Description |
-| ------- | ----------- |
-| Group Management | Create and join public and private community groups with group pictures, descriptions, and member management. Easy group discovery and joining. |
-| Invite System | Share group invite links or tokens for easy group joining. Secure token-based system prevents duplicate memberships. |
-| Announcements | Group owners can post announcements with images. Members can view and interact with group updates and news. |
-| Comment System | Comment on announcements with edit/delete permissions. Real-time comment loading and user authentication. |
-| Video Meetings | Daily.co integration for group video calls. Host controls, participant management, QR code sharing for easy joining. |
-| Event Coordination | Create and manage group meetings with persistent room links and participant tracking. Database storage for meeting history. |
+| Feature            | Description                                                                                                                                     |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Group Management   | Create and join public and private community groups with group pictures, descriptions, and member management. Easy group discovery and joining. |
+| Invite System      | Share group invite links or tokens for easy group joining. Secure token-based system prevents duplicate memberships.                            |
+| Announcements      | Group owners can post announcements with images. Members can view and interact with group updates and news.                                     |
+| Comment System     | Comment on announcements with edit/delete permissions. Real-time comment loading and user authentication.                                       |
+| Video Meetings     | Daily.co integration for group video calls. Host controls, participant management, QR code sharing for easy joining.                            |
+| Event Coordination | Create and manage group meetings with persistent room links and participant tracking. Database storage for meeting history.                     |
 
 ### Module 3: Facility & Transport Navigator
-
-
-
-
-
-
 
 | Feature | Description |
 | ------- | ----------- |
@@ -102,17 +96,17 @@ The website consists of 5 specialized modules.
 
 ## Technology Stack
 
-| Component                | Description                                                                                                                                                                |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Jest**                 | Jest is utilized for unit testing of controller and model functions.                                                                                                       |
-| **Swagger**              | Swagger is used for API documentation for our API routes, helping to provide detailed information.                                                                         |
-| **Gemini Flash 2.0**     | Gemini LLM API is used for generating potential replies based on the context of the conversation in the chat module. The latest 3 messages are joined and sent to the API. |
+| Component                 | Description                                                                                                                                                                                                                                      |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Jest**                  | Jest is utilized for unit testing of controller and model functions.                                                                                                                                                                             |
+| **Swagger**               | Swagger is used for API documentation for our API routes, helping to provide detailed information.                                                                                                                                               |
+| **Gemini Flash 2.0**      | Gemini LLM API is used for generating potential replies based on the context of the conversation in the chat module. The latest 3 messages are joined and sent to the API.                                                                       |
 | **Daily.co API**          | Daily.co video conferencing API integration for real-time video meetings within community groups. Provides room creation, participant management, host controls, and secure meeting tokens for seamless virtual gatherings designed for seniors. |
-| **Axios HTTP Client**     | Axios is used for making HTTP requests to external APIs including Daily.co for video meetings and Google APIs for various integrations. Provides promise-based HTTP client with request/response interceptors and automatic JSON parsing. |
-| **Joi Validation**        | Joi schema validation library used for robust input validation across community events, group creation, and announcement posting. Ensures data integrity with custom error messages and comprehensive validation rules for enhanced security. |
-| **JSON Web Tokens (JWT)** | JWT implementation for secure user authentication and session management across all community features. Provides stateless authentication with configurable expiration times and refresh token support for enhanced security. |
-| **Toastify.js**           | Toastify.js notification library used for user-friendly success and error messages throughout the community events interface. Provides accessible toast notifications with customizable styling optimized for senior users. |
-| **Tailwind CDN**         | Tailwind CSS is included via CDN to quickly apply utility-first styles for responsive and modern UI design.                                                                |
-| **qrcodejs CDN**         | qrcodejs is included via CDN to generate QR codes dynamically on the client side.                                                                                          |
-| **Express.js**           | Express.js is the Node.js web framework used to handle routing, middleware, and server-side logic.                                                                         |
-| **Microsoft SQL Server** | MSSQL is the database system used to store and retrieve structured data for the application.                                                                               |
+| **Axios HTTP Client**     | Axios is used for making HTTP requests to external APIs including Daily.co for video meetings and Google APIs for various integrations. Provides promise-based HTTP client with request/response interceptors and automatic JSON parsing.        |
+| **Joi Validation**        | Joi schema validation library used for robust input validation across community events, group creation, and announcement posting. Ensures data integrity with custom error messages and comprehensive validation rules for enhanced security.    |
+| **JSON Web Tokens (JWT)** | JWT implementation for secure user authentication and session management across all community features. Provides stateless authentication with configurable expiration times and refresh token support for enhanced security.                    |
+| **Toastify.js**           | Toastify.js notification library used for user-friendly success and error messages throughout the community events interface. Provides accessible toast notifications with customizable styling optimized for senior users.                      |
+| **Tailwind CDN**          | Tailwind CSS is included via CDN to quickly apply utility-first styles for responsive and modern UI design.                                                                                                                                      |
+| **qrcodejs CDN**          | qrcodejs is included via CDN to generate QR codes dynamically on the client side.                                                                                                                                                                |
+| **Express.js**            | Express.js is the Node.js web framework used to handle routing, middleware, and server-side logic.                                                                                                                                               |
+| **Microsoft SQL Server**  | MSSQL is the database system used to store and retrieve structured data for the application.                                                                                                                                                     |
