@@ -1318,7 +1318,6 @@ app.listen(port, () => {
 });
 app.post(
   "/api/upload/:folder",
-  authenticateJWT,
   upload.single("file"),
   handleUpload
 );
