@@ -537,7 +537,7 @@ app.post(
 app.get(
   "/api/emergency-contacts",
   authenticateJWT,
-  emergencyContactsController.getEmergencyContacts
+  emergencyContactsController.getUserEmergencyContacts
 );
 
 /**
