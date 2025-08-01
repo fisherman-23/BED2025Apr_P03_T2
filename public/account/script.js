@@ -30,7 +30,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 credentials: "include"
             });
             if (!res.ok) {
-                throw new Error("Failed to fetch user data. Please log in again.");
+                const error = await res.json();
+                throw new Error(error.error || error.message || "Failed to fetch user data. Please log in again.");
             }
             const data = await res.json();
             return data.id;
@@ -73,7 +74,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 credentials: "include"
             });
             if (!res.ok) {
-                throw new Error("Failed to fetch user data. Please try again.");
+                const error = await res.json();
+                throw new Error(error.error || error.message || "Failed to fetch user data. Please try again.");
             }
             const user = await res.json();
             console.log('Fetched user data:', user);
@@ -300,7 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function updateUserProfile(userId, userData) {
         try {
-            const response = await fetch(`/users/${userId}`, {
+            const res = await fetch(`/users/${userId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
@@ -309,18 +311,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 credentials: "include"
             });
 
-            if (!response.ok) {
-                const error = await response.json();
-                if (response.status === 404) {
-                    throw new Error(error.message || "User not found or password incorrect.");
-                } else if (response.status === 400) {
-                    throw new Error("Invalid data. Please check your input.");
-                } else {
-                    throw new Error(error.message || "Failed to update profile. Please try again.");
-                }
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.error || error.message || "Failed to update profile. Please try again.");
             }
-            return await response.json();
-    } catch (error) {
+            return await res.json();
+        } catch (error) {
             console.error("Error updating user profile:", error);
             throw error;
         }
@@ -328,13 +324,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function deleteUserAccount(userId) {
         try {
-            const response = await fetch(`/users/${userId}`, {
+            const res = await fetch(`/users/${userId}`, {
                 method: "DELETE",
                 credentials: "include"
             });
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || "Failed to delete account. Please try again.");
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.error || error.message || "Failed to delete account. Please try again.");
             }
         } catch (error) {
             console.error("Error deleting user account:", error);
