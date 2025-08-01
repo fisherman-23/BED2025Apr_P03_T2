@@ -36,12 +36,6 @@ PRINT 'Starting InitialiseValues.sql for MODULE 1: Medication & Appointment Mana
 
 -- Ensure we have test users first (update the existing user to Ryan Yip)
 -- Update existing user with new name and additional fields
-UPDATE Users 
-SET Name = 'Ryan Yip',
-    firstName = 'Ryan', 
-    lastName = 'Yip',
-    Email = 'ryan.yip@gmail.com'
-WHERE ID = 1;
 
 -- Insert additional test users for comprehensive testing
 IF NOT EXISTS (SELECT 1 FROM Users WHERE Email = 'mary.tan@gmail.com')

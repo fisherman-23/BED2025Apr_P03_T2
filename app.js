@@ -358,6 +358,22 @@ app.get(
 
 /**
  * @swagger
+ * /api/medication-compliance:
+ *   get:
+ *     summary: Get medication compliance data for dashboard
+ *     tags: [Medications]
+ *     security:
+ *       - bearerAuth: []
+ */
+app.get(
+  "/api/medication-compliance",
+  authenticateJWT,
+  validateAnalyticsRequest,
+  medicationController.getAdherenceAnalytics
+);
+
+/**
+ * @swagger
  * /api/appointments:
  *   get:
  *     summary: Get all appointments for authenticated user
@@ -700,6 +716,22 @@ app.get(
   authenticateJWT,
   validateHealthAnalyticsParams,
   healthMetricsController.getAdherenceAnalytics
+);
+
+/**
+ * @swagger
+ * /api/health-trends:
+ *   get:
+ *     summary: Get health trends and analytics data
+ *     tags: [Health Metrics]
+ *     security:
+ *       - bearerAuth: []
+ */
+app.get(
+  "/api/health-trends",
+  authenticateJWT,
+  validateHealthMetricsQuery,
+  healthMetricsController.getHealthTrends
 );
 
 // Main medication manager page

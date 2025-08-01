@@ -8,29 +8,6 @@
     <link rel="stylesheet" href="/medicationManager/style.css">
     
     <style>
-        .navbar {
-            background: linear-gradient(to right, #D7E961, #78B5D3);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .nav-icons {
-            display: flex;
-            gap: 1.5rem;
-        }
-        
-        .nav-icons img {
-            width: 2.5rem;
-            height: 2.5rem;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .nav-icons img:hover {
-            transform: scale(1.1);
-        }
         
         .team-card {
             background: #FFFFFF;
@@ -171,24 +148,27 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
     </style>
+      <link rel="stylesheet" href="/global.css">
+
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="w-screen overflow-x-hidden">
     <div class="flex flex-col h-screen">
-        <nav class="navbar">
-            <img src="/assets/Logo.svg" alt="Logo">
-            <div class="nav-icons">
-                <a onclick="window.location.href='index.html';"><img src="/assets/icons/NAV-House.svg" alt="home"></a>
-                <a onclick="window.location.href='medicationManager.html';"><img src="/assets/icons/NAV-Hospital.svg" alt="medical"></a>
-                <a onclick="window.location.href='facilities.html';"><img src="/assets/icons/NAV-Tram.svg" alt="transport"></a>
-                <a><img src="/assets/icons/NAV-exercise.svg" alt="exercise"></a>
-                <a><img src="/assets/icons/NAV-Community.svg" alt="community"></a>
-                <a><img src="/assets/icons/NAV-Chat.svg" alt="chat"></a>
-                <div class="profile-icon">
-                    <img src="/assets/images/elderlyPFP.png" alt="Profile" onclick="window.location.href='account.html';">
-                </div>
-            </div>
-        </nav>
+    <nav class="navbar">
+      <a href="index.html"><img src="/assets/Logo.svg" alt="Logo"></a>
+      <div class="nav-icons">
+        <a href="index.html"><img src="/assets/icons/NAV-House.svg" alt="home"></a>
+        <a href="medicationManager.html"><img src="/assets/icons/NAV-Hospital.svg" alt="medical"></a>
+        <a href="facilities.html"><img src="/assets/icons/NAV-Tram.svg" alt="transport"></a>
+        <a href="exercise.html"><img src="/assets/icons/NAV-exercise.svg" alt="exercise"></a>
+        <a href="events.html"><img src="/assets/icons/NAV-calendar.svg" alt="events"></a>
+        <a href="chat.html"><img src="/assets/icons/NAV-users.svg" alt="user"></a>
+      </div>
+      <div class="profile-icon">
+        <a href="account.html"><img src="/assets/images/defaultPFP.png" alt="Profile Picture"></a>
+      </div>
+    </nav>
 
         <div class="flex-1 overflow-auto">
             <div class="max-w-6xl mx-auto p-6">
