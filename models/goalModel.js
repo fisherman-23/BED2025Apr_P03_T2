@@ -1,7 +1,13 @@
-const sql = require('mssql');
-const dbConfig = require('../dbConfig');
+const sql = require("mssql");
+const dbConfig = require("../dbConfig");
 
-// Create a new goal
+/**
+ * Creates a new exercise goal for a user.
+ * @param {string} userId - ID of the user account.
+ * @param {string} name - Name of the goal.
+ * @param {string} description - Description of the goal.
+ * @returns {Promise<Object>} The created goal record.
+ */
 async function createGoal(userId, name, description) {
   let connection;
   try {
@@ -12,25 +18,30 @@ async function createGoal(userId, name, description) {
       VALUES (@userId, @name, @description);
     `;
     const request = connection.request();
-    request.input('userId', userId);
-    request.input('name', name);
-    request.input('description', description);
+    request.input("userId", userId);
+    request.input("name", name);
+    request.input("description", description);
     const result = await request.query(query);
     return result.recordset[0];
   } catch (error) {
-    console.error('Error creating goal:', error);
+    console.error("Error creating goal:", error);
     throw error;
   } finally {
     if (connection) {
-        try {
-            await connection.close();
-        } catch (err) {
-            console.error("Error closing connection:", err);
-        }
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error("Error closing connection:", err);
+      }
     }
-}};
+  }
+}
 
-// Get all goals for a user
+/**
+ * Gets all exercise goals for a user.
+ * @param {string} userId - ID of the user account.
+ * @returns {Promise<Object[]>} An array of goal records.
+ */
 async function getGoals(userId) {
   let connection;
   try {
@@ -39,11 +50,11 @@ async function getGoals(userId) {
       SELECT * FROM goals WHERE userId = @userId
     `;
     const request = connection.request();
-    request.input('userId', userId);
+    request.input("userId", userId);
     const result = await request.query(query);
     return result.recordset;
   } catch (error) {
-    console.error('Error fetching goals:', error);
+    console.error("Error fetching goals:", error);
     throw error;
   } finally {
     if (connection) {
@@ -56,7 +67,11 @@ async function getGoals(userId) {
   }
 }
 
-// Get incompleted goals
+/**
+ * Gets all exercise goals that have not been completed yet by the user.
+ * @param {string} userId - ID of the user account.
+ * @returns {Promise<Object[]>} An array of incomplete goal records.
+ */
 async function getIncompletedGoals(userId) {
   let connection;
   try {
@@ -65,11 +80,11 @@ async function getIncompletedGoals(userId) {
       SELECT * FROM goals WHERE userId = @userId AND last_completed_at IS NULL
     `;
     const request = connection.request();
-    request.input('userId', userId);
+    request.input("userId", userId);
     const result = await request.query(query);
     return result.recordset;
   } catch (error) {
-    console.error('Error fetching incompleted goals:', error);
+    console.error("Error fetching incompleted goals:", error);
     throw error;
   } finally {
     if (connection) {
@@ -82,7 +97,11 @@ async function getIncompletedGoals(userId) {
   }
 }
 
-// Delete a goal
+/**
+ * Deletes an exercise goal by its ID.
+ * @param {number} goalId - ID of the goal to delete.
+ * @returns {Promise<Object>} Message indicating deletion success.
+ */
 async function deleteGoal(goalId) {
   let connection;
   try {
@@ -91,11 +110,11 @@ async function deleteGoal(goalId) {
       DELETE FROM goals WHERE goalId = @goalId
     `;
     const request = connection.request();
-    request.input('goalId', goalId);
+    request.input("goalId", goalId);
     await request.query(query);
-    return { message: 'Goal deleted successfully' };
+    return { message: "Goal deleted successfully" };
   } catch (error) {
-    console.error('Error deleting goal:', error);
+    console.error("Error deleting goal:", error);
     throw error;
   } finally {
     if (connection) {
@@ -108,7 +127,12 @@ async function deleteGoal(goalId) {
   }
 }
 
-// Update goals
+/**
+ * Marks a exercise goal as completed by updating the last_completed_at timestamp.
+ * @param {number} goalId - ID of the goal to update.
+ * @param {string} userId - ID of the user account.
+ * @returns {Promise<Object|null>} The updated goal record or null if not found.
+ */
 async function updateGoal(goalId, userId) {
   let connection;
   try {
@@ -120,31 +144,35 @@ async function updateGoal(goalId, userId) {
       WHERE goalId = @goalId AND userId = @userId;
     `;
     const request = connection.request();
-    request.input('goalId', goalId);
-    request.input('userId', userId);
- 
+    request.input("goalId", goalId);
+    request.input("userId", userId);
+
     const result = await request.query(query);
- 
+
     if (result.recordset.length === 0) {
       return null;
     }
- 
+
     return result.recordset[0];
   } catch (error) {
-    console.error('Error updating goal progress:', error);
+    console.error("Error updating goal progress:", error);
     throw error;
   } finally {
     if (connection) {
       try {
         await connection.close();
       } catch (err) {
-        console.error('Error closing connection:', err);
+        console.error("Error closing connection:", err);
       }
     }
   }
 }
 
-// Reset all goals
+/**
+ * Resets all exercise goals that were previously completed before today.
+ * @param {string} userId - ID of the user account.
+ * @returns {Promise<Object>} Message indicating reset success.
+ */
 async function resetGoal(userId) {
   let connection;
   try {
@@ -160,22 +188,29 @@ async function resetGoal(userId) {
     `;
     // DATEADD(day, -1, CAST(last_completed_at AS DATE))
     const request = connection.request();
-    request.input('userId', userId);
+    request.input("userId", userId);
     await request.query(query);
-    return { message: 'All goals reset successfully' };
-  }catch (error) {
-    console.error('Error resetting goals:', error);
+    return { message: "All goals reset successfully" };
+  } catch (error) {
+    console.error("Error resetting goals:", error);
     throw error;
-  }finally{
+  } finally {
     if (connection) {
-    try {
-      await connection.close();
-    } catch (err) {
-      console.error("Error closing connection:", err);
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error("Error closing connection:", err);
+      }
     }
   }
-}}
+}
 
+/**
+ * Logs a exercise goal completion event for the user.
+ * @param {number} userID - ID of the user account.
+ * @param {number} goalID - ID of the goal completed.
+ * @returns {Promise<boolean>} True if logging was successful.
+ */
 async function logGoalCompletion(userID, goalID) {
   let connection;
   try {
@@ -202,7 +237,7 @@ async function logGoalCompletion(userID, goalID) {
     }
   }
 }
- 
+
 module.exports = {
   createGoal,
   getGoals,
@@ -210,5 +245,5 @@ module.exports = {
   updateGoal,
   getIncompletedGoals,
   resetGoal,
-  logGoalCompletion
+  logGoalCompletion,
 };

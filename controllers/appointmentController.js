@@ -1,11 +1,30 @@
 const Appointment = require('../models/appointmentModel');
+const sql = require('mssql');
 
+/**
+ * Appointment Controller - handles appointment booking and management
+ * Implements CRUD operations for appointment system
+ * Includes doctor search, availability checking, and OneMap API integration
+ */
 class AppointmentController {
-    // creates a new appointment
+    
+    /**
+     * Creates a new appointment
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     */
     async createAppointment(req, res) {
         try {
             const appointmentData = req.body;
-            appointmentData.userId = req.user.id; // from JWT token
+            appointmentData.userId = req.user.id; // From JWT token
+            
+            // Validate appointment data
+            if (!appointmentData.doctorId || !appointmentData.appointmentDate || !appointmentData.reason) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Doctor ID, appointment date, and reason are required'
+                });
+            }
             
             const newAppointment = await Appointment.createAppointment(appointmentData);
             
@@ -24,10 +43,21 @@ class AppointmentController {
         }
     }
 
-    // gets all appointments for the current user
+    /**
+     * Gets all appointments for the current user
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     */
     async getUserAppointments(req, res) {
         try {
-            const appointments = await Appointment.getAppointmentsByUserId(req.user.id);
+            const { status, upcoming } = req.query;
+            
+            let appointments;
+            if (upcoming === 'true') {
+                appointments = await Appointment.getUpcomingAppointments(req.user.id);
+            } else {
+                appointments = await Appointment.getAppointmentsByUserId(req.user.id, status);
+            }
             
             res.status(200).json({
                 status: 'success',
@@ -43,7 +73,11 @@ class AppointmentController {
         }
     }
 
-    // gets a specific appointment by ID
+    /**
+     * Gets a specific appointment by ID
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     */
     async getAppointmentById(req, res) {
         try {
             const appointmentId = req.params.id;
@@ -56,7 +90,7 @@ class AppointmentController {
                 });
             }
 
-            // check if appointment belongs to current user
+            // Check if appointment belongs to current user
             if (appointment.userId !== req.user.id) {
                 return res.status(403).json({
                     status: 'error',
@@ -78,13 +112,17 @@ class AppointmentController {
         }
     }
 
-    // updates an appointment
+    /**
+     * Updates an appointment
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     */
     async updateAppointment(req, res) {
         try {
             const appointmentId = req.params.id;
             const updateData = req.body;
             
-            // first check if appointment exists and belongs to user
+            // First check if appointment exists and belongs to user
             const existingAppointment = await Appointment.getAppointmentById(appointmentId);
             if (!existingAppointment) {
                 return res.status(404).json({
@@ -123,12 +161,16 @@ class AppointmentController {
         }
     }
 
-    // deletes an appointment
-    async deleteAppointment(req, res) {
+    /**
+     * Cancels an appointment (same as deleteAppointment but with proper naming)
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     */
+    async cancelAppointment(req, res) {
         try {
             const appointmentId = req.params.id;
             
-            // first check if appointment exists and belongs to user
+            // First check if appointment exists and belongs to user
             const existingAppointment = await Appointment.getAppointmentById(appointmentId);
             if (!existingAppointment) {
                 return res.status(404).json({
@@ -144,9 +186,9 @@ class AppointmentController {
                 });
             }
             
-            const deleted = await Appointment.deleteAppointment(appointmentId);
+            const cancelled = await Appointment.deleteAppointment(appointmentId);
             
-            if (deleted) {
+            if (cancelled) {
                 res.status(200).json({
                     status: 'success',
                     message: 'Appointment cancelled successfully'
@@ -158,7 +200,7 @@ class AppointmentController {
                 });
             }
         } catch (error) {
-            console.error('Error deleting appointment:', error);
+            console.error('Error cancelling appointment:', error);
             res.status(500).json({
                 status: 'error',
                 message: 'Failed to cancel appointment',
@@ -167,26 +209,20 @@ class AppointmentController {
         }
     }
 
-    // gets all available doctors
-    async getAllDoctors(req, res) {
-        try {
-            const doctors = await Appointment.getAllDoctors();
-            
-            res.status(200).json({
-                status: 'success',
-                data: { doctors }
-            });
-        } catch (error) {
-            console.error('Error fetching doctors:', error);
-            res.status(500).json({
-                status: 'error',
-                message: 'Failed to retrieve doctors',
-                error: error.message
-            });
-        }
+    /**
+     * Alias for cancelAppointment to maintain backward compatibility
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     */
+    async deleteAppointment(req, res) {
+        return this.cancelAppointment(req, res);
     }
 
-    // searches doctors by specialty and location
+    /**
+     * Searches doctors by specialty and location
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     */
     async searchDoctors(req, res) {
         try {
             const { specialty, location } = req.query;
@@ -207,11 +243,22 @@ class AppointmentController {
         }
     }
 
-    // gets doctor availability for appointment booking
+    /**
+     * Gets doctor availability for appointment booking
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     */
     async getDoctorAvailability(req, res) {
         try {
-            const doctorId = req.params.doctorId;
+            const doctorId = req.params.id; // Fixed: should be req.params.id not req.params.doctorId
             const { date } = req.query;
+            
+            if (!doctorId) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Doctor ID is required'
+                });
+            }
             
             const availability = await Appointment.getDoctorAvailability(doctorId, date);
             
@@ -229,12 +276,39 @@ class AppointmentController {
         }
     }
 
-    // sends appointment reminders
+    /**
+     * Gets all available doctors
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     */
+    async getAllDoctors(req, res) {
+        try {
+            const doctors = await Appointment.getAllDoctors();
+            
+            res.status(200).json({
+                status: 'success',
+                data: { doctors }
+            });
+        } catch (error) {
+            console.error('Error fetching doctors:', error);
+            res.status(500).json({
+                status: 'error',
+                message: 'Failed to retrieve doctors',
+                error: error.message
+            });
+        }
+    }
+
+    /**
+     * Sends appointment reminder
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     */
     async sendAppointmentReminder(req, res) {
         try {
             const appointmentId = req.params.id;
             
-            // check if appointment belongs to user
+            // Check if appointment belongs to user
             const appointment = await Appointment.getAppointmentById(appointmentId);
             if (!appointment || appointment.userId !== req.user.id) {
                 return res.status(404).json({
@@ -260,13 +334,17 @@ class AppointmentController {
         }
     }
 
-    // gets directions to clinic using OneMap API
+    /**
+     * Gets directions to clinic using OneMap API
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     */
     async getDirections(req, res) {
         try {
             const appointmentId = req.params.id;
             const { currentLocation } = req.body;
             
-            // check if appointment belongs to user
+            // Check if appointment belongs to user
             const appointment = await Appointment.getAppointmentById(appointmentId);
             if (!appointment || appointment.userId !== req.user.id) {
                 return res.status(404).json({

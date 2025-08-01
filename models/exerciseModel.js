@@ -1,7 +1,11 @@
 const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 
-// Get user preferences
+/**
+ * Retreieves the user exercise preferences
+ * @param {string} userId - ID of the user account
+ * @returns {Promise<number[]>} The category IDs of the user preferences
+ */
 async function getExercisePreferences(userId) {
   let connection;
   try {
@@ -26,7 +30,12 @@ async function getExercisePreferences(userId) {
   }
 }
 
-// Update user preferences
+/**
+ * Updates the user's exercise preferences.
+ * @param {number[]} categoryIds - An array of exercise category IDs.
+ * @param {string} userId - The ID of the user account.
+ * @returns {Promise<boolean>} True if update was successful.
+ */
 async function updateExercisePreferences(categoryIds, userId) {
   let connection;
   try {
@@ -57,7 +66,11 @@ async function updateExercisePreferences(categoryIds, userId) {
   }
 }
 
-// Delete user preferences
+/**
+ * Deletes all the user's exercise preferences.
+ * @param {string} userId - The ID of the user account.
+ * @returns {Promise<boolean>} True if deletion was successful.
+ */
 async function deleteExercisePreference(userId) {
   let connection;
   try {
@@ -81,7 +94,11 @@ async function deleteExercisePreference(userId) {
   }
 }
 
-// Get exercises based on user preferences or all exercises if no preferences are set
+/**
+ * Gets exercises based on user preferences or returns all if none are set.
+ * @param {string} userId - The ID of the user account.
+ * @returns {Promise<Object[]>} An array of exercise data.
+ */
 async function getExercises(userId) {
   let connection;
   try {
@@ -116,7 +133,11 @@ async function getExercises(userId) {
   }
 }
 
-// Get steps for a specific exercise
+/**
+ * Gets step-by-step instructions for a specific exercise.
+ * @param {number} exerciseId - The ID of the exercise.
+ * @returns {Promise<Object[]>} An array of step objects with step number and instruction.
+ */
 async function getSteps(exerciseId) {
   let connection;
   try {
@@ -141,7 +162,12 @@ async function getSteps(exerciseId) {
   }
 }
 
-// Add user preferences for exercises
+/**
+ * Create new exercise preferences for a user.
+ * @param {number[]} categoryIds - The category IDs of the user preferred exercise category.
+ * @param {string} userId - The ID of the user account.
+ * @returns {Promise<boolean>} True if insertion was successful.
+ */
 async function personalisation(categoryIds, userId) {
   let connection;
   try {
@@ -169,6 +195,11 @@ async function personalisation(categoryIds, userId) {
   }
 }
 
+/**
+ * Gets completion statistics (exercises/goals) for a specific user.
+ * @param {string} userId - The ID of the user account.
+ * @returns {Promise<Object>} An object containing userID, exercise_completed, and goal_completed counts.
+ */
 async function getUserStats(userId) {
   let connection;
   try {
@@ -204,6 +235,12 @@ async function getUserStats(userId) {
   }
 }
 
+/**
+ * Logs a completed exercise for a specific user.
+ * @param {number} userID - The ID of the user account.
+ * @param {number} exerciseID - The ID of the completed exercise.
+ * @returns {Promise<boolean>} True if logging was successful.
+ */
 async function logExerciseCompletion(userID, exerciseID) {
   let connection;
   try {
