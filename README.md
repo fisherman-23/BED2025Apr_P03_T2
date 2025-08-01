@@ -87,8 +87,13 @@ The website consists of 5 specialized modules.
 
 ### Module 4: Senior Fitness Coach
 
-| Feature | Description |
-| ------- | ----------- |
+| Feature            | Description                                                                                                                                     |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| View Exericse and Steps | Allows users to browse senior-friendly exercises with detailed step-by-step instructions retrieved from the database. |
+| Exercise Goal feature | Allow user to users to create, track, and manage daily exercise goals with automatic daily progress resets. |
+| Exercise Personalisation Feature | Allows users to save exercise preferences, filtering displayed exercises accordingly, with options to update or delete preferences anytime. |
+| Weather Advisior feature| Allow user to recieve weather information before they start their exercises, allowing them to choose indoor or outdoor|
+| Dashboard| Allow users to see the number of goals and exercises they have completed|
 
 ### Module 5: Messaging & Buddy System
 

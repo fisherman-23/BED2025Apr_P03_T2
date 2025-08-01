@@ -47,6 +47,7 @@ async function loginUser(req, res) {
 function logoutUser(req, res) {
   try {
     res.clearCookie("token");
+    res.clearCookie("refreshToken");
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     console.error("Controller error in logoutUser:", error);
