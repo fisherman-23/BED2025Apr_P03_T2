@@ -655,7 +655,32 @@ class MedicationAppointmentManager {
     }
 
     showDirections(directions) {
-        alert(`Directions:\nDistance: ${directions.distance}\nDuration: ${directions.duration}\n\nSteps:\n${directions.steps.join('\n')}`);
+        // Create a more detailed directions modal
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center';
+        modal.innerHTML = `
+            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-96 overflow-y-auto">
+                <h3 class="text-lg font-bold mb-4">🗺️ Directions to Clinic</h3>
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600">Distance: <span class="font-bold">${directions.distance}</span></p>
+                    <p class="text-sm text-gray-600">Duration: <span class="font-bold">${directions.duration}</span></p>
+                </div>
+                <div class="mb-4">
+                    <h4 class="font-semibold mb-2">Route Instructions:</h4>
+                    <ol class="text-sm space-y-1">
+                        ${directions.steps.map((step, index) => 
+                            `<li>${index + 1}. ${step}</li>`
+                        ).join('')}
+                    </ol>
+                </div>
+                <button onclick="this.closest('.fixed').remove()" 
+                        class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">
+                    Close
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
     }
 
     showSuccess(message) {

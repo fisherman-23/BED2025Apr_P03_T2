@@ -1,6 +1,8 @@
 const Medication = require('../models/medicationModel');
 const sql = require('mssql');
-
+const smsService = require('../utils/smsService');
+const emailService = require('../utils/emailService');
+const pdfGenerator = require('../utils/pdfGenerator');
 /**
  * Medication Controller - handles all medication-related operations
  * Implements CRUD operations for medication management system
@@ -32,6 +34,16 @@ class MedicationController {
             
             // Create initial medication schedule
             await this.createMedicationSchedule(newMedication.medicationId, medicationData);
+            
+            // Send confirmation SMS if user has phone number
+            if (req.user.phoneNumber) {
+                await smsService.sendMedicationReminder(req.user.phoneNumber, {
+                    name: medicationData.medicationName,
+                    dosage: medicationData.dosage,
+                    time: medicationData.timing,
+                    message: `New medication "${medicationData.medicationName}" added to your schedule. First reminder at ${medicationData.timing}.`
+                });
+            }
             
             res.status(201).json({
                 status: 'success',
@@ -347,6 +359,13 @@ class MedicationController {
                     .query(insertQuery);
             }
             
+            // Send confirmation SMS
+            if (req.user.phoneNumber) {
+                await smsService.sendSMS(req.user.phoneNumber, 
+                    `✅ Medication taken: ${medication.name} (${medication.dosage}) marked as taken at ${new Date().toLocaleTimeString()}.`
+                );
+            }
+            
             res.status(200).json({
                 status: 'success',
                 message: 'Medication marked as taken successfully'
@@ -473,6 +492,116 @@ class MedicationController {
         }
     }
 
+    /**
+     * Triggers alerts for missed medications (called by scheduler or manually)
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     */
+    async triggerMissedMedicationAlert(req, res) {
+        try {
+            const { medicationId, escalationLevel = 1 } = req.body;
+            
+            // Get missed medication details
+            const medication = await Medication.getMedicationById(medicationId);
+            if (!medication || medication.userId !== req.user.id) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: 'Medication not found'
+                });
+            }
+            
+            // Get user's emergency contacts
+            const pool = await sql.connect();
+            const emergencyContactsQuery = `
+                SELECT * FROM EmergencyContacts 
+                WHERE userId = @userId AND active = 1
+                ORDER BY priority ASC
+            `;
+            
+            const contactsResult = await pool.request()
+                .input('userId', sql.Int, req.user.id)
+                .query(emergencyContactsQuery);
+                
+            const emergencyContacts = contactsResult.recordset;
+            
+            // Send escalated alert based on level
+            let alertResults = [];
+            
+            if (escalationLevel === 1) {
+                // Level 1: SMS to user only
+                if (req.user.phoneNumber) {
+                    const smsResult = await smsService.sendMissedMedicationAlert(
+                        req.user.phoneNumber, 
+                        medication, 
+                        escalationLevel
+                    );
+                    alertResults.push({ type: 'user_sms', result: smsResult });
+                }
+            } else if (escalationLevel === 2) {
+                // Level 2: SMS to primary emergency contact
+                const primaryContact = emergencyContacts.find(c => c.priority === 'primary');
+                if (primaryContact) {
+                    const smsResult = await smsService.sendEmergencyAlert(
+                        primaryContact.phoneNumber,
+                        {
+                            patientName: `${req.user.firstName} ${req.user.lastName}`,
+                            reason: `Missed medication: ${medication.name}`,
+                            medicationName: medication.name,
+                            missedTime: new Date().toLocaleString()
+                        }
+                    );
+                    alertResults.push({ type: 'emergency_sms', contact: 'primary', result: smsResult });
+                }
+            } else if (escalationLevel === 3) {
+                // Level 3: SMS + Email to all emergency contacts
+                for (const contact of emergencyContacts) {
+                    // SMS Alert
+                    const smsResult = await smsService.sendEmergencyAlert(
+                        contact.phoneNumber,
+                        {
+                            patientName: `${req.user.firstName} ${req.user.lastName}`,
+                            reason: `URGENT: Multiple missed medications`,
+                            medicationName: medication.name,
+                            escalationLevel: 3
+                        }
+                    );
+                    
+                    // Email Alert
+                    const emailResult = await emailService.sendEmergencyEmail(
+                        contact.email,
+                        {
+                            patientName: `${req.user.firstName} ${req.user.lastName}`,
+                            alertType: 'critical_medication_missed',
+                            medicationDetails: medication,
+                            timestamp: new Date()
+                        }
+                    );
+                    
+                    alertResults.push({ 
+                        type: 'emergency_both', 
+                        contact: contact.relationship,
+                        sms: smsResult,
+                        email: emailResult 
+                    });
+                }
+            }
+            
+            res.status(200).json({
+                status: 'success',
+                message: `Escalation level ${escalationLevel} alerts triggered`,
+                data: { alertResults }
+            });
+            
+        } catch (error) {
+            console.error('Error triggering missed medication alert:', error);
+            res.status(500).json({
+                status: 'error',
+                message: 'Failed to trigger alert',
+                error: error.message
+            });
+        }
+    }
+    
     /**
      * Validates medication data for creation and updates
      * @param {Object} medicationData - Medication data to validate

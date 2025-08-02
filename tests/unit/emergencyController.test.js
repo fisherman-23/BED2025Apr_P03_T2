@@ -1,14 +1,14 @@
 const request = require('supertest');
 const express = require('express');
-const emergencyContactsController = require('../controllers/emergencyContactController');
-const smsService = require('../utils/smsService');
-const emailService = require('../utils/emailService');
+const emergencyContactsController = require('../../controllers/emergencyContactController');
+const smsService = require('../../utils/smsService');
+const emailService = require('../../utils/emailService');
 
 // Mock dependencies
 jest.mock('mssql');
-jest.mock('../dbConfig');
-jest.mock('../utils/smsService');
-jest.mock('../utils/emailService');
+jest.mock('../../dbConfig');
+jest.mock('../../utils/smsService');
+jest.mock('../../utils/emailService');
 
 describe('Emergency Contacts Controller Tests', () => {
     let app;

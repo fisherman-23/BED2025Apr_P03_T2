@@ -595,6 +595,90 @@ class HealthMetricsController {
       });
     }
   }
+
+  // gets weekly adherence data for Chart.js visualization
+  async getWeeklyAdherence(req, res) {
+    try {
+      const userId = req.user.id;
+      const pool = await sql.connect(dbConfig);
+      
+      // Get adherence data for the last 7 days
+      const query = `
+        WITH WeekDays AS (
+          SELECT 
+            DATEADD(day, -6, CAST(GETDATE() AS DATE)) AS day_date,
+            DATENAME(WEEKDAY, DATEADD(day, -6, CAST(GETDATE() AS DATE))) AS day_name
+          UNION ALL
+          SELECT 
+            DATEADD(day, -5, CAST(GETDATE() AS DATE)),
+            DATENAME(WEEKDAY, DATEADD(day, -5, CAST(GETDATE() AS DATE)))
+          UNION ALL
+          SELECT 
+            DATEADD(day, -4, CAST(GETDATE() AS DATE)),
+            DATENAME(WEEKDAY, DATEADD(day, -4, CAST(GETDATE() AS DATE)))
+          UNION ALL
+          SELECT 
+            DATEADD(day, -3, CAST(GETDATE() AS DATE)),
+            DATENAME(WEEKDAY, DATEADD(day, -3, CAST(GETDATE() AS DATE)))
+          UNION ALL
+          SELECT 
+            DATEADD(day, -2, CAST(GETDATE() AS DATE)),
+            DATENAME(WEEKDAY, DATEADD(day, -2, CAST(GETDATE() AS DATE)))
+          UNION ALL
+          SELECT 
+            DATEADD(day, -1, CAST(GETDATE() AS DATE)),
+            DATENAME(WEEKDAY, DATEADD(day, -1, CAST(GETDATE() AS DATE)))
+          UNION ALL
+          SELECT 
+            CAST(GETDATE() AS DATE),
+            DATENAME(WEEKDAY, CAST(GETDATE() AS DATE))
+        ),
+        DailyAdherence AS (
+          SELECT 
+            CAST(ml.scheduledTime AS DATE) as log_date,
+            COUNT(*) as total_doses,
+            SUM(CASE WHEN ml.taken = 1 THEN 1 ELSE 0 END) as taken_doses,
+            CASE 
+              WHEN COUNT(*) = 0 THEN 0
+              ELSE ROUND(SUM(CASE WHEN ml.taken = 1 THEN 1.0 ELSE 0 END) * 100.0 / COUNT(*), 1)
+            END as adherence_rate
+          FROM Medications m
+          LEFT JOIN MedicationLogs ml ON m.medicationId = ml.medicationId
+          WHERE m.userId = @userId 
+          AND m.active = 1
+          AND ml.scheduledTime >= DATEADD(day, -6, CAST(GETDATE() AS DATE))
+          AND ml.scheduledTime < DATEADD(day, 1, CAST(GETDATE() AS DATE))
+          GROUP BY CAST(ml.scheduledTime AS DATE)
+        )
+        SELECT 
+          wd.day_name,
+          wd.day_date,
+          COALESCE(da.adherence_rate, 0) as adherence_rate,
+          COALESCE(da.total_doses, 0) as total_doses,
+          COALESCE(da.taken_doses, 0) as taken_doses
+        FROM WeekDays wd
+        LEFT JOIN DailyAdherence da ON wd.day_date = da.log_date
+        ORDER BY wd.day_date
+      `;
+      
+      const result = await pool.request()
+        .input('userId', sql.Int, userId)
+        .query(query);
+        
+      res.status(200).json({
+        status: 'success',
+        data: result.recordset
+      });
+      
+    } catch (error) {
+      console.error('Error getting weekly adherence:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to get adherence data',
+        error: error.message
+      });
+    }
+  }
 }
 
 module.exports = new HealthMetricsController();
