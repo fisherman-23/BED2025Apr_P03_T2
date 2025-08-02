@@ -7,19 +7,42 @@ if (!roomUrl) {
   throw new Error("Missing room URL");
 }
 
-const meRes = await fetch("/me", { credentials: "include" });
-const { id: currentUserId } = await meRes.json();
+let currentUserId = null;
+let currentUserName = null;
+let isAuthenticated = false;
+
+try {
+  const meRes = await fetch("/me", { credentials: "include" });
+  if (meRes.ok) {
+    const userData = await meRes.json();
+    currentUserId = userData.id;
+    currentUserName = userData.name || 
+      userData.firstName ||
+      (userData.username ? userData.username.split('@')[0] : null);
+    isAuthenticated = true;
+  } else {
+    throw new Error("Not authenticated");
+  }
+} catch (error) {
+  console.log("User not authenticated, will use Daily.co pre-join UI");
+  isAuthenticated = false;
+}
 
 
 const dataRes = await fetch(`/meetings/${meetingId}/data`, {
   credentials: "include",
 });
-const { hostId } = await dataRes.json();
+let hostId = null;
+if (dataRes.ok) {
+  const data = await dataRes.json();
+  hostId = data.hostId;
+}
 
 
 
 const callFrame = window.DailyIframe.createFrame({
   showLeaveButton: true,
+  showFullscreenButton: true,
   iframeStyle: {
     width: "100%",
     height: "100%",
@@ -30,9 +53,20 @@ const container = document.getElementById("callFrame");
 container.innerHTML = "";
 container.appendChild(callFrame.iframe());
 
-// Join the call (with hostToken if any)
-if (hostToken) {
-  callFrame.join({ url: roomUrl, token: hostToken }).catch(console.error);
+if (isAuthenticated) {
+  // Authenticated users join directly with their name
+  if (hostToken) {
+    callFrame.join({ 
+      url: roomUrl, 
+      token: hostToken,
+      userName: currentUserName
+    }).catch(console.error);
+  } else {
+    callFrame.join({ 
+      url: roomUrl,
+      userName: currentUserName
+    }).catch(console.error);
+  }
 } else {
   callFrame.join({ url: roomUrl }).catch(console.error);
 }
@@ -44,8 +78,15 @@ function renderParticipants(participants) {
   Object.values(participants).forEach((p) => {
     const li = document.createElement("li");
     li.className = "flex justify-between items-center";
-    li.textContent = p.user_name || p.session_id;
-    if (currentUserId === hostId && !p.local) {
+    
+    let displayName = p.user_name;
+    if (!displayName || displayName === p.session_id) {
+      displayName = "User";
+    }
+    li.textContent = displayName;
+    
+    // Only show kick button if current user is authenticated and is the host
+    if (currentUserId && hostId && currentUserId === hostId && !p.local) {
       const btn = document.createElement("button");
       btn.textContent = "Kick";
       btn.className = "ml-2 px-2 py-1 text-sm bg-red-500 text-white rounded";
@@ -56,7 +97,11 @@ function renderParticipants(participants) {
   });
 }
 
-callFrame.on("joined-meeting", () => {
+callFrame.on("joined-meeting", (event) => {
+  // For non-authenticated users, get their name from the join event
+  if (!isAuthenticated && event.participants.local.user_name) {
+    currentUserName = event.participants.local.user_name;
+  }
   renderParticipants(callFrame.participants());
 });
 callFrame.on("participant-joined", () => {
