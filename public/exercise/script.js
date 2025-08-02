@@ -1,9 +1,25 @@
 // Fetch and display exercise
 let currentIndex = 0;
-const batchSize = 4;
 let exercises = [];
 const container = document.querySelector(".exercise-cards");
 const viewMoreBtn = document.getElementById("viewMore");
+
+function getWindowWidth() {
+  const width = window.innerWidth;
+  if (width <= 1620) return 3;
+  return 4;
+}
+let batchSize = getWindowWidth();
+
+window.addEventListener("resize", () => {
+  const newBatchSize = getWindowWidth();
+  if (newBatchSize !== batchSize) {
+    batchSize = newBatchSize;
+    currentIndex = 0;
+    container.innerHTML = "";
+    renderNextBatch();
+  }
+});
 
 async function fetchExercise() {
   try {

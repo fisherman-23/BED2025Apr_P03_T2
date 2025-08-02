@@ -3,37 +3,37 @@ main {
   margin-right: 4rem;
 }
 
-h1{
+h1 {
   margin: 0;
   padding: 0;
 }
 
 .welcome-section {
-    padding-top: 1.5rem;
+  padding-top: 1.5rem;
 }
 
 .welcome-section h1 {
-    margin: 0;
-    font-size: 2.5rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
 }
 
-.exercise-section h1{
-    font-size: 2rem;
-    font-weight: 600;
-    margin-top: 1rem;
+.exercise-section h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-top: 1rem;
 }
 
 .exercise-section {
-    padding-top: 1.5rem;
+  padding-top: 1.5rem;
 }
 
-.exercise-card hr{
+.exercise-card hr {
   margin: 0;
 }
 
-.exercise-card p{
+.exercise-card p {
   font-size: 1rem;
   color: #333;
   margin-top: 0.5rem;
@@ -41,16 +41,16 @@ h1{
 }
 
 .exercise-cards {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4rem;
-    padding-top: 1rem;
-    width: 100%;
-    row-gap: 5rem; 
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4rem;
+  padding-top: 1rem;
+  width: 100%;
+  row-gap: 5rem;
 }
 
 .viewExercise {
-  background-color: #2D2D2D;
+  background-color: #2d2d2d;
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -74,7 +74,7 @@ h1{
   right: 19px;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to right, #D7E961, #78B5D3);
+  background: linear-gradient(to right, #d7e961, #78b5d3);
   border-radius: 1rem;
   transform: translate(12px, 12px);
   z-index: 0;
@@ -86,74 +86,75 @@ h1{
   display: flex;
   flex-direction: column;
   position: relative;
-  background-color: #F6F5F8;
+  background-color: #f6f5f8;
   border-radius: 1rem;
   padding: 1.4rem;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   z-index: 1;
 }
 
 .exercise-card h1 {
-    font-size: 2rem;
-    font-weight: 600;
+  font-size: 1.8rem;
+  font-weight: 550;
 }
 
 .exercise-card img {
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    border-radius: 1rem;
-    object-fit: cover;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 1rem;
+  object-fit: cover;
 }
 
 .viewAll {
-    display: flex;
-    margin: auto;
-    margin-top: 4rem;
-    padding: 1rem;
-    background-color: #2D2D2D;
-    color: white;
-    border: none;
-    border-radius: 1rem;
-    font-size: 1rem;
-    cursor: pointer;
+  display: flex;
+  margin: auto;
+  margin-top: 4rem;
+  padding: 1rem;
+  background-color: #2d2d2d;
+  color: white;
+  border: none;
+  border-radius: 1rem;
+  font-size: 1rem;
+  cursor: pointer;
 }
 
 .exercise-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.7rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.7rem;
 }
 
 .personalise {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    background-color: #D7E961;
-    color: #000;
-    border: none;
-    padding: 0.7rem 1.1rem;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #d7e961;
+  color: #000;
+  border: none;
+  padding: 0.7rem 1.1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
-@media (max-width: 1920px) {
-    .exercise-cards {
-        gap: 2.8rem;
-    }
+@media (max-width: 1620px) {
+  .exercise-cards {
+    gap: 3rem;
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .exercise-progress {
-    display: flex;
-    /* align-items: center; */
-    justify-content: space-between;
-    padding-top: 4rem;
-    width: 100%;
+  display: flex;
+  /* align-items: center; */
+  justify-content: space-between;
+  padding-top: 4rem;
+  width: 100%;
 }
 
-.goals{
+.goals {
   width: 45%;
 }
 
@@ -169,25 +170,27 @@ h1{
 }
 
 .addGoal {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    background-color: #D7E961;
-    color: #000;
-    border: none;
-    padding: 0.7rem 1.1rem;
-    cursor: pointer;
-    font-size: 1.2rem;
-    font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #d7e961;
+  color: #000;
+  border: none;
+  padding: 0.7rem 1.1rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
-.goalCards{
+.goalCards {
   display: flex;
   flex-direction: column;
   max-height: 21rem;
   overflow-y: auto;
   padding-right: 0.5rem;
+  padding-left: 0.5rem;
+  padding-bottom: 0.5rem;
   margin-top: 2rem;
   gap: 1.8rem;
 }
@@ -197,18 +200,17 @@ h1{
 }
 
 .goalCards::-webkit-scrollbar-thumb {
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   border-radius: 1rem;
 }
 
 .goalcard {
   /* margin-top: 2rem; */
   display: flex;
-  background-color: #F6F5F8;
+  background-color: #f6f5f8;
   border-radius: 1rem;
   padding: 1.4rem;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-  /* margin-bottom: 1rem; */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   gap: 2rem;
   align-items: center;
   position: relative;
@@ -219,8 +221,6 @@ h1{
   opacity: 0.5;
   border: 2px solid green;
 }
-
-
 
 .goalcard img {
   width: 4rem;
@@ -238,7 +238,7 @@ h1{
   right: 5px;
 }
 
-.progress{
+.progress {
   width: 45%;
 }
 
@@ -252,7 +252,6 @@ h1{
   font-weight: 650;
 }
 
-
 .progressCards {
   display: flex;
   flex-direction: column;
@@ -263,17 +262,17 @@ h1{
 .progressCard {
   display: flex;
   align-items: center;
-  background-color: #D7E961;
+  background-color: #d7e961;
   border-radius: 1rem;
   padding: 1.4rem;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   /* margin-top: 2rem; */
   /* margin-bottom: 1rem; */
   gap: 2rem;
   height: 6rem;
 }
 
-.progressCard P{
+.progressCard P {
   margin-top: 0.4rem;
 }
 
@@ -303,17 +302,17 @@ h1{
 .progressCard2 {
   display: flex;
   align-items: center;
-  background-color: #78B5D3;
+  background-color: #78b5d3;
   border-radius: 1rem;
   padding: 1.4rem;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   /* margin-top: 2rem; */
   /* margin-bottom: 1rem; */
   gap: 2rem;
   height: 6rem;
 }
 
-.progressCard2 P{
+.progressCard2 P {
   margin-top: 0.4rem;
 }
 
@@ -323,176 +322,181 @@ h1{
 }
 
 .personalise-popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(5px); /* Blurs the background */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px); /* Blurs the background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
 }
 
 .personalise-popup-content {
-    width: 70vw;
-    height: 80vh;
-    background-color: rgba(255, 255, 255);
-    border-radius: 20px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: relative;
+  width: 70vw;
+  height: 80vh;
+  background-color: rgba(255, 255, 255);
+  border-radius: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }
 
 .personalise-close {
-    position: absolute;
-    top: 0.4rem;
-    right: 0.5rem;
-    font-size: 1.4rem;
-    background: transparent;
-    border: none;
-    color: rgb(0, 0, 0);
-    cursor: pointer;
+  position: absolute;
+  top: 0.4rem;
+  right: 0.5rem;
+  font-size: 1.4rem;
+  background: transparent;
+  border: none;
+  color: rgb(0, 0, 0);
+  cursor: pointer;
 }
 
 .exercise-options {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
-    padding: 2rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  padding: 2rem;
 }
 
-.exercise-option{
-  background-color: #78B5D3;
+.exercise-option {
+  background-color: #78b5d3;
   padding: 0.9rem 1rem;
-  border: 3px solid transparent; 
+  border: 3px solid transparent;
   font-size: 1.1rem;
   font-weight: 650;
   border-radius: 0.8rem;
 }
 
-.exercise-option.selected{
+.exercise-option.selected {
   border: solid 3px #000;
 }
 
-.personalise-add{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #D7E961;
-    color: #000;
-    border: none;
-    padding: 0.7rem 2rem;
-    cursor: pointer;
-    font-size: 1.2rem;
-    font-weight: 600;
-    border-radius: 0.8rem;
-    margin-top: 1.5rem;
+.personalise-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #d7e961;
+  color: #000;
+  border: none;
+  padding: 0.7rem 2rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 0.8rem;
+  margin-top: 1.5rem;
 }
 
-#personalise-update{
+#personalise-update {
   display: none;
 }
 
-#personalise-clear{
+#personalise-clear {
   display: none;
 }
 
 .goal-popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(5px); /* Blurs the background */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px); /* Blurs the background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
 }
- 
+
 .goal-popup-content {
-    width: 60vw;
-    height: 80vh;
-    background-color: rgba(255, 255, 255);
-    border-radius: 20px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: relative;
+  width: 60vw;
+  height: 80vh;
+  background-color: rgba(255, 255, 255);
+  border-radius: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }
- 
+
 #goal-text {
-    font-size: 1.6rem;
-    margin-bottom: 1.9rem;
+  font-size: 1.6rem;
+  margin-bottom: 1.9rem;
 }
- 
+
 .goal-close {
-    position: absolute;
-    top: 0.4rem;
-    right: 0.5rem;
-    font-size: 1.4rem;
-    background: transparent;
-    border: none;
-    color: rgb(0, 0, 0);
-    cursor: pointer;
+  position: absolute;
+  top: 0.4rem;
+  right: 0.5rem;
+  font-size: 1.4rem;
+  background: transparent;
+  border: none;
+  color: rgb(0, 0, 0);
+  cursor: pointer;
 }
- 
-.goal-add{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #D7E961;
-    color: #000;
-    border: none;
-    padding: 0.7rem 2rem;
-    cursor: pointer;
-    font-size: 1.2rem;
-    font-weight: 600;
-    border-radius: 0.8rem;
-    margin-top: 1.5rem;
+
+.goal-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #d7e961;
+  color: #000;
+  border: none;
+  padding: 0.7rem 2rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 0.8rem;
+  margin-top: 1.5rem;
 }
- 
-.goal-name, .goal-description {
-    font-size: 1.2rem;    
+
+.goal-name,
+.goal-description {
+  font-size: 1.2rem;
 }
- 
+
 .goal-name-input {
-    width: 100%;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    border: 1px solid #ccc;
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
 }
- 
+
 .goal-description-input {
-    width: 100%;
-    vertical-align: top;
-    height: 6rem;
-    padding: 0.5rem;
-    padding-top: 0;
-    border-radius: 0.5rem;
-    border: 1px solid #ccc;
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-    font-family: 'Poppins';
+  width: 100%;
+  vertical-align: top;
+  height: 6rem;
+  padding: 0.5rem;
+  padding-top: 0;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  font-family: "Poppins";
 }
- 
+
 .goal-form {
   width: 60%;
 }
