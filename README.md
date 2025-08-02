@@ -77,12 +77,12 @@ The website consists of 5 specialized modules.
 
 ### Module 3: Facility & Transport Navigator
 
-| Feature                    | Description                                                                                                                     |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Smart Facility Explorer    | Easily browse and filter nearby facilities by type to find what you need, from clinics, hospitals, parks, to community centers. |
-| Bookmark Facilities        | Save favorite facilities with personal notes for quick access and easy reference anytime.                                       |
-| Facility Reviews & Reports | Read community reviews, manage own feedback, and report inappropriate content to keep the space safe.                           |
-| Step-by-Step Route Planner | Get clear, step-by-step directions to any facility using current or custom location with Google Maps support.                   |
+| Feature                        | Description                                                                                                                     |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| Smart Facility Explorer        | Easily browse and filter nearby facilities by type to find what you need, from clinics, hospitals, parks, to community centers. |
+| Personalised Facility Bookmark | Save favorite facilities with personal notes for quick access and easy reference anytime.                                       |
+| Facility Reviews & Reports     | Read community reviews, manage own feedback, and report inappropriate content to keep the space safe.                           |
+| Step-by-Step Route Planner     | Get clear, step-by-step directions to any facility using current or custom location with Google Maps support.                   |
 
 ### Module 4: Senior Fitness Coach
 
