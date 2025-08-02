@@ -316,6 +316,43 @@ async function deleteUser(ID) {
   }
 }
 
+/**
+ * Retrieves only the profile picture of a user by their ID.
+ * @param {number} ID - The user's ID.
+ * @returns {Promise<string|null>} The profile picture URL if found, otherwise null.
+ */
+async function getUserProfilePicture(ID) {
+  let connection;
+  try {
+    connection = await sql.connect(dbConfig);
+    const query = `
+    SELECT ProfilePicture 
+    FROM Users 
+    WHERE ID = @ID AND IsActive = 1
+  `;
+    const request = connection.request();
+    request.input("ID", ID);
+    const result = await request.query(query);
+
+    if (result.recordset.length === 0) {
+      return null;
+    }
+
+    return result.recordset[0].ProfilePicture;
+  } catch (e) {
+    console.error("Database error in getUserProfilePicture:", e);
+    throw e;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (e) {
+        console.error("Error closing connection in getUserProfilePicture:", e);
+      }
+    }
+  }
+}
+
 module.exports = {
   loginUser,
   getUserById,
@@ -323,4 +360,5 @@ module.exports = {
   updateUser,
   deleteUser,
   getUserByUUID,
+  getUserProfilePicture,
 };

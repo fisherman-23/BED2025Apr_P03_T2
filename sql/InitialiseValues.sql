@@ -284,7 +284,7 @@ VALUES
   1
 ),
 (
-  'Singapore Tech Talk Collective - AI, Apps, and Mor',
+  'Singapore Tech Talk Collective - AI, Apps, and More',
   'Dive into lively discussions on artificial intelligence, mobile apps, smart gadgets, and tech news over casual meetups. Great for all ages and skill levels.',
   'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1753826510097_tech-talks-series-social-en.jpg',
   0,

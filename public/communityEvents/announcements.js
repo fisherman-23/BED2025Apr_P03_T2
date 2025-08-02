@@ -5,6 +5,7 @@ const groupName = params.get('groupName');
 
 const groupTitle = document.getElementById("group-title");
 let currentUserId = null;
+let currentUserProfilePicture = null;
 
 if (groupTitle && groupName) {
   const decodedGroupName = decodeURIComponent(groupName);
@@ -46,7 +47,7 @@ async function loadAnnouncements() {
             <h4 class="font-semibold text-lg mb-4">Comments</h4>
             <div class="comments-list space-y-4 mb-4"></div>
             <div class="comment-input flex items-start gap-3 mb-4">
-              <img src="/assets/images/elderlyPFP.png" alt="Your avatar" class="w-10 h-10 rounded-full">
+              <img src="${currentUserProfilePicture || '/assets/images/defaultPFP.png'}" alt="Your avatar" class="w-10 h-10 rounded-full object-cover">
               <input type="text" placeholder="Write a comment..." class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 comment-field">
             </div>
             <button class="post-comment-btn bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors">
@@ -99,7 +100,7 @@ async function bindComments(annId) {
       div.className = 'comment flex items-start gap-3 mb-4';
 
       div.innerHTML = `
-        <img src="${c.ProfilePicture || '/assets/images/elderlyPFP.png'}"
+        <img src="${c.ProfilePicture || '/assets/images/defaultPFP.png'}"
              alt="${c.Name}"
              class="w-10 h-10 rounded-full object-cover">
         <div class="flex-1">
@@ -219,10 +220,20 @@ async function getCurrentUserId() {
     const res = await fetch('/me', { credentials: 'include' });
     if (!res.ok) throw new Error('Failed to fetch user info');
     const user = await res.json();
+    
+    const profileRes = await fetch('/me/profile-picture', { credentials: 'include' });
+    if (profileRes.ok) {
+      const profileData = await profileRes.json();
+      currentUserProfilePicture = profileData.profilePicture || '/assets/images/defaultPFP.png';
+    } else {
+      currentUserProfilePicture = '/assets/images/defaultPFP.png';
+    }
+    
     return user.id;
   } catch (err) {
     console.error(err);
     toastError('Failed to get user info');
+    currentUserProfilePicture = '/assets/images/defaultPFP.png';
     return null;
   }
 }

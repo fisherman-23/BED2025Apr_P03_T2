@@ -106,6 +106,12 @@ app.get("/me", authenticateJWT, (req, res) => {
 
   res.json({ username: req.user.email, id: req.user.id, uuid: req.user.uuid });
 });
+
+app.get("/me/profile-picture", authenticateJWT, (req, res) => {
+  // #swagger.description = 'Get the authenticated user\'s profile picture'
+  userController.getUserProfilePicture(req, res);
+});
+
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, "public")));
 

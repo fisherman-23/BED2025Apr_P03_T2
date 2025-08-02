@@ -178,6 +178,25 @@ async function deleteUser(req, res) {
   }
 }
 
+/**
+ * Retrieves the authenticated user's profile picture.
+ *
+ * @param {import("express").Request} req - Express request object. Uses req.user.id from JWT.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with profile picture URL or null.
+ */
+async function getUserProfilePicture(req, res) {
+  try {
+    const id = req.user.id;
+    const profilePicture = await userModel.getUserProfilePicture(id);
+    res.json({ profilePicture });
+  } catch (error) {
+    console.error("Controller error in getUserProfilePicture:", error);
+    res.status(500).json({ error: "Error retrieving profile picture" });
+  }
+}
+
 module.exports = {
   loginUser,
   getUserById,
@@ -186,4 +205,5 @@ module.exports = {
   deleteUser,
   logoutUser,
   getUserByUUID,
+  getUserProfilePicture,
 };
