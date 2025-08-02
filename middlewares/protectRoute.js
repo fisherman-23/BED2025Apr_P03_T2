@@ -1,3 +1,4 @@
+const { types } = require("joi");
 const jwt = require("jsonwebtoken");
 // Core protectRoute middleware (already yours)
 function protectRoute(req, res, next) {
@@ -33,19 +34,19 @@ function tokenRefresher(req, res, next) {
   if (!refreshToken) {
     return res.status(403).redirect("/login.html");
   }
-  try{
+  try {
     decodedRefresh = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
     newToken = jwt.sign(
-          { id: decodedRefresh.id, email: decodedRefresh.email },
-          process.env.JWT_SECRET,
-          { expiresIn: process.env.JWT_EXPIRES_IN }
-        );
+      { id: decodedRefresh.id, email: decodedRefresh.email },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
     res.cookie("token", newToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          maxAge: 1000 * 60 * 60, // expires in 1h
-        });
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60, // expires in 1h
+    });
     req.user = decodedRefresh;
     return next();
   } catch (err) {
@@ -53,7 +54,6 @@ function tokenRefresher(req, res, next) {
     return res.status(403).redirect("/login.html");
   }
 }
-
 
 // Middleware to protect specific routes
 function protectSpecificRoutes(req, res, next) {
@@ -65,6 +65,16 @@ function protectSpecificRoutes(req, res, next) {
     "/social.html",
     "/invite",
     "/index.html",
+    "/include.html",
+    "/account.html",
+    "/announcements.html",
+    "/exercise-steps.html",
+    "/exercise.html",
+    "/facilities.html",
+    "/medicationManager.html",
+    "/meetings.html",
+    "/navigation.html",
+    "/review.html",
   ];
 
   if (protectedFiles.includes(req.path)) {
