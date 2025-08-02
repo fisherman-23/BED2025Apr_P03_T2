@@ -216,13 +216,12 @@
 
 .facility-header img {
     width: 1.8rem;
-    height: 1.8rem;
+    height: 2.4rem;
 }
 
 #facilityImage {
     display: block;
     width: 100%;
-    height: 20rem;
     object-fit: cover;
     border-radius: 1rem;
 }
