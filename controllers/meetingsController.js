@@ -24,7 +24,7 @@ async function getMeetingData(req, res) {
   if (!data) {
     return res.status(404).json({ error: "Meeting not found" });
   }
-  res.json({ hostId: data.HostID });
+  res.json({ hostId: data.HostID, roomName: data.RoomName });
 }
 
 async function joinByName(req, res) {

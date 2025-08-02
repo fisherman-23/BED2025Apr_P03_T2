@@ -33,9 +33,11 @@ const dataRes = await fetch(`/meetings/${meetingId}/data`, {
   credentials: "include",
 });
 let hostId = null;
+let meetingName = null;
 if (dataRes.ok) {
   const data = await dataRes.json();
   hostId = data.hostId;
+  meetingName = data.roomName;
 }
 
 
@@ -121,9 +123,24 @@ qrButton.addEventListener("click", () => {
     QRCode.toCanvas(qrPopup, roomUrl, { width: 200 }).catch(console.error);
     qrPopup.classList.remove("hidden");
     qrButton.textContent = "Hide QR Code";
+    
+    const meetingNameDiv = document.getElementById("meetingNameDisplay");
+    if (meetingName && meetingNameDiv) {
+      meetingNameDiv.textContent = `Meeting Name: ${meetingName}`;
+      meetingNameDiv.classList.remove("hidden");
+    }
   } else {
     qrPopup.classList.add("hidden");
     qrButton.textContent = "Show QR Code";
+    
+
+
+
+
+    const meetingNameDiv = document.getElementById("meetingNameDisplay");
+    if (meetingNameDiv) {
+      meetingNameDiv.classList.add("hidden");
+    }
   }
 });
 
