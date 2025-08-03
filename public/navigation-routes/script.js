@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const summary = document.createElement('div');
         summary.className = 'route-summary';
         summary.innerHTML = `
-            <h3>Route ${index + 1}</h3>
+            <h3>Route ${index}</h3>
             <p>${route.legs[0].distance.text} • ${route.legs[0].duration.text}</p>
         `;
 
