@@ -31,6 +31,15 @@ const groupIdSchema = Joi.object({
   })
 });
 
+/**
+ * Validates the request body for creating a new group.
+ *
+ * @param {import("express").Request} req - Express request object with group data in body.
+ * @param {import("express").Response} res - Express response object.
+ * @param {import("express").NextFunction} next - Express next middleware function.
+ *
+ * @returns {void} Calls next() if validation passes, or responds with validation errors.
+ */
 async function validateCreateGroup(req, res, next) {
   try {
     await createGroupSchema.validateAsync(req.body, { abortEarly: false });
@@ -41,6 +50,15 @@ async function validateCreateGroup(req, res, next) {
   }
 }
 
+/**
+ * Validates the request body for group ID parameter.
+ *
+ * @param {import("express").Request} req - Express request object with groupId in body.
+ * @param {import("express").Response} res - Express response object.
+ * @param {import("express").NextFunction} next - Express next middleware function.
+ *
+ * @returns {void} Calls next() if validation passes, or responds with validation errors.
+ */
 async function validateGroupId(req, res, next) {
   try {
     await groupIdSchema.validateAsync(req.body, { abortEarly: false });

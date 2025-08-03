@@ -2,6 +2,11 @@ const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 const jwt = require("jsonwebtoken");
 
+/**
+ * Retrieves all groups that a user has joined.
+ * @param {number} userId - The ID of the user.
+ * @returns {Promise<Array>} Array of joined groups with their details.
+ */
 async function getJoinedGroups(userId) {
  let connection;
  try { 
@@ -29,6 +34,11 @@ async function getJoinedGroups(userId) {
   }
 }
 
+/**
+ * Retrieves all available public groups that a user hasn't joined.
+ * @param {number} userId - The ID of the user.
+ * @returns {Promise<Array>} Array of available groups that the user can join.
+ */
 async function getAvailableGroups(userId) {
   let connection;
   try {
@@ -58,6 +68,12 @@ async function getAvailableGroups(userId) {
   }
 }
 
+/**
+ * Creates a new group with the specified data and sets the creator as owner.
+ * @param {Object} groupData - The group data containing Name, Description, GroupPicture, and IsPrivate.
+ * @param {number} userId - The ID of the user creating the group.
+ * @returns {Promise<Object>} The newly created group object with its ID.
+ */
 async function createGroup(groupData, userId) {
   let connection;
   try {
@@ -107,7 +123,12 @@ async function createGroup(groupData, userId) {
   }
 }
 
-
+/**
+ * Adds a user to an existing group as a member.
+ * @param {number} userId - The ID of the user joining the group.
+ * @param {number} groupId - The ID of the group to join.
+ * @returns {Promise<boolean>} True if successfully joined, false otherwise.
+ */
 async function joinGroup(userId, groupId) {
   let connection;
   try {
@@ -135,6 +156,12 @@ async function joinGroup(userId, groupId) {
   }
 }
 
+/**
+ * Removes a user from a group they are currently a member of.
+ * @param {number} userId - The ID of the user leaving the group.
+ * @param {number} groupId - The ID of the group to leave.
+ * @returns {Promise<boolean>} True if successfully left the group, false otherwise.
+ */
 async function leaveGroup(userId, groupId) {
     let connection;
   try {
@@ -158,6 +185,12 @@ async function leaveGroup(userId, groupId) {
   }
 }
 
+/**
+ * Generates and retrieves an invite token for a group that the user owns.
+ * @param {number} userId - The ID of the user requesting the invite token.
+ * @param {number} groupId - The ID of the group to generate invite token for.
+ * @returns {Promise<string|null>} The invite token if user is owner, null otherwise.
+ */
 async function getGroupInviteToken(userId, groupId) {
   let connection;
   try {
@@ -181,6 +214,11 @@ async function getGroupInviteToken(userId, groupId) {
   }
 }
 
+/**
+ * Finds a group by its invite token and returns group information.
+ * @param {string} token - The invite token to look up.
+ * @returns {Promise<Object|null>} Group object if token is valid, null otherwise.
+ */
 async function findGroupByInviteToken(token) {
   let connection;
   try {
@@ -203,6 +241,12 @@ async function findGroupByInviteToken(token) {
   }
 }
 
+/**
+ * Allows a user to join a group using an invite token.
+ * @param {number} userId - The ID of the user joining the group.
+ * @param {string} token - The invite token for the group.
+ * @returns {Promise<boolean>} True if successfully joined using token, false otherwise.
+ */
 async function joinGroupByInviteToken(userId, token) {
   let connection;
   try {

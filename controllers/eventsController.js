@@ -1,5 +1,13 @@
 const eventsModel = require("../models/eventsModel.js");
 
+/**
+ * Retrieves all groups that the authenticated user has joined.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with an array of joined groups or an error.
+ */
 async function getJoinedGroups(req, res) {
   const userId = req.user.id;
   try {
@@ -11,6 +19,14 @@ async function getJoinedGroups(req, res) {
   }
 }
 
+/**
+ * Retrieves all available public groups that the authenticated user can join.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with an array of available groups or an error.
+ */
 async function getAvailableGroups(req, res) {
   const userId = req.user.id;
   try {
@@ -22,6 +38,14 @@ async function getAvailableGroups(req, res) {
   }
 }
 
+/**
+ * Creates a new group with the authenticated user as the owner.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and group data in body.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with the created group object or an error status.
+ */
 async function createGroup(req, res) {
   const groupData = req.body;
   const userId = req.user.id;
@@ -34,6 +58,14 @@ async function createGroup(req, res) {
   }
 }
 
+/**
+ * Adds the authenticated user to an existing group as a member.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.body.groupId`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with a success message or an error status.
+ */
 async function joinGroup(req, res) {
   try {
     const userId = req.user.id;
@@ -53,6 +85,14 @@ async function joinGroup(req, res) {
   }
 }
 
+/**
+ * Removes the authenticated user from a group they are currently a member of.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.body.groupId`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with a success message or an error status.
+ */
 async function leaveGroup(req, res) {
     try {
     const userId  = req.user.id;
@@ -73,6 +113,14 @@ async function leaveGroup(req, res) {
   }
 }
 
+/**
+ * Generates an invite token for a group owned by the authenticated user.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.params.groupId`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with the invite token or an error status.
+ */
 async function getGroupInviteToken(req, res) {
   try {
     const userId = req.user.id;
@@ -90,6 +138,14 @@ async function getGroupInviteToken(req, res) {
   }
 }
 
+/**
+ * Finds and returns group information using an invite token.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.params.token`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with group information or an error status.
+ */
 async function findGroupByToken(req, res) {
   try {
     const token = req.params.token;
@@ -105,6 +161,14 @@ async function findGroupByToken(req, res) {
   }
 }
 
+/**
+ * Allows the authenticated user to join a group using an invite token.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.body.inviteToken`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with a success message or an error status.
+ */
 async function joinGroupByToken(req, res) {
   try {
     const userId = req.user.id;

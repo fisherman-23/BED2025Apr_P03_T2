@@ -1,6 +1,14 @@
 const announcementsModel = require("../models/announcementsModel");
 const sql = require("mssql");
 
+/**
+ * Retrieves all announcements for a specific group.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.query.groupId`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with an array of announcements or an error status.
+ */
 async function getAnnouncements(req, res) {
   const groupId = Number(req.query.groupId);
   try {
@@ -12,7 +20,14 @@ async function getAnnouncements(req, res) {
   }
 }
 
-
+/**
+ * Creates a new announcement in a group if the user is the group owner.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and announcement data in body.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with the new announcement ID or an error status.
+ */
 async function createAnnouncement(req, res) {
   const userId = req.user.id;
   const { GroupID, Title, Content, ImageURL } = req.body;
@@ -36,7 +51,14 @@ async function createAnnouncement(req, res) {
   }
 }
 
-
+/**
+ * Retrieves all comments for a specific announcement with ownership flags.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.params.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with an array of comments or an error status.
+ */
 async function getComments(req, res) {
   const announcementId = Number(req.params.id);
   const userId = req.user.id;
@@ -53,6 +75,14 @@ async function getComments(req, res) {
   }
 }
 
+/**
+ * Creates a new comment on an announcement by the authenticated user.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and comment data in body.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with the new comment ID or an error status.
+ */
 async function postComment(req, res) {
   const userId = req.user.id;
   const { announcementId, content } = req.body;
@@ -70,7 +100,14 @@ async function postComment(req, res) {
   }
 }
 
-
+/**
+ * Deletes a comment if the user is authorized to do so.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.params.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with a success message or an error status.
+ */
 async function deleteComment(req, res) {
   const userId = req.user.id;
   const commentId = Number(req.params.id);
@@ -87,6 +124,14 @@ async function deleteComment(req, res) {
   }
 }
 
+/**
+ * Updates an existing announcement if the user is the creator.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id`, `req.params.id`, and updated data in body.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with a success message or an error status.
+ */
 async function editAnnouncement(req, res) {
   const userId = req.user.id;
   const announcementId = Number(req.params.id);
@@ -114,6 +159,14 @@ async function editAnnouncement(req, res) {
   }
 }
 
+/**
+ * Deletes an announcement if the user is the creator.
+ *
+ * @param {import("express").Request} req - Express request object. Requires `req.user.id` and `req.params.id`.
+ * @param {import("express").Response} res - Express response object.
+ *
+ * @returns {void} Responds with a success message or an error status.
+ */
 async function deleteAnnouncement(req, res) {
   const userId = req.user.id;
   const announcementId = Number(req.params.id);

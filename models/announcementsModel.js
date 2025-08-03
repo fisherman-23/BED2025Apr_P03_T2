@@ -1,6 +1,11 @@
 const sql = require("mssql");
 const dbConfig = require("../dbConfig");
 
+/**
+ * Retrieves all announcements for a specific group with creator information.
+ * @param {number} groupId - The ID of the group to get announcements for.
+ * @returns {Promise<Array>} Array of announcements with creator names and group creator ID.
+ */
 async function getAnnouncementsByGroup(groupId) {
   let connection;
   try {
@@ -29,6 +34,11 @@ async function getAnnouncementsByGroup(groupId) {
   }
 }
 
+/**
+ * Creates a new announcement in a group.
+ * @param {Object} announcementData - Object containing GroupID, Title, Content, ImageURL, and CreatedBy.
+ * @returns {Promise<number>} The ID of the newly created announcement.
+ */
 async function createAnnouncement({ GroupID, Title, Content, ImageURL, CreatedBy }) {
   let connection;
   try {
@@ -61,6 +71,11 @@ async function createAnnouncement({ GroupID, Title, Content, ImageURL, CreatedBy
   }
 }
 
+/**
+ * Retrieves all comments for a specific announcement with user information.
+ * @param {number} announcementId - The ID of the announcement to get comments for.
+ * @returns {Promise<Array>} Array of comments with user names and details.
+ */
 async function getCommentsForAnnouncement(announcementId) {
   let connection;
   try {
@@ -88,7 +103,11 @@ async function getCommentsForAnnouncement(announcementId) {
   }
 }
 
-
+/**
+ * Creates a new comment on an announcement.
+ * @param {Object} commentData - Object containing AnnouncementID, UserID, and Content.
+ * @returns {Promise<number>} The ID of the newly created comment.
+ */
 async function postComment({ AnnouncementID, UserID, Content }) {
   let connection;
   try {
@@ -134,6 +153,12 @@ async function postComment({ AnnouncementID, UserID, Content }) {
   }
 }
 
+/**
+ * Deletes a comment if the user is authorized (comment owner or announcement creator).
+ * @param {number} userId - The ID of the user attempting to delete the comment.
+ * @param {number} commentId - The ID of the comment to delete.
+ * @returns {Promise<boolean>} True if comment was deleted, false if unauthorized or not found.
+ */
 async function deleteComment(userId, commentId) {
   let connection;
   try {
@@ -162,9 +187,11 @@ async function deleteComment(userId, commentId) {
   }
 }
 
-
-
-
+/**
+ * Retrieves group information by group ID.
+ * @param {number} groupId - The ID of the group to retrieve.
+ * @returns {Promise<Object|null>} Group object with CreatedBy field, or null if not found.
+ */
 async function getGroupById(groupId) {
   let connection;
   try {
@@ -182,7 +209,11 @@ async function getGroupById(groupId) {
   }
 }
 
-
+/**
+ * Updates an existing announcement if the user is authorized (announcement creator).
+ * @param {Object} editData - Object containing announcementId, title, content, imageUrl, and userId.
+ * @returns {Promise<boolean>} True if announcement was updated, false if unauthorized or not found.
+ */
 async function editAnnouncement({ announcementId, title, content, imageUrl, userId }) {
   let connection;
   try {
@@ -234,6 +265,12 @@ async function editAnnouncement({ announcementId, title, content, imageUrl, user
   }
 }
 
+/**
+ * Deletes an announcement if the user is authorized (announcement creator).
+ * @param {number} announcementId - The ID of the announcement to delete.
+ * @param {number} userId - The ID of the user attempting to delete the announcement.
+ * @returns {Promise<boolean>} True if announcement was deleted, false if unauthorized or not found.
+ */
 async function deleteAnnouncement(announcementId, userId) {
   let connection;
   try {

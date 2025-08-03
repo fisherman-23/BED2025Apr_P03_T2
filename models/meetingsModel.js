@@ -7,6 +7,11 @@ if (!DAILY_API_KEY) {
   throw new Error("Missing DAILY_API_KEY in environment");
 }
 
+/**
+ * Creates a new Daily.co video meeting room with optional name and expiration.
+ * @param {string} [name] - Optional name for the meeting room.
+ * @returns {Promise<Object>} Object containing room name and URL.
+ */
 async function createRoom(name) {
   const endpoint = "https://api.daily.co/v1/rooms";
   const headers = {
@@ -31,6 +36,12 @@ async function createRoom(name) {
   };
 }
 
+/**
+ * Generates a meeting token for accessing a specific Daily.co room.
+ * @param {string} roomName - The name of the room to generate token for.
+ * @param {boolean} [isOwner=false] - Whether the token holder should have owner privileges.
+ * @returns {Promise<string>} The generated meeting token.
+ */
 async function createMeetingToken(roomName, isOwner = false) {
   const endpoint = "https://api.daily.co/v1/meeting-tokens";
   const headers = {
@@ -48,6 +59,13 @@ async function createMeetingToken(roomName, isOwner = false) {
   return response.data.token;
 }
 
+/**
+ * Saves meeting information to the database.
+ * @param {string} roomName - The name of the meeting room.
+ * @param {string} roomUrl - The URL of the meeting room.
+ * @param {number} hostId - The ID of the user hosting the meeting.
+ * @returns {Promise<number>} The ID of the saved meeting record.
+ */
 async function saveMeeting(roomName, roomUrl, hostId) {
   const connection = await sql.connect(dbConfig);
   try {
@@ -67,6 +85,11 @@ async function saveMeeting(roomName, roomUrl, hostId) {
   }
 }
 
+/**
+ * Retrieves meeting information by meeting ID.
+ * @param {number} meetingId - The ID of the meeting to retrieve.
+ * @returns {Promise<Object|null>} Meeting object with HostID and RoomName, or null if not found.
+ */
 async function getMeetingById(meetingId) {
   const conn = await sql.connect(dbConfig);
   try {
@@ -84,7 +107,11 @@ async function getMeetingById(meetingId) {
   }
 }
 
-
+/**
+ * Retrieves meeting URL by room name.
+ * @param {string} roomName - The name of the room to look up.
+ * @returns {Promise<string|null>} The meeting URL if found, null otherwise.
+ */
 async function getMeetingByName(roomName) {
   const connection = await sql.connect(dbConfig);
   try {
