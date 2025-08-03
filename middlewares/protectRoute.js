@@ -72,7 +72,6 @@ function protectSpecificRoutes(req, res, next) {
     "/exercise.html",
     "/facilities.html",
     "/medicationManager.html",
-    "/meetings.html",
     "/navigation.html",
     "/review.html",
   ];
