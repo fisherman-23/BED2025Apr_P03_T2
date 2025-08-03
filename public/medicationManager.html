@@ -6,6 +6,7 @@
     <title>Medication & Appointment Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="global.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>    
     <style>
         .gradient-bg {
             background: linear-gradient(to right, #D7E961, #78B5D3);
@@ -283,6 +284,13 @@
                     <div class="p-6">
                         <!-- Overview tab -->
                         <div id="overview-content" class="tab-content">
+                            <!-- ADD THIS CHART SECTION FIRST -->
+                            <div class="team-card mb-8">
+                                <h3 class="text-2xl font-bold text-gray-800 mb-6">📊 Medication Compliance Over Time</h3>
+                                <div class="bg-white rounded-lg p-4">
+                                    <canvas id="adherenceChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>                         
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 <!-- Today's Medications -->
                                 <div>
@@ -465,5 +473,83 @@
     </div>
 
     <script src="medicationManager/script.js"></script>
+    <script>
+        // Wait for DOM to load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Medication adherence chart
+            const ctx = document.getElementById('adherenceChart');
+            if (ctx) {
+                const adherenceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+                        datasets: [{
+                            label: 'Medication Adherence %',
+                            data: [100, 85, 95, 80, 90, 100, 75], // This should come from your API
+                            borderColor: '#7161E9', // Using your team purple color
+                            backgroundColor: 'rgba(113, 97, 233, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            pointBackgroundColor: '#7161E9',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Weekly Medication Compliance Tracking',
+                                font: { 
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                color: '#374151'
+                            },
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    },
+                                    font: {
+                                        size: 12
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.1)'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        size: 12
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.1)'
+                                }
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        }
+                    }
+                });
+            }
+        });
+        </script>
+    
 </body>
 </html>

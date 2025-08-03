@@ -239,6 +239,72 @@ class Appointment {
         const result = await request.query(sqlQuery);
         return result.recordset;
     }
+    
+    /**
+     * Gets directions to appointment location using OneMap API
+     * @param {Object} currentLocation - User's current location {latitude, longitude}
+     * @param {string} destinationAddress - Clinic address
+     * @returns {Promise<Object>} Direction details
+     */
+    static async getDirections(currentLocation, destinationAddress) {
+        try {
+            const oneMapService = require('../utils/oneMapService');
+            
+            // First, get coordinates for the destination address
+            const destinationResult = await oneMapService.searchLocation(destinationAddress);
+            
+            if (!destinationResult.success) {
+                throw new Error(`Could not find location: ${destinationAddress}`);
+            }
+            
+            // Get directions from current location to destination
+            const directionsResult = await oneMapService.getDirections(
+                currentLocation, 
+                destinationResult.location
+            );
+            
+            if (!directionsResult.success) {
+                throw new Error('Could not calculate route');
+            }
+            
+            return {
+                success: true,
+                directions: directionsResult.route,
+                destination: destinationResult.location
+            };
+            
+        } catch (error) {
+            console.error('Error getting directions:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Gets all doctors with their locations
+     * @returns {Promise<Array>} Array of all doctors
+     */
+    static async getAllDoctors() {
+        const connection = await sql.connect(dbConfig);
+        
+        const sqlQuery = `
+            SELECT 
+                doctorId,
+                name,
+                specialty,
+                phone,
+                email,
+                location,
+                address,
+                rating,
+                availability_notes,
+                created_at
+            FROM Doctors
+            ORDER BY rating DESC, name ASC
+        `;
+        
+        const result = await connection.request().query(sqlQuery);
+        return result.recordset;
+    }
 
     /**
      * Gets doctor availability for a specific doctor

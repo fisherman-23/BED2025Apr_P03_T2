@@ -250,7 +250,7 @@ class AppointmentController {
      */
     async getDoctorAvailability(req, res) {
         try {
-            const doctorId = req.params.id; // Fixed: should be req.params.id not req.params.doctorId
+            const doctorId = req.params.id;
             const { date } = req.query;
             
             if (!doctorId) {

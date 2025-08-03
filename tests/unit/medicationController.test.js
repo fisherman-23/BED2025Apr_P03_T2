@@ -1,10 +1,10 @@
 const request = require('supertest');
 const express = require('express');
-const medicationController = require('../controllers/medicationController');
-const Medication = require('../models/medicationModel');
+const medicationController = require('../../controllers/medicationController');
+const Medication = require('../../models/medicationModel');
 
 // Mock the medication model
-jest.mock('../models/medicationModel');
+jest.mock('../../models/medicationModel');
 
 describe('Medication Controller Tests', () => {
     let app;

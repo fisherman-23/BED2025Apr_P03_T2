@@ -406,6 +406,43 @@ async function sendMissedMedicationAlert(patientId) {
   }
 }
 
+// generates PDF report for a specific patient
+async function generatePatientReport(patientId) {
+    try {
+        showLoading(true);
+        
+        const response = await fetch(`/api/caregiver/patients/${patientId}/reports?format=pdf&period=monthly`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to generate report');
+        }
+        
+        // Handle PDF download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `patient_${patientId}_medication_report_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        showSuccess('Medication adherence report downloaded successfully!');
+        
+    } catch (error) {
+        console.error('Error generating patient report:', error);
+        showError('Failed to generate report. Please try again.');
+    } finally {
+        showLoading(false);
+    }
+}
+
 // loads recent alerts for the dashboard
 async function loadRecentAlerts() {
   try {

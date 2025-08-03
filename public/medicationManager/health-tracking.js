@@ -364,14 +364,16 @@ class HealthTrackingManager {
 
     if (Object.keys(groupedMetrics).length === 0) {
       container.innerHTML = `
-                <div class="col-span-full text-center py-12 text-gray-500">
-                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <h3 class="text-xl font-medium mb-2">No Health Metrics</h3>
-                    <p>Start tracking your health by adding your first metric.</p>
-                </div>
-            `;
+        <div class="col-span-full flex flex-col items-center justify-center py-12">
+            <div class="w-16 h-16 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No Health Metrics</h3>
+            <p class="text-gray-500 text-center max-w-sm">Start tracking your health by adding your first metric.</p>
+        </div>
+      `;
       return;
     }
 
