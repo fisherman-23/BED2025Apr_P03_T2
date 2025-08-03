@@ -43,7 +43,12 @@ https://github.com/fisherman-23/BED2025Apr_P03_T2
 
 ### Figma Wireframe
 
-[Placeholder]
+https://www.figma.com/design/0y0RpoY8aE0zmodNN9uF9f/BED-SPM-High-Fidelity?node-id=0-1&t=jaRaViKXcBVXk1Bj-1
+
+### Demonstration & Explanation Video
+
+- **Main Link (YouTube):** [Watch on YouTube](https://youtu.be/VrG2T0SHSUk)
+- **Backup Link (IVID):** [Watch on IVID](https://ivid2.np.edu.sg/media/BED+Assg+2+Group+2/1_kk9zkeai)
 
 ## Overview of Idea
 
@@ -55,14 +60,14 @@ The website consists of 5 specialized modules.
 
 ### Module 1: Medication & Appointment Manager
 
-| Feature | Description |
-|---------|-------------|
-| **Medication CRUD Management** | Comprehensive medication tracking system allowing elderly users to add, view, update, and delete medications with dosage amounts, timing schedules, and special instructions. Features validation for required fields and displays immediate confirmation messages. |
-| **Automated SMS Reminder System** | Intelligent reminder system that sends SMS notifications at prescribed medication times using Twilio API integration. Includes 15-minute pre-reminders, escalating alerts for missed doses every 30 minutes up to 2 hours, and direct "mark as taken" functionality from SMS responses. |
-| **Appointment Booking Integration** | Caregiver-assisted appointment management connecting seniors with healthcare providers through doctor database searches by specialty and location. Features real-time availability checking, OneMap API integration for clinic directions, and automated email confirmations to both elderly users and caregivers. |
-| **Emergency Contact Alert System** | Multi-tier safety system allowing users to designate primary and secondary emergency contacts with customizable alert preferences (immediate, 1-hour, 2-hour delays). Automatically triggers SMS/email escalation when medication adherence issues are detected, with integration to medication tracking for pattern analysis. |
-| **Real-time Health Analytics Dashboard** | Interactive health monitoring dashboard using Chart.js visualizations designed specifically for seniors with large, clear fonts. Features medication compliance tracking with color-coded indicators (green/yellow/red), daily/weekly/monthly trend analysis, and simple warning messages for concerning patterns. Includes printable reports for doctor visits. |
-| **Caregiver Monitoring Portal** | Comprehensive real-time dashboard enabling family caregivers to monitor elderly family member's medication adherence remotely. Displays live compliance metrics, generates automated alerts for missed medications exceeding 2-hour thresholds, provides detailed medication history logs, and creates weekly adherence reports with PDF generation for healthcare provider sharing. |
+| Feature                                  | Description                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Medication CRUD Management**           | Comprehensive medication tracking system allowing elderly users to add, view, update, and delete medications with dosage amounts, timing schedules, and special instructions. Features validation for required fields and displays immediate confirmation messages.                                                                                                                  |
+| **Automated SMS Reminder System**        | Intelligent reminder system that sends SMS notifications at prescribed medication times using Twilio API integration. Includes 15-minute pre-reminders, escalating alerts for missed doses every 30 minutes up to 2 hours, and direct "mark as taken" functionality from SMS responses.                                                                                              |
+| **Appointment Booking Integration**      | Caregiver-assisted appointment management connecting seniors with healthcare providers through doctor database searches by specialty and location. Features real-time availability checking, OneMap API integration for clinic directions, and automated email confirmations to both elderly users and caregivers.                                                                   |
+| **Emergency Contact Alert System**       | Multi-tier safety system allowing users to designate primary and secondary emergency contacts with customizable alert preferences (immediate, 1-hour, 2-hour delays). Automatically triggers SMS/email escalation when medication adherence issues are detected, with integration to medication tracking for pattern analysis.                                                       |
+| **Real-time Health Analytics Dashboard** | Interactive health monitoring dashboard using Chart.js visualizations designed specifically for seniors with large, clear fonts. Features medication compliance tracking with color-coded indicators (green/yellow/red), daily/weekly/monthly trend analysis, and simple warning messages for concerning patterns. Includes printable reports for doctor visits.                     |
+| **Caregiver Monitoring Portal**          | Comprehensive real-time dashboard enabling family caregivers to monitor elderly family member's medication adherence remotely. Displays live compliance metrics, generates automated alerts for missed medications exceeding 2-hour thresholds, provides detailed medication history logs, and creates weekly adherence reports with PDF generation for healthcare provider sharing. |
 
 ### Module 2: Community Events & Meetings
 
@@ -77,12 +82,12 @@ The website consists of 5 specialized modules.
 
 ### Module 3: Facility & Transport Navigator
 
-| Feature                        | Description                                                                                                                     |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| Smart Facility Explorer        | Easily browse and filter nearby facilities by type to find what you need, from clinics, hospitals, parks, to community centers. |
-| Personalised Facility Bookmark | Save favorite facilities with personal notes for quick access and easy reference anytime.                                       |
-| Facility Accessibility Reviews & Reports     | Read community reviews, manage own feedback, and report inappropriate content to keep the space safe.                           |
-| Step-by-Step Route Planner     | Get clear, step-by-step directions to any facility using current or custom location with Google Maps support.                   |
+| Feature                                  | Description                                                                                                                     |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Smart Facility Explorer                  | Easily browse and filter nearby facilities by type to find what you need, from clinics, hospitals, parks, to community centers. |
+| Personalised Facility Bookmark           | Save favorite facilities with personal notes for quick access and easy reference anytime.                                       |
+| Facility Accessibility Reviews & Reports | Read community reviews, manage own feedback, and report inappropriate content to keep the space safe.                           |
+| Step-by-Step Route Planner               | Get clear, step-by-step directions to any facility using current or custom location with Google Maps support.                   |
 
 ### Module 4: Senior Fitness Coach
 
@@ -123,6 +128,6 @@ The website consists of 5 specialized modules.
 | **Google Geocoding API**       | Google Geocoding API converts addresses into geographic coordinates and vice versa. Used for translating user-inputted location text into precise map coordinates and vice versa for location-based features.                                    |
 | **Google Places API**          | Google Places API provides detailed information about geographical locations, including names, place IDs, and addresses. Useful for features like location autocomplete and validating user-entered locations.                                   |
 | **OpenWeather Weather API**    | The OpenWeather weather API provides detailed weather reports, including weather descriptions, current temperature, "feels like" temperature, rain forecasts, and a wide range of other data.                                                    |
-| **Twilio API** | SMS notifications for medication reminders and emergency alerts |
-| **Chart.js** | Interactive data visualizations for health analytics dashboards |
-| **OneMap API** | Singapore mapping service for location-based features |
+| **Twilio API**                 | SMS notifications for medication reminders and emergency alerts                                                                                                                                                                                  |
+| **Chart.js**                   | Interactive data visualizations for health analytics dashboards                                                                                                                                                                                  |
+| **OneMap API**                 | Singapore mapping service for location-based features                                                                                                                                                                                            |
