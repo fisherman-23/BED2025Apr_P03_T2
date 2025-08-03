@@ -5,6 +5,9 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 dotenv.config();
 const jwt = require("jsonwebtoken");
+const smsService = require("./utils/smsService");
+const emailService = require("./utils/emailService");
+const pdfGenerator = require("./utils/pdfGenerator");
 const { upload, handleUpload } = require("./utils/fileUpload.js");
 
 // Controllers
@@ -380,6 +383,45 @@ app.get(
 
 /**
  * @swagger
+ * /api/medications/missed-alert:
+ *   post:
+ *     summary: Trigger missed medication alerts with escalation
+ *     tags: [Medications]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - medicationId
+ *             properties:
+ *               medicationId:
+ *                 type: integer
+ *                 example: 1
+ *               escalationLevel:
+ *                 type: integer
+ *                 enum: [1, 2, 3]
+ *                 example: 1
+ *                 description: "1=User SMS, 2=Emergency Contact SMS, 3=All Contacts SMS+Email"
+ *     responses:
+ *       200:
+ *         description: Alert triggered successfully
+ *       404:
+ *         description: Medication not found
+ *       500:
+ *         description: Failed to trigger alert
+ */
+app.post("/api/medications/missed-alert", 
+    authenticateJWT, 
+    validateMissedMedicationAlert, 
+    medicationController.triggerMissedMedicationAlert
+);
+
+/**
+ * @swagger
  * /api/appointments:
  *   get:
  *     summary: Get all appointments for authenticated user
@@ -503,17 +545,34 @@ app.get(
  * @swagger
  * /api/caregiver/patients/{patientId}/reports:
  *   get:
- *     summary: Get medication adherence reports for a patient
+ *     summary: Generate PDF medication adherence reports for a patient
  *     tags: [Caregiver]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: patientId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: format
+ *         schema:
+ *           type: string
+ *           enum: [json, pdf]
+ *           default: pdf
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [daily, weekly, monthly]
+ *           default: monthly
  */
-app.get(
-  "/api/caregiver/patients/:patientId/reports",
-  authenticateJWT,
-  validatePatientId,
-  validateAdherenceReportRequest,
-  caregiverController.getAdherenceReports
+app.get("/api/caregiver/patients/:patientId/reports", 
+    authenticateJWT, 
+    validatePatientId, 
+    validateAdherenceReportRequest, 
+    caregiverController.getAdherenceReports
 );
 
 /**
@@ -739,6 +798,48 @@ app.get(
   validateHealthMetricsQuery,
   healthMetricsController.getHealthTrends
 );
+
+/**
+ * @swagger
+ * /api/health/adherence/weekly:
+ *   get:
+ *     summary: Get weekly medication adherence data for Chart.js visualization
+ *     tags: [Health Metrics]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Weekly adherence data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       day_name:
+ *                         type: string
+ *                         example: Monday
+ *                       day_date:
+ *                         type: string
+ *                         example: "2025-01-27"
+ *                       adherence_rate:
+ *                         type: number
+ *                         example: 85.5
+ *                       total_doses:
+ *                         type: integer
+ *                         example: 3
+ *                       taken_doses:
+ *                         type: integer
+ *                         example: 2
+ */
+app.get("/api/health/adherence/weekly", authenticateJWT, healthMetricsController.getWeeklyAdherence);
 
 // Main medication manager page
 app.get("/medicationManager", (req, res) => {
