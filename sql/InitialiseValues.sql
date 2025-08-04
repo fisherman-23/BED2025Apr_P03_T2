@@ -300,7 +300,7 @@ VALUES
   1
 ),
 (
-  'Book Buddies Reading Circle - Monthly Book Discuss',
+  'Book Buddies Reading Circle - Monthly Discussions',
   'From thrillers to biographies, our members vote on a new book every month and meet to discuss over tea. Ideal for casual readers and literary enthusiasts alike.',
   'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1752402308787_older-male-friends-reading-newsp.jpg',
   0,
@@ -308,7 +308,7 @@ VALUES
   1
 ),
 (
-  'Early Risers Walking Group - Morning Wellness Stro',
+  'Early Risers Walking Group - Morning Strolls',
   'Kickstart your mornings with a refreshing walk and friendly chatter. We explore parks, gardens, and local landmarks while promoting healthy living and community bonding.',
   'https://storage.googleapis.com/bed-circlelife-t02.firebasestorage.app/communityEvents%2F1752402321077_360_F_462429607_hh4RpG0tYZ5j9BFx.jpg',
   0,
