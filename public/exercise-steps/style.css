@@ -1,6 +1,13 @@
 main {
-  margin-left: 18rem;
-  margin-right: 18rem;
+  margin-left: 15rem;
+  margin-right: 15rem;
+}
+
+@media (max-width: 1550px) {
+  main {
+    margin-left: 11rem;
+    margin-right: 11rem;
+    }
 }
 
 .start {
